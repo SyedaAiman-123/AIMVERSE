@@ -1,0 +1,28 @@
+/* ---------- contact form ---------- */
+.contact{border:0;padding:0;margin:0 0 0 auto;width:min(520px,100vw);max-width:none;height:100vh;max-height:none;background:radial-gradient(60% 40% at 80% 0,rgba(255,74,28,.25),transparent 70%),#07080c;color:var(--bone);border-left:3px solid var(--red);animation:qin .5s cubic-bezier(.2,.8,.2,1) both}
+.contact::backdrop{background:rgba(4,4,8,.7);backdrop-filter:blur(4px)}
+.contact-in{height:100%;overflow:auto;padding:22px clamp(16px,3vw,28px) 34px;scrollbar-width:thin;scrollbar-color:var(--red) transparent}
+.contact header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:1.2rem}
+.contact header p{margin:0;color:var(--red)}
+.contact h2{font-size:clamp(1.6rem,5vw,2.3rem);letter-spacing:-.03em;line-height:1;margin-top:.3rem}
+.contact header button:hover{color:var(--red)}
+.contact form{display:flex;flex-direction:column;gap:14px}
+.contact .f{display:flex;flex-direction:column;gap:6px}
+.contact label{font-weight:700;font-size:.9rem}
+.contact input,.contact textarea{width:100%;background:rgba(236,231,219,.05);border:1px solid var(--line);color:var(--bone);padding:.75rem .85rem;font:inherit;line-height:1.4;resize:vertical;transition:border-color .2s,background .2s}
+.contact input:focus,.contact textarea:focus{border-color:var(--red);outline:none;background:rgba(236,231,219,.08)}
+.contact .bad input,.contact .bad textarea{border-color:#ff6a6a}
+.contact .e{color:#ff8a8a;margin:0;text-transform:none;font-size:.72rem}
+.contact .row{display:flex;justify-content:flex-end}.contact .count{color:var(--mut)}
+.contact .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.contact .banner{margin:0;padding:.65rem .8rem;border-left:3px solid #ffb020;background:rgba(255,176,32,.08);text-transform:none;font-size:.78rem;line-height:1.5}
+.contact .banner.err{border-color:#ff6a6a;background:rgba(255,106,106,.1)}
+.contact .send{align-self:flex-start;padding:.8rem 1.4rem;background:var(--red);color:var(--ink);font-weight:800;font-size:.9rem;transition:transform .2s,box-shadow .2s}
+.contact .send:hover:not(:disabled){transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--bone)}
+.contact .send:disabled{opacity:.55;cursor:wait}
+.contact .privacy{color:var(--mut);text-transform:none;font-size:.65rem;line-height:1.5;margin:0}
+.contact .done{padding:1rem 0}
+.contact .done .big{font-weight:800;font-size:clamp(1.8rem,6vw,2.6rem);letter-spacing:-.03em;margin:0 0 .6rem}
+.contact .done p{color:#d6d1c4;margin:0 0 1.4rem}
+.contact .done b{color:var(--bone)}
+.sendbtn{display:inline-flex}

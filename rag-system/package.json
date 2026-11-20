@@ -1,0 +1,15 @@
+{
+  "name": "aimanverse-rag",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "ingest": "tsx ingest.ts",
+    "eval": "tsx ../tests/rag-eval.ts",
+    "test:mock": "tsx ../tests/mock-gemini.test.ts"
+  },
+  "devDependencies": {
+    "pdfjs-dist": "^6.5.438",
+    "tsx": "^4.23.15"
+  }
+}

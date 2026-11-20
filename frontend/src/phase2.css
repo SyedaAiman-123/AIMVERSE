@@ -1,0 +1,49 @@
+/* ---------- phase 2 sections ---------- */
+.lead2{font-size:clamp(1rem,1.5vw,1.2rem);line-height:1.55;color:#e6e1d4;max-width:46ch;margin:1.2rem 0 0}
+.facts2{list-style:none;padding:0;margin:1.1rem 0 0;display:flex;flex-wrap:wrap;gap:8px}
+.facts2 li{border:1px solid var(--line);padding:.4rem .7rem;background:rgba(8,9,13,.55)}
+.stage.long h2{font-size:clamp(2.2rem,5.6vw,5.2rem)}
+.cats{display:flex;flex-wrap:wrap;gap:8px;margin:1.6rem 0 1rem}
+.cats button,.cat{display:inline-flex;align-items:center;gap:8px;padding:.45rem .75rem;border:1px solid var(--line);background:rgba(8,9,13,.6);transition:all .2s}
+.cats button i,.cat i{width:9px;height:9px;border-radius:50%;background:var(--c);display:block;box-shadow:0 0 8px var(--c)}
+.cats button:hover{border-color:var(--c)}
+.cats button.on{background:var(--c);color:var(--ink)}
+.cats button.on i{background:var(--ink);box-shadow:none}
+.cat{border:0;background:none;padding:0;margin:.3rem 0}
+.skillpanel{min-height:130px;max-width:46ch}
+.skillpanel h3{font-size:clamp(1.6rem,3vw,2.4rem);letter-spacing:-.03em;line-height:1}
+.hint2{color:var(--mut);margin:.6rem 0 .5rem;text-transform:none}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:.5rem}
+.tags button,.years button{padding:.35rem .6rem;border:1px solid var(--line);background:rgba(8,9,13,.6);transition:all .2s;text-transform:none}
+.tags button:hover,.years button:hover{background:var(--a);color:var(--ink);border-color:var(--a)}
+.jgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:1.3rem 0 1rem}
+.jgrid h4{color:var(--a);margin:0 0 .4rem}
+.jgrid p,.jgrid ul{margin:0 0 .4rem;font-size:.86rem;line-height:1.4;color:#e6e1d4}
+.jgrid ul{padding-left:1rem}
+.years{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.years li{display:grid;grid-template-columns:3.4rem 1fr;gap:10px;padding:.55rem 0;border-bottom:1px solid var(--line)}
+.years b{color:var(--a)}
+.years span{display:flex;flex-wrap:wrap;gap:5px}
+@media (max-width:760px){.jgrid{grid-template-columns:1fr 1fr}.years li{grid-template-columns:1fr}.stage.long h2{font-size:clamp(1.9rem,9vw,3rem)}}
+
+/* ---------- creative upgrades ---------- */
+.factchips{display:flex;flex-wrap:wrap;gap:6px;margin:1.1rem 0 .4rem}
+.factchips button{padding:.4rem .65rem;border:1px solid var(--line);background:rgba(8,9,13,.6);transition:all .2s;text-transform:none}
+.factchips button:hover{border-color:var(--a)}
+.factchips button.on{background:var(--a);color:var(--ink);border-color:var(--a)}
+.factbody{color:var(--a);margin:.2rem 0 .6rem;text-transform:none;min-height:1.4em}
+.yeartabs{display:flex;flex-wrap:wrap;gap:6px;margin:1.1rem 0 .8rem}
+.yeartabs button{display:inline-flex;gap:8px;align-items:center;padding:.5rem .8rem;border:1px solid var(--line);background:rgba(8,9,13,.6);transition:all .2s}
+.yeartabs button i{font-style:normal;color:var(--a)}
+.yeartabs button:hover{border-color:var(--a)}
+.yeartabs button.on{background:var(--a);color:var(--ink);border-color:var(--a)}.yeartabs button.on i{color:var(--ink)}
+.yeartabs .play{margin-left:auto;background:var(--bone);color:var(--ink)}.yeartabs .play.on{background:var(--a)}
+.yearpanel{min-height:120px}
+.yeartitle{font-weight:800;font-size:1.3rem;margin:.2rem 0 .6rem;letter-spacing:-.02em}
+.posters{display:flex;flex-wrap:wrap;gap:8px}
+.posters button{position:relative;width:104px;aspect-ratio:16/10;overflow:hidden;border:1px solid var(--line);background:#0b0d14;transition:transform .25s,border-color .25s;animation:fade .5s both}
+.posters button:hover{transform:translateY(-4px);border-color:var(--c)}
+.posters img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(1.1)}
+.posters .noimg{display:grid;place-items:center;height:100%;color:var(--mut);font-size:.6rem}
+.posters em{position:absolute;left:0;right:0;bottom:0;padding:.25rem .4rem;font-style:normal;font-size:.56rem;line-height:1.1;background:linear-gradient(0deg,rgba(5,6,10,.92),transparent);text-transform:none}
+@media (max-width:760px){.posters button{width:88px}.yeartabs .play{margin-left:0}}

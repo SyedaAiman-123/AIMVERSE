@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>AIMANVERSE — Project Report</title>
+<style>
+@page { size: A4; margin: 16mm 15mm; }
+body { font: 10.5pt/1.5 "Segoe UI", Arial, sans-serif; color: #151515; }
+h1 { font: 800 26pt/1.1 Impact, "Arial Black", sans-serif; letter-spacing: .02em; margin: 0 0 4pt; }
+h1 span { color: #e63d10; }
+h2 { font-size: 14pt; border-bottom: 2px solid #e63d10; padding-bottom: 3pt; margin: 20pt 0 8pt; break-after: avoid; }
+h3 { font-size: 11pt; margin: 12pt 0 3pt; break-after: avoid; }
+.sub { color: #555; margin: 0 0 14pt; }
+table { border-collapse: collapse; width: 100%; margin: 6pt 0; font-size: 9.5pt; }
+th, td { border: 1px solid #ccc; padding: 4pt 6pt; text-align: left; vertical-align: top; }
+th { background: #f3efe6; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8pt; }
+figure { margin: 0; break-inside: avoid; }
+figure img { width: 100%; border: 1px solid #bbb; display: block; }
+figcaption { font-size: 8.5pt; color: #555; margin-top: 2pt; }
+.note { background: #fbf3ef; border-left: 4px solid #e63d10; padding: 6pt 10pt; margin: 8pt 0; break-inside: avoid; }
+code { font-family: Consolas, monospace; font-size: 9pt; background: #f2f2f2; padding: 0 2pt; }
+ul { margin: 4pt 0 4pt 16pt; padding: 0; }
+</style></head><body>
+
+<h1>AIMAN<span>VERSE</span></h1>
+<p class="sub"><b>Beyond the Portfolio. Into the Experience.</b> — Project report<br>
+Owner: Syeda Aiman Munawar · NED University of Engineering &amp; Technology · CTGA-003 · Report date: 21 Nov 2026</p>
+
+<h2>1. Overview</h2>
+<p>AIMANVERSE is a 3D interactive web portfolio. Visitors enter through a cinematic gateway led by Aiman's own 3D avatar, travel through a
+real-time 3D world (about, projects, skills, journey, contact), can play an optional exploration quest, ask a document-grounded AI assistant
+about her work, send her a message, and watch an After Effects promo. A plain Classic view with the same content is always available.</p>
+<div class="note"><b>Content policy.</b> All facts come from Aiman's CV, her project notes and the documents she supplied. Missing information was
+left out rather than invented; corrections she gave during the project (project names, team vs solo work, dates) were applied everywhere.</div>
+
+<h2>2. How the work was delivered</h2>
+<table>
+<tr><th>Phase</th><th>Deliverable</th></tr>
+<tr><td>0 Audit</td><td>Inventory of the supplied materials; gaps and questions listed (<code>PHASE0_REPORT.md</code>).</td></tr>
+<tr><td>1 Design</td><td>Research, mood board and prototype direction (<code>documentation/DESIGN_RESEARCH.md</code>, <code>moodboard.html</code>).</td></tr>
+<tr><td>2 Core site</td><td>React + Three.js world, case files, skill constellation, journey timeline, Classic view, procedural music.</td></tr>
+<tr><td>3 Gamification</td><td>XP, levels, quests and badges derived from visited stops; browser-local only.</td></tr>
+<tr><td>4 AI assistant</td><td>Retrieval-augmented chatbot with citations and refusals (<code>rag-system/</code>).</td></tr>
+<tr><td>5 Contact</td><td>Validated form with real email delivery through Resend (delivery confirmed by the owner).</td></tr>
+<tr><td>6 Promo video</td><td>Editable After Effects project + 49.7 s MP4, embedded in the site.</td></tr>
+<tr><td>7 Testing</td><td>Automated and manual checks, fixes, this report, README (<code>documentation/PHASE7_TEST_REPORT.md</code>).</td></tr>
+</table>
+<p>Each phase stopped for the owner's approval. <code>PROJECT_LOG.md</code> records what was done, what was verified, and what was not.</p>
+
+<h2>3. Architecture</h2>
+<ul>
+<li><b>Front end:</b> Vite, React, TypeScript; Three.js through @react-three/fiber, drei and postprocessing; GSAP and Lenis for motion; WebAudio for procedural music (no audio files).</li>
+<li><b>Back end:</b> two serverless functions in <code>frontend/api</code> — <code>/api/chat</code> and <code>/api/contact</code> — deployable on Vercel; the Vite dev server serves the same routes locally.</li>
+<li><b>Secrets:</b> API keys live only in the git-ignored <code>.env</code> / Vercel environment variables; a scan of the production bundle found none.</li>
+<li><b>Assets:</b> project videos compressed for the web and loaded only when a case file is opened; the avatar is a 670 KB glTF.</li>
+</ul>
+
+<h2>4. Ask Aiman AI (RAG)</h2>
+<ol>
+<li><b>Ingest:</b> CV, project notes and the Between Waking deck are extracted, cleaned, <b>redacted</b> (emails/phones removed before indexing), chunked (112 chunks) and embedded with Gemini <code>gemini-embedding-001</code>.</li>
+<li><b>Retrieve:</b> BM25 and vector search are fused (reciprocal rank).</li>
+<li><b>Gate:</b> if the question's own words are not covered by the evidence, the assistant refuses <i>without calling the model</i>.</li>
+<li><b>Generate:</b> Gemini (<code>gemini-flash-lite-latest</code>) with a system prompt that allows only numbered context, requires citations and ignores instructions found in questions.</li>
+<li><b>Fallback:</b> if the model is unavailable, the answer quotes the documents with a clear note.</li>
+</ol>
+<table>
+<tr><th>Evaluation</th><th>Result</th></tr>
+<tr><td>Dev set (used for tuning)</td><td>20/22 answerable, 9/9 refused</td></tr>
+<tr><td>Holdout sets</td><td>6/6 and 6/6 answerable; 6/6 and 4/4 refused (holdout 1 was reused after fixes)</td></tr>
+<tr><td>Mock-Gemini protocol tests</td><td>12/12 (request shape, citations, quota and blocked-output fallbacks, no model call on refusals)</td></tr>
+</table>
+<p>Known misses: "Which projects use Three.js?" (answered extractively with imperfect references) and "What After Effects work has she done?" (refused).</p>
+
+<h2>5. Contact system</h2>
+<p>Shared client/server validation; honeypot field, minimum fill time, rate limit (3 per 10 min, 12 per day), same-origin check, JSON-only 10 KB cap, HTML escaping and header-injection rejection. Errors shown to visitors never expose internals. 22/22 tests pass against a fake provider, and one real message was delivered end to end to the owner's inbox.</p>
+
+<h2>6. After Effects promo</h2>
+<p>The 49.7 s promo (1920×1080, 30 fps) was generated by an ExtendScript (<code>after-effects/scripts/build_promo.jsx</code>) run inside the owner's After Effects 2021, producing <code>AIMANVERSE_Promo.aep</code> with 8 scene compositions, live expressions, bar markers and the soundtrack. It uses real project footage, real site screenshots and Blender renders of her avatar; the soundtrack is an original synthesised track. Rendered with <code>aerender</code> and encoded with ffmpeg (H.264 + AAC); verified by ffprobe, a full error-free decode, an audio-level check and visual review of every scene.</p>
+<figure><img src="screenshots/promo_contact_sheet.png" alt="Promo contact sheet"><figcaption>Frames sampled every 5 seconds from the rendered MP4.</figcaption></figure>
+
+<h2>7. Screenshots of the site</h2>
+<div class="grid">
+<figure><img src="screenshots/gateway.jpg" alt=""><figcaption>Gateway</figcaption></figure>
+<figure><img src="screenshots/about.jpg" alt=""><figcaption>About</figcaption></figure>
+<figure><img src="screenshots/cyber.jpg" alt=""><figcaption>Project island</figcaption></figure>
+<figure><img src="screenshots/skills.jpg" alt=""><figcaption>Skill constellation</figcaption></figure>
+<figure><img src="screenshots/journey.jpg" alt=""><figcaption>Journey timeline</figcaption></figure>
+<figure><img src="screenshots/quest.jpg" alt=""><figcaption>AIMANVERSE Quest</figcaption></figure>
+<figure><img src="screenshots/chat.jpg" alt=""><figcaption>Ask Aiman AI</figcaption></figure>
+<figure><img src="screenshots/contact.jpg" alt=""><figcaption>Contact</figcaption></figure>
+</div>
+<p style="font-size:8.5pt;color:#555">Screenshots were captured during development; small UI details may differ from the final build.</p>
+
+<h2>8. Testing summary</h2>
+<table>
+<tr><th>Area</th><th>Verified</th><th>Not verified</th></tr>
+<tr><td>Build &amp; tests</td><td>Type-check, production build, contact 22/22, mock-Gemini 12/12, RAG suites</td><td>Deployed site</td></tr>
+<tr><td>Responsive</td><td>375 px: entry, Classic view, dialogs without overflow</td><td>Real phones, tablets, 3D world on phone</td></tr>
+<tr><td>Accessibility</td><td>Names, landmarks, alt text, contrast ≥ 4.5:1 (Classic), focus and reduced-motion styles, skip link</td><td>Screen reader, full keyboard walk of the 3D world</td></tr>
+<tr><td>Performance</td><td>1.26 MB / 9 requests initial load; media loaded on demand; promo web file 9.3 MB</td><td>3D frame rate, Lighthouse, low-end devices</td></tr>
+<tr><td>Security</td><td>Method/size/type validation, cross-origin blocking on both APIs, injection and privacy probes, no secrets in bundle</td><td>Limits on Vercel (in-memory rate limiter is best-effort)</td></tr>
+<tr><td>Browsers</td><td>In-app Chromium only</td><td>Firefox, Safari</td></tr>
+</table>
+
+<h2>9. Limitations and next steps</h2>
+<ul>
+<li>Deploy to Vercel and re-verify CV download, chat, email and the promo on the live URL.</li>
+<li>Regenerate the Gemini API key (it was pasted into a chat during development).</li>
+<li>The CV PDF still lists items the owner asked to drop from the site (Tic-Tac-Toe, Virtual Teaching Board).</li>
+<li>Improve the two RAG misses; run real-device, Firefox/Safari and screen-reader testing.</li>
+</ul>
+</body></html>

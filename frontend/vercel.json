@@ -1,0 +1,10 @@
+{
+  "functions": { "api/chat.ts": { "includeFiles": "api/_rag/index.json", "maxDuration": 10 }, "api/contact.ts": { "maxDuration": 10 } },
+  "headers": [
+    { "source": "/documents/Syeda_Aiman_Munawar_CV.pdf",
+      "headers": [
+        { "key": "Content-Type", "value": "application/pdf" },
+        { "key": "Content-Disposition", "value": "attachment; filename=\"Syeda_Aiman_Munawar_CV.pdf\"" }
+      ] }
+  ]
+}

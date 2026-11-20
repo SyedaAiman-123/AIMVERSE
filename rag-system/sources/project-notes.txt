@@ -1,0 +1,332 @@
+🛡️ 1) Dungeon Chase: Where Survival Meets Destruction! ⚔️ (2026)
+Excited to showcase Dungeon Chase — a 3D Endless Runner developed in Unreal Engine 5.3! 🎮🏰
+This project challenged us to bridge the gap between technical logic and immersive art. While we focused on high-speed mechanics and atmosphere, the true standout feature is our unique Power Mode Mechanic.
+💥 The Standout Feature: Power Mode
+Unlike traditional runners where you only dodge, in Dungeon Chase, you fight back. By collecting 50 daggers, the player triggers an intense 15-second Power Mode. During this window, the gameplay flips: you stop evading and start smashing, gaining the ability to destroy blocker obstacles that would otherwise end your run. This adds a layer of strategy and high-stakes reward that keeps players pushing for that next dagger.
+Core Technical Highlights:
+✨ Procedural World Generation: A modular tile-spawning system that ensures a unique dungeon path every time.
+✨ Technical Character Integration: Mastered IK Retargeting to bring a custom Viking model to life with fluid movement.
+✨ Dynamic HUD: A frame-independent UI progress bar that tracks Power Mode duration in real-time.
+Building Dungeon Chase was an incredible hands-on experience in problem-solving and teamwork. From mastering the dark dungeon atmosphere to implementing complex event-driven logic, every phase strengthened our understanding of the Unreal ecosystem.
+
+2) DUNGEON 2D CRAWLER (2025)
+Made my first game in Unity!
+
+For Gamecon, Techfest 2025, at NED University, I made a 2D dungeon crawler. It had mechanics for:
+- Attacking enemies
+- Being attacked by enemies
+- Traps
+- Running
+- Claiming keys and coins from chests
+- Level unlocking by winning the previous level
+3) CYBERNEX SIMULATOR:
+🎉 Excited to share our  semester project of Data Structures And Algorithms "Cybernex Simulator" at NED University of Engineering and Technology
+🏆 We are thrilled that Cybernex Simulator was selected as one of the top projects in the department and also got the privilege to showcase it in the project exhibition, making this journey even more rewarding!
+🌟 About the Project
+Cybernex Simulator is an innovative game that blends cybersecurity challenges with a graph-based environment. Each node represents a unique task, allowing players to navigate through decoding encrypted messages, cracking passwords, bypassing firewalls, and number guessing—challenges inspired by real-world cybersecurity scenarios.
+The game's dynamic graph structure enhances engagement, enabling strategic navigation, backtracking, and progression. By integrating data structures and algorithms, Cybernex Simulator provides both educational value and an exhilarating experience of "hacking the system" through problem-solving.
+
+4) ORB RUSH (2026)
+# Orb Rush — 3D Arcade Game & Full-Stack Web Application
+
+**Technologies:** HTML5, CSS3, JavaScript, Three.js, Vite, Node.js, Express.js, MongoDB Atlas, Mongoose, JWT, Vercel
+
+I developed **Orb Rush**, a responsive, browser-based 3D arcade game that combines interactive gameplay with full-stack web application functionality. Built using Three.js, the game allows authenticated players to interact with animated orbs in a 3D arena, earn points through timed rounds, and track their performance through a personal dashboard and public leaderboard.
+
+### Key Features & Contributions
+
+- **3D Game Development:** Implemented a Three.js-based game arena featuring animated orbs, lighting, camera controls, and pointer-based interaction through raycasting.
+- **Game Mechanics:** Designed a scoring system with normal orbs, bonus orbs, penalties, limited lives, combo multipliers, and progressive difficulty.
+- **Game State Management:** Planned timed 60-second rounds with pause/resume functionality, score tracking, accuracy calculations, and game-over summaries.
+- **Full-Stack Development:** Built the application architecture using vanilla JavaScript and Vite on the frontend, with Node.js and Express.js powering backend APIs.
+- **Database Integration:** Used MongoDB Atlas and Mongoose to manage user accounts and persist game results, including player statistics and score history.
+- **Authentication & Security:** Implemented secure account-handling architecture using password hashing, JWT-based authentication with HTTP-only cookies, input validation, CSRF protection, and rate limiting.
+- **Statistics & Leaderboard:** Developed the backend structure for personal performance summaries, recent game history, and public score rankings.
+- **Responsive UI/UX:** Designed a playful Sunny Arcade visual theme with responsive layouts, accessible form states, and consistent typography across screen sizes.
+- **Deployment:** Configured the application for Vercel deployment with GitHub integration, environment variables, and same-origin API routing.
+
+### Technical Highlights
+
+- Modular frontend and backend architecture.
+- Three.js raycasting for interactive 3D object selection.
+- Reusable geometry and material resources for rendering efficiency.
+- Server-issued game sessions and server-side result validation.
+- MongoDB-backed player accounts and game history.
+- Automated testing and production build verification.
+
+**Testing:** The latest shared local test run reported 21 passing tests and a successful Vite production build. Live deployment acceptance is a separate verification step.
+
+**Live Project:** https://orb-rush-omega.vercel.app/
+
+**Developer:** Syeda Aiman Munawar  
+**Institution:** NED University of Engineering and Technology  
+**Batch:** CTGA-003
+5)SCRATCH MAZE GAME (2024)
+I'm delighted to showcase our inaugural scratch game, developed in collaboration with my talented teammates Aasia Asadullah, RAFIA GULL, and Iffat Adnan. I'm immensely proud of our team's tireless efforts and dedication throughout our journey at the GAME JAM competition during TechFest '24, proudly supported by the Gameverse-CSIT society and the CSIT Department at NED University of Engineering and Technology.I extend my heartfelt gratitude to Meta Frolic Labs (Pvt.) Ltd. for their invaluable mentorship and participation in the event. Special thanks to Miss Samia Masood   and Miss Saadia A. for their exceptional organization and efforts in making this event a resounding success.
+#techfest24 #gameverse #gamejam #gaming #animation #csit #neduniversity #scratch #gamedevelopment
+6) FYP VR UAV SIM APP (2026)
+### VR-UAV SIM – Cross-Platform Mobile Application
+**React Native | JavaScript | Expo | Expo Router | React Native Animated API**
+
+I collaborated on designing and developing a cross-platform mobile application for VR-UAV SIM, our Final Year Design Project focused on Virtual Reality-based UAV (drone) flight training and simulation.
+
+I worked on building an interactive mobile experience that introduces users to the VR-UAV SIM concept through five main sections: Home, Explore, Fly, Demo, and Team. The application provides an overview of the project, an interactive drone exploration interface, flight simulation demonstrations, and information about the development team.
+
+One of the key components I worked on was the **Take Control mini-game**, which allows users to experience basic drone flight controls through a touch-based virtual joystick, including climbing and descending. I also worked on interactive 2D drone graphics, animated flight paths, waypoint navigation, and simulated flight telemetry displaying altitude, speed, and heading.
+
+I implemented reusable React Native components, file-based navigation using Expo Router, touch interactions, animations, and responsive layouts. I also integrated an offline demo video, haptic feedback, and centralized application content management to make the application easier to maintain and update.
+
+**Key Features & Technical Contributions:**
+- Developed a five-screen mobile application using React Native and Expo.
+- Implemented file-based navigation and bottom tab navigation using Expo Router.
+- Created an interactive 2D drone exploration interface with tappable component hotspots.
+- Developed a touch-controlled drone flying mini-game using PanResponder and the React Native Animated API.
+- Implemented waypoint-based flight path visualization and simulated flight telemetry.
+- Integrated animated drone graphics, interactive UI elements, and haptic feedback.
+- Added offline video playback using Expo Video.
+- Built reusable components and centralized content configuration for maintainability.
+- Prepared the application for cross-platform deployment on Android, iOS, and web using Expo Application Services (EAS).
+
+Through this project, I gained practical experience in cross-platform mobile development, JavaScript, React Native, state management, touch gesture handling, animation systems, application architecture, and responsive UI development.
+7) VR ESCAPE ROOM (2026)
+### VR Escape – Immersive VR Horror Escape Game
+**Unity | C# | XR Interaction Toolkit | Virtual Reality**
+
+I collaborated on developing an immersive VR horror escape game using Unity and the XR Interaction Toolkit. The game places players inside an abandoned multi-room house, where they must explore their surroundings, locate four hidden keys, and unlock the exit before the countdown timer expires.
+
+I worked on creating an interactive VR gameplay experience featuring object grabbing, collectible-based progression, teleportation, and randomized gameplay mechanics. The key collection system allows players to physically pick up objects using VR interactions, while randomized spawn locations ensure that each playthrough offers a different exploration experience.
+
+The project also incorporates a countdown timer, dynamic teleportation, and a complete win/lose system to create an engaging escape challenge. To improve VR comfort, we implemented teleportation-based movement instead of smooth locomotion. I also worked with VR-specific UI implementation using World Space Canvas to display the timer, collected key count, and gameplay status within the virtual environment.
+
+**Key Features & Technical Implementation:**
+- Developed VR object interaction and grabbing mechanics using XR Interaction Toolkit.
+- Implemented a four-key collectible system with pickup animations and audio feedback.
+- Integrated randomized key spawning using the Fisher-Yates shuffle algorithm.
+- Implemented teleportation mechanics to enhance exploration and VR comfort.
+- Developed countdown timer functionality and win/lose game conditions.
+- Integrated World Space UI for real-time timer and collectible tracking.
+- Worked with modular C# scripts, including GameManager, ItemCollect, SpawnManager, and HUDFollow.
+- Implemented scene restarting and exit-unlocking functionality.
+
+Through this project, I gained practical experience in VR game development, interactive gameplay systems, C# scripting, randomized algorithms, XR interaction design, and designing comfortable immersive experiences.
+
+8) SHADOWS OF THE SLUMS->SOS(2025) 
+# Shadows of the Slums — 3D Stealth-Adventure Game
+
+**Engine:** Unity 3D  
+**Platform:** PC (Windows)  
+**Genre:** Stealth-Adventure / Narrative Thriller  
+**Project Type:** Game Development
+
+I worked on **Shadows of the Slums**, a story-driven stealth game concept developed using Unity, set in a crime-ridden city inspired by noir cinematography. The narrative follows Elias, an ordinary man who accidentally witnesses a mafia execution and becomes a target. Players follow his journey through dangerous urban environments as he attempts to survive, gather evidence, and expose a criminal empire.
+
+### Key Design & Development Contributions
+
+- **Game Concept & Narrative Design:** Developed the central storyline, characters, conflicts, and narrative direction.
+- **Gameplay Design:** Planned stealth mechanics involving hiding, evasion, exploration, environmental interaction, and evidence collection.
+- **Choice-Based Systems:** Designed a trust system in which player decisions influence relationships with allies and potentially lead to different endings.
+- **Environment Planning:** Designed three main settings: the slums, harbor, and rooftops, each with a distinct atmosphere and gameplay purpose.
+- **Character & Enemy Design:** Planned the protagonist Elias, supporting characters Clara, Samir, and Noah, along with the antagonist Don Vescari and mafia bodyguards.
+- **Enemy AI Planning:** Designed enemy patrol and chase behaviors, as well as surveillance drones with spotlight-based scanning.
+- **Visual Direction:** Established a cinematic noir aesthetic using dark environments, fog, high-contrast lighting, and neon accents.
+
+### Skills Demonstrated
+
+- Unity Game Development
+- Game Design & Pre-Production
+- Narrative and Level Design
+- Gameplay Mechanics Planning
+- Character and Environment Design
+- Storyboarding and Gameflow Design
+- Team Collaboration
+
+**Project:** Shadows of the Slums  
+**Engine:** Unity 3D  
+**Institution:** NED University of Engineering and Technology  
+**Batch:** CTGA-003
+
+9) ADOBE AFTER EFFECTS PROJECT (MENU CARD) (2026)
+# Chef's Special — Animated Restaurant Menu Card
+
+**Software:** Adobe After Effects
+
+I created an animated restaurant menu card promotional video for **Chef's Special**, designed to present featured food items through engaging motion graphics and visually appealing transitions.
+
+The animation introduces the restaurant's menu with an animated title sequence, followed by individual promotional cards showcasing different food items. Each card uses a distinct background, animated typography, and food imagery to create a dynamic presentation. The video concludes with a clear call-to-action encouraging customers to order.
+
+### Key Features & Contributions
+
+- **Animated Typography:** Created animated text reveals for headings, food names, promotional messages, and the final call-to-action.
+- **Motion Graphics:** Used animated graphic elements, decorative illustrations, and visual accents to enhance the presentation.
+- **Menu Card Design:** Developed individual promotional layouts for featured items, including special pasta, cheeseburgers, grilled sandwiches, and chicken tacos.
+- **Visual Transitions:** Incorporated transitions between different menu cards to maintain visual flow throughout the video.
+- **Background & Color Styling:** Used contrasting colors, textured backgrounds, and radial visual effects to give each food promotion its own identity.
+- **Promotional Ending:** Designed a final ordering screen featuring the restaurant's website and ordering information.
+
+### Skills Demonstrated
+
+- Adobe After Effects
+- Motion Graphics
+- Typography Animation
+- Animated Promotional Design
+- Visual Storytelling
+- Composition and Layout Design
+- Video Editing
+
+**Project:** Chef's Special – Animated Menu Card  
+**Software:** Adobe After Effects
+
+10) PORTAL ASSIGNMENT USING THREE JS (2026)
+
+# CYBERVERSE — Beyond the Firewall | Interactive First-Person 3D Experience
+
+**Technologies:** JavaScript, Three.js, WebGL, GLSL, Vite, HTML5, CSS3
+
+I developed **CYBERVERSE – Beyond the Firewall**, an interactive, browser-based 3D experience inspired by cybersecurity and digital network environments. The project takes players through two connected worlds: a futuristic Cybersecurity Command Center and an encrypted Cyber Network.
+
+Players explore the command center in first-person view, interact with a robotic guardian using a raycasting-based targeting system, and activate an EMP override to disable it and unlock a glowing digital portal. Walking through the gateway transitions the player into the second world, where they can explore a network environment and return through a matching gateway.
+
+### Key Features & Contributions
+
+- **Procedural 3D Environment Development:** Created two connected 3D worlds using Three.js, generating scene geometry, lighting, server racks, holographic panels, data towers, network nodes, and particles directly through code.
+- **First-Person Navigation:** Implemented mouse-based camera controls using the Pointer Lock API, keyboard movement with WASD and arrow keys, sprint functionality, and movement boundaries.
+- **Procedural Robot Guardian:** Built an animated robot character from 18 primitive 3D meshes, with independently moving parts, a rotating shoulder ring, scanning head, glowing reactor, and energy shield.
+- **Interactive Raycasting:** Implemented a targeting system that detects when the player's crosshair is aimed at the robot within a defined distance, enabling contextual interaction.
+- **EMP Override Mechanic:** Developed a staged shutdown sequence featuring robot movement, fading energy effects, shield deactivation, and dynamic status updates to unlock the portal.
+- **Live 3D Portal Rendering:** Used WebGLRenderTarget to render the second world into a live texture displayed inside the portal, rather than using a static image.
+- **Custom GLSL Shader:** Created a ShaderMaterial-based portal effect with animated energy bands, scan lines, ripple effects, and soft edges.
+- **Seamless World Transitions:** Implemented position-based portal crossing detection, animated transition effects, access restrictions while the guardian is active, and a return gateway.
+- **HUD and Visual Design:** Designed a futuristic interface with a crosshair, guardian interaction prompt, status indicators, toast notifications, and animated transition overlays.
+
+### Technical Highlights
+
+- Two independently managed Three.js scenes using one WebGL renderer.
+- Procedural geometry and animation without external 3D model or texture files.
+- Raycaster-based object targeting and interaction.
+- Render-to-texture pipeline for live portal previews.
+- Custom GLSL fragment shader effects.
+- Delta-time-based animation and first-person movement.
+- Modular separation of HTML, CSS, and JavaScript project files.
+
+### Learning Outcomes
+
+Through this project, I gained practical experience with real-time 3D rendering in the browser, Three.js scene management, procedural modelling, shader programming, raycasting, animation loops, and interactive first-person environments.
+
+**Project:** CYBERVERSE – Beyond the Firewall  
+**Developer:** Syeda Aiman Munawar  
+**Institution:** NED University of Engineering and Technology  
+**Batch:** CTGA-003  
+**Date:** 1 November 2026
+
+
+
+11)ALICE IN THE WONDERLAND (TEA PARTY SCENE RECREATION IN UNITY USING VR)
+Alice in Wonderland – VR Tea Party Experience (2026)
+
+Unity | C# | XR Interaction Toolkit | Virtual Reality
+
+I developed an interactive VR-inspired tea party experience using Unity and the XR Interaction Toolkit, inspired by the magical world of Alice in Wonderland. My goal was to recreate a fantasy tea-party environment where users can explore the surroundings and interact naturally with objects.
+
+I designed and configured the interactive environment, implemented an XR-based player interaction system, and developed object-grabbing mechanics that allow users to pick up and hold teapots naturally. One of the main features I developed was a tilt-based tea-pouring mechanic using custom C# scripting and Unity's Particle System. The system detects the teapot's orientation and automatically activates or stops the tea particles and pouring sound accordingly.
+
+I also customized particle effects to simulate a realistic flowing tea stream, integrated background ambience and interaction sounds, designed a main menu using Unity Canvas and TextMeshPro, and implemented scene transitions using Unity SceneManager.
+
+Key Contributions:
+
+Developed interactive object-grabbing mechanics using XR Grab Interactable.
+
+Implemented a custom tilt-based tea-pouring system using C#.
+
+Customized Unity Particle Systems for realistic pouring effects.
+
+Integrated synchronized audio feedback and background ambience.
+
+Designed the main menu and implemented multi-scene navigation.
+
+Configured object physics, colliders, XR interactions, and input systems.
+
+Through this project, I gained practical experience in Unity development, C# scripting, XR interaction design, physics-based interactions, particle effects, and immersive environment development.
+
+12) VIRTUAL BOARD (USING OPEN CV) (2026)
+### Virtual Board — Hand Gesture Recognition System
+
+**Technologies:** Python, OpenCV, VS Code
+
+I developed a **Virtual Board** application using Python and OpenCV that allows users to interact with a digital drawing board through hand gestures. The system uses a camera to detect and track hand movements, translating gestures into drawing actions without requiring a physical mouse or touchscreen.
+
+The project demonstrates the practical application of computer vision and gesture-based interaction to create a touch-free digital drawing experience.
+
+**Key Features:**
+- Real-time hand detection using OpenCV.
+- Hand gesture recognition for user interaction.
+- Gesture-controlled drawing on a virtual canvas.
+- Touch-free input using camera-based hand tracking.
+
+**Skills Demonstrated:** Python, OpenCV, Computer Vision, Hand Gesture Recognition, Real-Time Image Processing.
+
+13) Mask Game (Game Jam) (2026)
+# MASK GAME — Unity Game Development | CEGA Game Jam 2025
+
+**Engine:** Unity  
+**Project Type:** 3D Game Development  
+**Theme:** Mask  
+**Event:** CEGA Game Jam 2025
+
+I developed **MASK GAME**, a 3D game project created in Unity for CEGA Game Jam 2025, based on the assigned theme of *Mask*.
+
+Set in a futuristic, dystopian Tokyo in the year 3030, the game presents a city overwhelmed by toxic smog, where a mysterious creature emerges as a threat. The experience introduces a masked hero wearing the Aurelian Mask, who stands against the creature in a dark and atmospheric urban environment.
+
+### Key Creative Contributions
+
+- **Game Concept Development:** Developed a game concept around the assigned Mask theme, incorporating mystery, identity, and a futuristic setting.
+- **3D Game Development:** Used Unity as the game development engine.
+- **Environment Design:** Established a dystopian futuristic Tokyo setting featuring atmospheric streets, cityscapes, fog, and neon lighting.
+- **Character Presentation:** Incorporated a masked protagonist whose Aurelian Mask is central to the game's visual identity.
+- **Creature Design & Presentation:** Introduced a mysterious creature as the central opposing presence.
+- **Visual Storytelling:** Used cinematic scenes and narrative elements to establish the game's setting, characters, and conflict.
+
+### Skills Demonstrated
+
+- Unity Game Development
+- 3D Game Concepts
+- Game Design
+- Environment and Character Presentation
+- Visual Storytelling
+- Creative Problem Solving
+- Game Jam Development
+
+**Project:** MASK GAME  
+**Event:** CEGA Game Jam 2025  
+**Engine:** Unity
+
+
+
+14) # Islamic Evaluator and Trainer (2025)
+NOTE: VIDEO IS NOT AVIALABLE FOR THIS PROJECT SO GENERATE SOME RELEVANT IMAGES TO DISPLAY FOR THIS PROJECT A/C TO THEME.
+
+**Technologies:** Python, Tkinter, MySQL, Pillow (PIL)
+
+## Project Overview
+I worked on **Islamic Evaluator and Trainer**, a desktop-based educational application designed to help users assess and strengthen their knowledge of Islamic studies through interactive evaluations and learning activities.
+
+The application combines a structured evaluation system with game-based training exercises, making the learning experience more engaging and interactive.
+
+## Key Features
+- **User Authentication:** Registration and login functionality with password hashing and database-backed user accounts.
+- **Knowledge Evaluation:** Assessment module with Easy, Medium, and Hard difficulty levels, allowing users to test their Islamic knowledge.
+- **Interactive Training Activities:** Includes anagram solving, Seerah event sequencing, and Islamic-themed word search games.
+- **Difficulty-Based Word Search:** Three levels of word search challenges with timers, hints, scoring, and visual feedback.
+- **Leaderboard:** Displays user rankings based on accumulated scores, encouraging learning through friendly competition.
+- **Database Integration:** MySQL database stores user information, educational content, evaluation data, and leaderboard scores.
+- **Animated Interface:** Tkinter-based graphical interface enhanced with custom backgrounds, animations, transitions, and interactive UI elements.
+
+## My Contribution
+I contributed to developing the application's Python-based functionality, integrating the graphical interface with the database, and implementing interactive learning activities. I also worked on creating an engaging user experience through visual elements, animations, and game mechanics.
+
+## Skills Demonstrated
+Python Programming • Object-Oriented Programming • GUI Development • MySQL Database Integration • Authentication • Game Logic • Problem Solving
+
+15) ADOBE AFTER EFFECTS->CREATIVE AGENCY MARKETING VIDEO RECREATION
+As part of CEGA's Post Production Course, I recreated a creative agency promotional video using Adobe After Effects. This project allowed me to explore motion graphics, animated typography, shape transformations, and visual transitions. I focused on recreating the original animation's visual flow while maintaining smooth movement and synchronization between different elements. Through this project, I gained practical experience in building engaging motion graphics and using animation to communicate a brand's identity and creative vision.
+16) DOCUMENTARY-STYLE ANIMATION IN ADOBE AFTER EFFECTS
+Created as part of CEGA's Post Production Course, this project involved developing a short documentary-style animation featuring the historic Badshahi Mosque in Lahore. Using Adobe After Effects, I combined architectural imagery, animated shapes, typography, and layered visual elements to introduce the monument and highlight its historical significance. I experimented with animation techniques and visual composition to create a documentary-inspired presentation that communicates historical information through engaging visual storytelling.
