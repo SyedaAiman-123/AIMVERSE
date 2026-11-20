@@ -158,3 +158,7 @@
 ## 2026-11-21 — Phase 7 approved; documentation delivered
 - Added README.md (features, stack, local run, env keys, scripts, Vercel steps, repo layout), documentation/project_report.html -> AIMANVERSE_Project_Report.pdf (5 pages, printed with headless Edge; pages checked visually), documentation/screenshots/ (8 site screenshots copied from the earlier real-site captures + promo contact sheet). .gitignore now also excludes AE scratch output (probe/, render/, Logs, avatar test).
 - Caveats: screenshots were captured during development and may differ slightly from the final build; the PDF's claims mirror PHASE7_TEST_REPORT.md. Deployment, key regeneration, README deploy steps (untested on Vercel) remain for Phase 8.
+
+## 2026-11-21 — Phase 8: GitHub
+- Created PRIVATE repo https://github.com/SyedaAiman-123/AIMVERSE (name as typed by the owner; rename possible) and pushed branch main (single commit; author uses the GitHub noreply email). Pre-push scan: no API keys, .env excluded, no file > 100 MB.
+- Not done: Vercel deployment (needs owner's go-ahead and a regenerated GEMINI_API_KEY), live-site verification.
