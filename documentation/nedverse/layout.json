@@ -1,0 +1,309 @@
+{
+ "units": "metres; x east, z south; north up",
+ "roads": [
+  [
+   "Main Avenue",
+   -105,
+   58,
+   125,
+   58,
+   9
+  ],
+  [
+   "East Spine",
+   84,
+   -58,
+   84,
+   58,
+   7
+  ],
+  [
+   "Central Spine",
+   10,
+   -46,
+   10,
+   58,
+   6
+  ],
+  [
+   "North Loop",
+   -80,
+   -46,
+   84,
+   -46,
+   6
+  ],
+  [
+   "West Spine",
+   -62,
+   -52,
+   -62,
+   58,
+   6
+  ]
+ ],
+ "buildings": [
+  [
+   "A",
+   "Main Gate & Welcome Plaza",
+   "plaza",
+   102,
+   52,
+   30,
+   30,
+   "#f2c200"
+  ],
+  [
+   "A1",
+   "Admissions Centre",
+   "bld",
+   112,
+   70,
+   12,
+   8,
+   "#c9bd9d"
+  ],
+  [
+   "A2",
+   "Food Centre",
+   "bld",
+   92,
+   70,
+   14,
+   9,
+   "#c9bd9d"
+  ],
+  [
+   "ADM",
+   "Administration Block",
+   "bld",
+   58,
+   71,
+   36,
+   14,
+   "#d9c34a"
+  ],
+  [
+   "C",
+   "CS & IT Department + Labs",
+   "bld",
+   102,
+   8,
+   42,
+   18,
+   "#e3d6b4"
+  ],
+  [
+   "C2",
+   "CS Labs wing",
+   "bld",
+   102,
+   -16,
+   36,
+   12,
+   "#e3d6b4"
+  ],
+  [
+   "F",
+   "Auditorium & Exhibition",
+   "bld",
+   34,
+   6,
+   30,
+   24,
+   "#e3d6b4"
+  ],
+  [
+   "E",
+   "Central Garden & Fountain Courtyard",
+   "garden",
+   63,
+   4,
+   34,
+   34,
+   "#7fa56a"
+  ],
+  [
+   "B",
+   "Academic Block",
+   "bld",
+   10,
+   -24,
+   42,
+   16,
+   "#e3d6b4"
+  ],
+  [
+   "B2",
+   "",
+   "bld",
+   -14,
+   -10,
+   18,
+   14,
+   "#e3d6b4"
+  ],
+  [
+   "D",
+   "University Library",
+   "bld",
+   -40,
+   22,
+   36,
+   22,
+   "#e3d6b4"
+  ],
+  [
+   "MQ",
+   "Mosque (scenery)",
+   "dome",
+   -66,
+   6,
+   14,
+   14,
+   "#c9bd9d"
+  ],
+  [
+   "G",
+   "Student Common Area & Cafeteria",
+   "bld",
+   -42,
+   -36,
+   24,
+   14,
+   "#e8d2a8"
+  ],
+  [
+   "HST",
+   "Hostels (scenery)",
+   "bld",
+   -108,
+   -34,
+   30,
+   18,
+   "#a9c8d8"
+  ],
+  [
+   "SP",
+   "Cricket ground (scenery)",
+   "oval",
+   70,
+   -68,
+   40,
+   30,
+   "#8bb36f"
+  ]
+ ],
+ "signs": [
+  [
+   84,
+   52,
+   "CS & IT Dept \u2191   Auditorium \u2190"
+  ],
+  [
+   36,
+   52,
+   "Auditorium \u2191  Library \u2190"
+  ],
+  [
+   10,
+   52,
+   "Academic Block \u2191"
+  ],
+  [
+   -62,
+   52,
+   "Library \u2191  Cafeteria \u2191"
+  ],
+  [
+   84,
+   -40,
+   "\u2190 Academic Block"
+  ],
+  [
+   10,
+   -40,
+   "\u2193 Garden & Auditorium"
+  ]
+ ],
+ "route": [
+  [
+   102,
+   52
+  ],
+  [
+   84,
+   52
+  ],
+  [
+   84,
+   4
+  ],
+  [
+   63,
+   4
+  ],
+  [
+   36,
+   6
+  ],
+  [
+   10,
+   6
+  ],
+  [
+   10,
+   -24
+  ],
+  [
+   10,
+   -46
+  ],
+  [
+   -62,
+   -46
+  ],
+  [
+   -62,
+   -36
+  ],
+  [
+   -42,
+   -36
+  ],
+  [
+   -62,
+   -36
+  ],
+  [
+   -62,
+   22
+  ],
+  [
+   -40,
+   22
+  ]
+ ],
+ "anchors": {
+  "welcome kiosk": [
+   104,
+   45
+  ],
+  "campus guide": [
+   96,
+   57
+  ],
+  "CS lab workstations (5-6 desks)": [
+   102,
+   3
+  ],
+  "library skill shelves (6)": [
+   -40,
+   14
+  ],
+  "auditorium exhibition panels": [
+   36,
+   14
+  ]
+ }
+}
