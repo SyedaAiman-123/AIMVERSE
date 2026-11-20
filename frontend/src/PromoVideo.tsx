@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
+import { BRAND } from './brand'
 
-export const PROMO_URL = '/media/AIMANVERSE_Promo.mp4'
+export const PROMO_URL = BRAND.promoFile
 
 /** Modal player for the After Effects promo. The file is only requested once the dialog is opened (preload="none" until then). */
 export default function PromoVideo({ onClose }: { onClose: () => void }) {
@@ -15,11 +16,11 @@ export default function PromoVideo({ onClose }: { onClose: () => void }) {
   }, [])
 
   return (
-    <dialog ref={dlg} className="promo-dialog" aria-label="AIMANVERSE promo video" onClose={onClose}
+    <dialog ref={dlg} className="promo-dialog" aria-label={`${BRAND.name} promo video`} onClose={onClose}
       onClick={(e) => { if (e.target === dlg.current) dlg.current?.close() }}>
       <div className="promo-box">
         <div className="promo-head">
-          <span className="mono">AIMANVERSE — PROMO · MADE IN ADOBE AFTER EFFECTS</span>
+          <span className="mono">{BRAND.name} — PROMO · MADE IN ADOBE AFTER EFFECTS</span>
           <button className="promo-x" onClick={() => dlg.current?.close()} aria-label="Close video">CLOSE ✕</button>
         </div>
         <video ref={vid} src={PROMO_URL} controls autoPlay playsInline preload="auto" />

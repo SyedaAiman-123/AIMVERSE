@@ -1,10 +1,10 @@
-// AIMANVERSE — promo video builder (ExtendScript for After Effects 2021)
+// AIMVERSE — promo video builder (ExtendScript for After Effects 2021)
 // Builds an EDITABLE project: organised folders, one comp per scene (precomps), live text layers, keyframed motion,
 // expressions, effects, beat markers and the original soundtrack. All media are Aiman's real project assets.
 // Run via after-effects/scripts/run_ae.ps1 (copies this file to a space-free path because AfterFX.exe -r cannot take spaces).
 (function () {
   var ROOT = "C:/Users/saima/Documents/3d portfolio/after-effects/";
-  var OUT = ROOT + "AIMANVERSE_Promo.aep";
+  var OUT = ROOT + "AIMVERSE_Promo.aep";
   var W = 1920, H = 1080, FPS = 30;
   var BPM = 116, BEAT = 60 / BPM, BAR = BEAT * 4;
   var SCENE_BARS = [2, 3, 3, 6, 2, 3, 3, 2];            // 24 bars ≈ 49.66 s
@@ -42,7 +42,7 @@
   var wave = imp("assets/avatar/wave/Aiman_Greeting_Wave_0001.png", fAva, true);
   if (wave) { wave.name = "Aiman wave (60 frames)"; wave.mainSource.conformFrameRate = 12; }
   var idle = imp("assets/avatar/idle/Aiman_Idle_0030.png", fAva);
-  var music = imp("assets/audio/aimanverse_promo_theme.wav", fAud);
+  var music = imp("assets/audio/aimverse_promo_theme.wav", fAud);
 
   // ---------- helpers ----------
   function mkComp(name, w, h, dur, folder) {
@@ -227,7 +227,7 @@
   var S1 = sceneComp(0), d1 = S1.duration;
   bg(S1, RED, 960, 540);
   (function () {
-    var word = "AIMANVERSE", x = 0, items = [], size = 250, gap = 6;
+    var word = "AIMVERSE", x = 0, items = [], size = 250, gap = 6;
     // measure each letter so the word is perfectly centred with tight tracking
     for (var i = 0; i < word.length; i++) {
       var tl = T(S1, word.charAt(i), { x: 0, y: 540, size: size, color: BONE, font: "Impact", name: "letter " + word.charAt(i) + (i + 1) });
@@ -249,10 +249,9 @@
       keys(p, [t0, t0 + 0.5], [[cx, 520 + 90], [cx, 520]]);
       keys(tf(it.l).property("Opacity"), [t0, t0 + 0.3], [0, 100]);
       keys(tf(it.l).property("Scale"), [t0, t0 + 0.5, d1], [[135, 135], [100, 100], [106, 106]]);
-      if (i >= 6) it.l.property("Transform").property("Opacity"); // (keeps structure; colour split below)
     }
-    // "VERSE" half in the accent colour
-    for (i = 5; i < items.length; i++) {
+    // "VERSE" half (letters 4-8 of AIMVERSE) in the accent colour
+    for (i = 3; i < items.length; i++) {
       var tp = items[i].l.property("Source Text"), td = tp.value;
       td.fillColor = RED; tp.setValue(td);
     }
@@ -401,7 +400,7 @@
   var mh2 = T(S5, "MADE IN ADOBE AFTER EFFECTS", { x: 106, y: 905, size: 30, color: PINK, font: "Consolas", track: 260, name: "AE credit" }); slideIn(mh2, 0.6, 24, 0.5);
 
   // ===================================================================================
-  // SCENE 6 — THE WORLD: real screenshots of AIMANVERSE in parallax cards
+  // SCENE 6 — THE WORLD: real screenshots of AIMVERSE in parallax cards
   // ===================================================================================
   var S6 = sceneComp(5), d6 = S6.duration;
   bg(S6, BLUE, 960, 540);
@@ -435,7 +434,7 @@
   var a1 = T(S7, "ASK AIMAN AI", { x: 110, y: 260, size: 118, color: BONE, name: "ASK AIMAN AI" }); slideIn(a1, 0.15, 80, 0.6);
   glow(a1, 85, 40, 0.25);
   var a2 = T(S7, "Answers only from her CV, projects and documents —\rcited, and honest when it doesn't know.", { x: 116, y: 365, size: 23, color: LIME, font: "Consolas", track: 0, lead: 36, name: "AI promise" }); slideIn(a2, 0.5, 24, 0.55);
-  var q1 = T(S7, "AIMANVERSE QUEST", { x: 110, y: 630, size: 82, color: BONE, name: "AIMANVERSE QUEST" }); slideIn(q1, 1.0, 70, 0.6);
+  var q1 = T(S7, "AIMVERSE QUEST", { x: 110, y: 630, size: 82, color: BONE, name: "AIMVERSE QUEST" }); slideIn(q1, 1.0, 70, 0.6);
   var q2 = T(S7, "EXPLORE.  DISCOVER.  UNLOCK.", { x: 116, y: 705, size: 30, color: PINK, font: "Consolas", track: 100, name: "Explore Discover Unlock" }); slideIn(q2, 1.4, 24, 0.55);
   var xp = T(S7, "LVL 1 · 0 XP", { x: 116, y: 790, size: 38, color: BONE, font: "Consolas", track: 120, name: "XP counter (expression)" });
   xp.property("Source Text").expression = "var v = Math.round(ease(time, 1.6, 4.8, 0, 275)); 'LVL ' + (v >= 250 ? 3 : (v >= 100 ? 2 : 1)) + '  ·  ' + v + ' XP'";
@@ -478,7 +477,7 @@
   // ===================================================================================
   // MAIN — sequence of scenes + transitions + HUD + grain + audio + beat markers
   // ===================================================================================
-  var MAIN = mkComp("MAIN — AIMANVERSE Promo", W, H, TOTAL, fComps);
+  var MAIN = mkComp("MAIN — AIMVERSE Promo", W, H, TOTAL, fComps);
   var scenes = [S1, S2, S3, S4, S5, S6, S7, S8];
   var accents = [RED, RED, YEL, MINT, PINK, BLUE, LIME, RED];
   for (i = 0; i < scenes.length; i++) {
@@ -488,7 +487,7 @@
     label(sl, 1 + i);
   }
   // HUD
-  var wm = T(MAIN, "AIMANVERSE", { x: 70, y: 74, size: 30, color: BONE, font: "Impact", track: 220, name: "HUD wordmark" });
+  var wm = T(MAIN, "AIMVERSE", { x: 70, y: 74, size: 30, color: BONE, font: "Impact", track: 220, name: "HUD wordmark" });
   var secLabels = [];
   for (i = 0; i < scenes.length; i++) {
     var sT = T(MAIN, "0" + (i + 1) + " — " + SCENE_NAMES[i], { x: 1850, y: 74, size: 24, color: accents[i], font: "Consolas", just: "R", track: 200, name: "HUD section " + (i + 1) });

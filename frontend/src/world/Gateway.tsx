@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import { audio } from '../audio'
 import { track } from '../game'
 import { avatarBus, fx, tint } from './state'
+import { BRAND } from '../brand'
 
 // she only tracks you while you're near the gateway
 const camera_near = (z: number) => THREE.MathUtils.clamp((14 - z) / 10, 0, 1) * THREE.MathUtils.clamp((z + 4) / 3, 0, 1)
@@ -121,7 +122,7 @@ export function Gateway({ reduced }: { reduced: boolean }) {
           </mesh>
         ))}
         <Text font="/fonts/bricolage-grotesque-latin-800-normal.woff" fontSize={2.1} position={[0, 4.9, -9]} fillOpacity={0} strokeWidth={0.012} strokeColor="#ECE7DB" anchorY="middle" letterSpacing={-0.03}>
-          AIMANVERSE
+          {BRAND.name}
         </Text>
       </group>
     </group>

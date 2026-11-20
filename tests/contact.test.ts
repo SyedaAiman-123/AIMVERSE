@@ -48,7 +48,7 @@ async function main() {
   check('valid message → 200 ok', r.status === 200 && r.json.ok === true)
   check('email goes to CONTACT_TO from CONTACT_FROM with Reply-To = visitor', resendBody.to[0] === 'owner@example.com' && resendBody.from === 'Site <site@example.com>' && resendBody.reply_to === 'sara@example.com')
   check('API key sent as Bearer header, never in the body', resendAuth === 'Bearer TEST_RESEND_KEY' && !JSON.stringify(resendBody).includes('TEST_RESEND_KEY'))
-  check('subject is prefixed and body contains the message', resendBody.subject === '[AIMANVERSE] Internship opportunity' && resendBody.text.includes('would like to talk about a role'))
+  check('subject is prefixed and body contains the message', resendBody.subject === '[AIMVERSE] Internship opportunity' && resendBody.text.includes('would like to talk about a role'))
 
   // ---- validation (server side)
   r = await post(port, { ...good(), name: '', email: 'not-an-email', subject: 'x', message: 'short' })

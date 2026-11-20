@@ -5,6 +5,7 @@
  */
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { escapeHtml, validate } from './_lib/validate.js'
+import { BRAND_NAME } from './_lib/brand'
 
 type Req = IncomingMessage & { body?: unknown; socket: { remoteAddress?: string } }
 type Env = Record<string, string | undefined>
@@ -74,10 +75,10 @@ export default async function handler(req: Req, res: ServerResponse, env: Env = 
   const key = env.RESEND_API_KEY
   if (!key) return send(res, 503, { error: 'Email delivery is not set up yet. Please reach out on LinkedIn for now.' })
   const to = env.CONTACT_TO ?? 's.aimanmunawarali@gmail.com'
-  const from = env.CONTACT_FROM ?? 'AIMANVERSE <onboarding@resend.dev>'
+  const from = env.CONTACT_FROM ?? `${BRAND_NAME} <onboarding@resend.dev>`
   const { name, email, subject, message } = v.value
-  const text = `New message from the AIMANVERSE contact form\n\nName: ${name}\nEmail: ${email}\nSubject: ${subject}\n\n${message}\n`
-  const html = `<div style="font-family:system-ui,sans-serif;max-width:560px"><h2 style="margin:0 0 12px">New message from AIMANVERSE</h2><p style="margin:0"><b>Name:</b> ${escapeHtml(name)}<br><b>Email:</b> ${escapeHtml(email)}<br><b>Subject:</b> ${escapeHtml(subject)}</p><hr style="margin:16px 0;border:0;border-top:1px solid #ddd"><p style="white-space:pre-wrap;margin:0">${escapeHtml(message)}</p></div>`
+  const text = `New message from the ${BRAND_NAME} contact form\n\nName: ${name}\nEmail: ${email}\nSubject: ${subject}\n\n${message}\n`
+  const html = `<div style="font-family:system-ui,sans-serif;max-width:560px"><h2 style="margin:0 0 12px">New message from ${BRAND_NAME}</h2><p style="margin:0"><b>Name:</b> ${escapeHtml(name)}<br><b>Email:</b> ${escapeHtml(email)}<br><b>Subject:</b> ${escapeHtml(subject)}</p><hr style="margin:16px 0;border:0;border-top:1px solid #ddd"><p style="white-space:pre-wrap;margin:0">${escapeHtml(message)}</p></div>`
 
   const ctl = new AbortController()
   const timer = setTimeout(() => ctl.abort(), 8000)
@@ -85,7 +86,7 @@ export default async function handler(req: Req, res: ServerResponse, env: Env = 
     const r = await fetch(`${env.RESEND_BASE_URL ?? 'https://api.resend.com'}/emails`, {
       method: 'POST',
       headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ from, to: [to], reply_to: email, subject: `[AIMANVERSE] ${subject}`, text, html }),
+      body: JSON.stringify({ from, to: [to], reply_to: email, subject: `[${BRAND_NAME}] ${subject}`, text, html }),
       signal: ctl.signal,
     })
     if (!r.ok) {

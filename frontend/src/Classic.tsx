@@ -3,6 +3,7 @@ import { CV_URL, EXPERIENCE, FLAT, ISLANDS, LINKEDIN, SKILLS } from './data'
 import CaseSheet, { type OpenState } from './CaseSheet'
 import Contact from './Contact'
 import PromoVideo from './PromoVideo'
+import { BRAND } from './brand'
 
 export default function Classic({ canReturn, onWorld }: { canReturn: boolean; onWorld: () => void }) {
   const [open, setOpen] = useState<OpenState | null>(null)
@@ -12,7 +13,7 @@ export default function Classic({ canReturn, onWorld }: { canReturn: boolean; on
     <div className="classic">
       <a className="skip-link" href="#content">Skip to content</a>
       <header className="bar solid">
-        <a className="word" href="#home">AIMANVERSE</a>
+        <a className="word" href="#home">{BRAND.name}</a>
         <nav aria-label="Sections" className="bar-r mono">
           <a href="#about">About</a><a href="#skills">Skills</a><a href="#projects">Projects</a><a href="#education">Education</a><a href="#contact">Contact</a>
           <a className="dl" href={CV_URL} download="Syeda_Aiman_Munawar_CV.pdf">CV ↓</a>

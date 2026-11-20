@@ -9,6 +9,7 @@ import { audio } from './audio'
 import { STATIONS, StationGame, type StationId } from './QuestGames'
 import { ProgressPanel } from './ProgressPanel'
 import './questworld.css'
+import { BRAND } from './brand'
 
 /* QUEST WORLD — a separate 3D environment. You steer a small drone around a glowing observatory floating in space.
    Aiman stands at the centre as your host; four objects around her are the game stations. Walk up to one and press
@@ -374,7 +375,7 @@ export default function QuestWorld({ onClose }: { onClose: () => void }) {
 
       <header className="qw-top">
         <div className="qw-title">
-          <p className="mono">AIMANVERSE QUEST</p>
+          <p className="mono">{BRAND.name} QUEST</p>
           <div className="qw-lvl"><b>{g.levelName}</b><span className="mono">LVL {g.level + 1}/{LEVELS.length} · {g.xp} XP</span></div>
           <div className="xbar" role="progressbar" aria-label="Progress to next level" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}><i style={{ width: `${pct}%` }} /></div>
         </div>

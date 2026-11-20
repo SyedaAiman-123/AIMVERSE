@@ -1,4 +1,4 @@
-"""Original soundtrack for the AIMANVERSE promo — synthesised from scratch (no samples, no licensing).
+"""Original soundtrack for the AIMVERSE promo — synthesised from scratch (no samples, no licensing).
 116 BPM, 24 bars (~49.7 s), I–V–vi–IV in C. Structure (bars):
   1-2  riser + hats + teaser arp      3-10  drop: full groove       11-14 lift: pad + wide arp
   15-22 full groove, extra stabs     23-24 outro: kick stops, chord rings out

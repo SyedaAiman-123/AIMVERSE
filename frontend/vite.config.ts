@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 /** Serves /api/chat during `npm run dev` using the same handler Vercel runs in production. Reads .env for GEMINI_API_KEY. */
 function apiDev(): Plugin {
   return {
-    name: 'aimanverse-api-dev',
+    name: 'aimverse-api-dev',
     configureServer(server) {
       Object.assign(process.env, loadEnv('development', process.cwd(), ''))
       for (const route of ['chat', 'contact']) {

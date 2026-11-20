@@ -1,4 +1,4 @@
-/* ---------- AIMANVERSE QUEST ---------- */
+/* ---------- AIMVERSE QUEST ---------- */
 .qbtn{display:inline-flex;align-items:center;gap:8px;padding:.4rem .7rem;border:1px solid var(--line);background:rgba(8,9,13,.6);font:500 .72rem Mono,monospace;text-transform:uppercase;letter-spacing:.04em;opacity:1!important}
 .qbtn:hover{border-color:var(--red);color:var(--bone)!important}
 .qlvl{color:var(--red)}

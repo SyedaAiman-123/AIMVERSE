@@ -1,3 +1,4 @@
+import { BRAND } from './brand'
 // Original, procedurally synthesised "launch-ad" soundtrack (WebAudio) — upbeat, bright, driving.
 // ~116 BPM, I–V–vi–IV progression, four-on-the-floor drums, bass groove, off-beat chord stabs and a sparkling arpeggio.
 // No audio files, so nothing to license. Starts only after the user's entry gesture; can be muted any time.
@@ -377,7 +378,7 @@ export const audio = {
       e.ctx.resume()
       if (playing) e.next = Math.max(e.next, e.ctx.currentTime + 0.05)
     }
-    try { localStorage.setItem('aimanverse:sound', m ? 'off' : 'on') } catch { /* private mode */ }
+    try { localStorage.setItem(BRAND.storage.sound, m ? 'off' : 'on') } catch { /* private mode */ }
   },
   get muted() { return muted },
   setSection(i: number) {
@@ -407,5 +408,5 @@ export const audio = {
   close() { blip(880, 0.3, 'triangle', 0.05, 0.5) },
   chime() { [1047, 1319, 1568, 2093].forEach((f, i) => setTimeout(() => blip(f, 1.2, 'triangle', 0.045), i * 90)) },
   pulse() { blip(220, 0.35, 'square', 0.03, 0.4) },
-  stored(): boolean { try { return localStorage.getItem('aimanverse:sound') !== 'off' } catch { return true } },
+  stored(): boolean { try { return (localStorage.getItem(BRAND.storage.sound) ?? localStorage.getItem(BRAND.storage.soundLegacy)) !== 'off' } catch { return true } },
 }

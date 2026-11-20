@@ -13,6 +13,7 @@ import { Dashboard, QuestButton } from './GameUI'
 import Chat, { type Msg } from './Chat'
 import Contact from './Contact'
 import PromoVideo from './PromoVideo'
+import { BRAND } from './brand'
 
 const Scene = lazy(() => import('./Scene'))
 
@@ -46,7 +47,7 @@ function Preloader({ ready, onDone }: { ready: boolean; onDone: () => void }) {
     <div className={'preloader' + (out ? ' out' : '')} role="status" aria-live="polite">
       <div className="pl-count">{pad(Math.round(Math.min(shown, 100)))}<span>%</span></div>
       <div className="pl-bar"><i style={{ transform: `scaleX(${Math.min(shown, 100) / 100})` }} /></div>
-      <p className="mono">Loading AIMANVERSE</p>
+      <p className="mono">Loading {BRAND.name}</p>
     </div>
   )
 }
@@ -119,12 +120,12 @@ function Welcome({ onEnter, onSkip, reduced, out }: { onEnter: () => void; onSki
       </h1>
       <p className="wl">
         I build <span className="cycle" aria-hidden="true"><b>games</b><b>VR worlds</b><b>3D web experiences</b><b>motion</b></span>
-        <span className="sr">games, VR worlds, 3D web experiences and motion</span>. Welcome to AIMANVERSE.
+        <span className="sr">games, VR worlds, 3D web experiences and motion</span>. Welcome to {BRAND.name}.
       </p>
       <div className="holdrow">
         <button
           className="hold"
-          aria-label="Enter AIMANVERSE — press and hold, or press Enter"
+          aria-label={`Enter ${BRAND.name} — press and hold, or press Enter`}
           onPointerDown={(e) => { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); start(false) }}
           onPointerUp={release}
           onPointerCancel={release}
@@ -329,7 +330,7 @@ export default function App() {
       {!loaded && <Preloader ready={ready} onDone={() => setLoaded(true)} />}
 
       <header className="bar">
-        <a className="word" href="#top" onClick={(e) => { e.preventDefault(); if (entered) go(0) }}>AIMANVERSE</a>
+        <a className="word" href="#top" onClick={(e) => { e.preventDefault(); if (entered) go(0) }}>{BRAND.name}</a>
         <nav aria-label="Main" className="bar-r mono">
           {entered && <span className="where" aria-hidden="true">{pad(near)} / {pad(SECTION_COUNT - 1)} — {LABELS[near]}</span>}
           {entered && <button className="askbtn" onClick={() => setChatOpen(true)}>Ask Aiman AI</button>}

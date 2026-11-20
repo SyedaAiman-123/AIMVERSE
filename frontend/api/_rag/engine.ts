@@ -6,6 +6,7 @@
  * Secrets: the API key is read from the server environment only. Nothing here runs in the browser.
  */
 import fs from 'node:fs'
+import { BRAND_NAME } from '../_lib/brand'
 
 export type Chunk = { id: string; doc: string; title: string; ref: string; text: string; vec?: number[] }
 export type Index = { version: number; builtAt: string; embeddingModel: string | null; dims: number; chunks: Chunk[] }
@@ -145,7 +146,7 @@ export async function embedQuery(q: string, env: Env = process.env): Promise<num
   } catch { return null }
 }
 
-const SYSTEM = `You are "Ask Aiman AI", the portfolio assistant on Syeda Aiman Munawar's website AIMANVERSE.
+const SYSTEM = `You are "Ask Aiman AI", the portfolio assistant on Syeda Aiman Munawar's website ${BRAND_NAME}.
 Rules you must always follow:
 1. Answer ONLY from the numbered CONTEXT passages. Never use outside knowledge and never invent facts, dates, grades, employers, links or technologies.
 2. If the context does not contain the answer, say clearly that you don't have that information in Aiman's documents, and suggest what you can help with.

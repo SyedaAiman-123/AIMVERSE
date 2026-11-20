@@ -18,7 +18,7 @@ Name 2–80, email RFC-style + ≤254 and no `..`, subject 3–120, message 10�
 |---|---|
 | `RESEND_API_KEY` | required — create at resend.com/api-keys |
 | `CONTACT_TO` | recipient, default `s.aimanmunawarali@gmail.com` |
-| `CONTACT_FROM` | sender, default `AIMANVERSE <onboarding@resend.dev>` |
+| `CONTACT_FROM` | sender, default `AIMVERSE <onboarding@resend.dev>` |
 
 **Resend free-tier note:** without a verified domain, Resend can only deliver to the email you registered with — so register the Resend account with the same Gmail that should receive messages. To receive at any address, verify a domain in Resend and set `CONTACT_FROM` to an address on it.
 

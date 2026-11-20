@@ -1,4 +1,4 @@
-# AIMANVERSE — Design Research & Proposed Art Direction
+# AIMVERSE — Design Research & Proposed Art Direction
 
 **Status: awaiting your approval. Nothing has been built beyond a static mood board (`documentation/moodboard.html`).**
 

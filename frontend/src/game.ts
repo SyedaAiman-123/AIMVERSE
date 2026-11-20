@@ -1,13 +1,14 @@
-// AIMANVERSE QUEST — optional, anonymous, local-only gamification.
+// AIMVERSE QUEST — optional, anonymous, local-only gamification.
 // Design: the only stored data is a set of "events" the visitor has triggered by genuinely using the site.
 // XP, levels, quests and badges are all DERIVED from that set, so nothing can be double-counted.
 // No accounts, no network calls, no leaderboard, no hidden items. Rewards are shown only inside the Quest interface
 // (never as pop-ups over the portfolio), so nothing can cover the content.
 import { useSyncExternalStore } from 'react'
 import { ISLANDS } from './data'
+import { BRAND } from './brand'
 
-const KEY = 'aimanverse:quest:v1'
-const HUD_KEY = 'aimanverse:quest:hud'
+const KEY = BRAND.storage.quest
+const HUD_KEY = BRAND.storage.hud
 
 /* ---------- definitions ---------- */
 export type Quest = { id: string; title: string; desc: string; xp: number; goal: number; progress: (c: Counter) => number }
@@ -20,7 +21,7 @@ export const ARCADE = ['portal', 'keyframe', 'light', 'radar'] as const
 const gi = (id: string) => ISLANDS.findIndex((i) => i.id === id)
 
 export const QUESTS: Quest[] = [
-  { id: 'first-contact', title: 'First Contact', desc: 'Enter AIMANVERSE.', xp: 50, goal: 1, progress: (c) => (c.has('enter') ? 1 : 0) },
+  { id: 'first-contact', title: 'First Contact', desc: `Enter ${BRAND.name}.`, xp: 50, goal: 1, progress: (c) => (c.has('enter') ? 1 : 0) },
   { id: 'say-hello', title: 'Say Hello', desc: 'Greet Aiman — press Say hello or click her.', xp: 25, goal: 1, progress: (c) => (c.has('hello') ? 1 : 0) },
   { id: 'cyber-explorer', title: 'Cyber Explorer', desc: 'Open both Cybersecurity projects: CYBERVERSE and CyberNex.', xp: 100, goal: ISLANDS[gi('cyber')].projects.length, progress: (c) => c.count(`project:${gi('cyber')}:`) },
   { id: 'game-developer', title: 'Game Developer', desc: 'Open any three Game Development projects.', xp: 100, goal: 3, progress: (c) => Math.min(3, c.count(`project:${gi('game')}:`)) },
@@ -52,7 +53,7 @@ export const LEVELS = [
   { name: 'Digital Explorer', xp: 100 },
   { name: 'Tech Adventurer', xp: 250 },
   { name: 'Innovation Seeker', xp: 450 },
-  { name: 'AIMANVERSE Master', xp: 700 },
+  { name: `${BRAND.name} Master`, xp: 700 },
 ]
 
 /** small XP for first-time discoveries (each event type pays out once) */
@@ -111,9 +112,10 @@ function derive(events: Set<string>): Derived {
 let events = new Set<string>()
 let hud = true
 try {
-  const raw = localStorage.getItem(KEY)
+  // read the pre-rename (AIMANVERSE) key once so existing visitors keep their progress
+  const raw = localStorage.getItem(KEY) ?? localStorage.getItem(BRAND.storage.questLegacy)
   if (raw) events = new Set((JSON.parse(raw) as string[]).filter((e) => typeof e === 'string'))
-  hud = localStorage.getItem(HUD_KEY) !== 'off'
+  hud = (localStorage.getItem(HUD_KEY) ?? localStorage.getItem(BRAND.storage.hudLegacy)) !== 'off'
 } catch { /* storage unavailable: progress simply won't persist */ }
 
 let snap = derive(events)

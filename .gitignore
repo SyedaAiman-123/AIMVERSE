@@ -12,3 +12,6 @@ after-effects/probe/
 after-effects/render/
 after-effects/*Logs/
 after-effects/assets/avatar/test/
+
+# Third-party reference material (NED official map/photos) — local only, never published
+reference/

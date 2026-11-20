@@ -1,0 +1,110 @@
+# AIMVERSE rebrand + NEDVERSE Quest redesign — Phase 1: Audit, branding plan, proposal
+
+Date: 2026-11-21. Status: **audit only — no code, assets or branding have been changed.** Awaiting approval (and the answers in §9).
+
+## 1. Current architecture (what exists today)
+| Area | Reality |
+|---|---|
+| Stack | Vite 8 · React 19 · TypeScript · Three.js 0.187 · @react-three/fiber 9 · drei 10 · postprocessing · GSAP · Lenis · WebAudio (procedural music) |
+| Main site | `App.tsx` (483 lines): hold-to-enter gateway, scroll-driven 3D world (`world/*`, `Scene.tsx`), case-file dialogs (`CaseSheet.tsx`), Classic view (`Classic.tsx`), Ask-Aiman-AI chat, contact form, promo-video dialog |
+| API | Vercel functions `api/chat.ts` (RAG + Gemini) and `api/contact.ts` (Resend). **There is no authentication or account system** anywhere in the portfolio (Orb Rush has one, but it is a separate hosted project). |
+| Quest today | `GameUI.tsx` (header button + dialog), `QuestWorld.tsx` (fantasy floating observatory, drone, 4 stations), `QuestGames.tsx` (4 games), `ProgressPanel.tsx`, `game.ts` (event-set store: XP/levels/quests/badges derived, localStorage key `aimanverse:quest:v1`) |
+| Avatar | `public/models/aiman-web.glb` (670 KB): 1 skinned mesh, 40 nodes, full humanoid rig (hips, spine, thighs, shins, feet, toes, arms, fingers, head). **Only 3 animations: `Aiman_Idle`, `Aiman_Greeting_Wave`, `Aiman_Head_Movement`. No walk, no run.** Source rig: `blender/Aiman_Avatar_Rigged.blend` (Blender 4.5 is installed). |
+| Project data | Single source of truth `src/data.ts` (`ISLANDS` → `Project`: name, tag, blurb, year, team, role, stack, built, features, learned, media[], link) + `FACTS`, skills table, `LINKEDIN`, `CV_URL`. The 3D islands, Classic view, case sheets, RAG index and Quest all already read it. Media in `public/media` (jpg/mp4 per project). |
+| Deployment | GitHub `SyedaAiman-123/AIMVERSE` (private) → Vercel project `frontend` (root dir `frontend`), live at frontend-opal-six-64.vercel.app |
+
+## 2. Keep / remove / redesign
+**Keep (reuse as-is):** build/deploy pipeline, data.ts and CaseSheet content, media, the avatar GLB and its rig/materials, the XP/level/quest/badge **derived-state engine and localStorage persistence pattern** (`game.ts`), `ProgressPanel`, WebAudio engine and mute persistence, Classic view, Chat, Contact, promo dialog, reduced-motion handling, the no-WebGL fallback idea.
+
+**Remove (conflicts with your Part 15):** all four current games — Portal Tuner (30 s countdown + wrong-lock penalty counter), Keyframe Rhythm (timing/rhythm), Three-Point Light (limited takes), Retrieval Radar (scored/F1) — plus the fantasy "floating observatory" world, drone, and "Arcade/Station" quest names.
+
+**Redesign:** Quest entry (header shows `LVL 3` → `QUEST MODE` + separate level label), quests (exploration-only), the progress UI wording, the 3D scene (NED campus), the player (your avatar walking, third-person).
+
+## 3. Branding audit — AIMANVERSE → AIMVERSE
+Search result: **153 lines in ~54 files** (excluding node_modules/dist/source-materials). Classified:
+
+| Class | Where | Decision |
+|---|---|---|
+| **A. Active UI brand — change** | `App.tsx` (loader, sentence, aria-label, header wordmark), `Classic.tsx` wordmark, `Chat.tsx` title, `Scene.tsx` aria-label, `world/Gateway.tsx` giant 3D outline text, `GameUI.tsx`/`QuestWorld.tsx` (replaced by NEDVERSE UI anyway), `PromoVideo.tsx` labels, `index.html` title + meta description | Change via one new `src/brand.ts` (central config) |
+| **B. Server-visible brand — change** | `api/contact.ts` (From name `AIMANVERSE <…>`, email subject `[AIMANVERSE]`, body headings), `api/_rag/engine.ts` system prompt ("website AIMANVERSE"), `vite.config.ts` dev-plugin name | Change; the contact tests (`tests/contact.test.ts`) assert the subject and must be updated with it |
+| **C. Persistent keys — change WITH migration** | `localStorage`: `aimanverse:quest:v1`, `aimanverse:quest:hud`, `aimanverse:sound` | Rename to `aimverse:*` and read the old key once so existing visitors do not lose progress/mute choice |
+| **D. Burned into media — needs regeneration** | **The promo video**: the AIMANVERSE wordmark is in the HUD of every scene and the title card/end card (rendered pixels); `public/media/AIMANVERSE_Promo.mp4`; `build_promo.jsx` text + comp names; **the 8 site screenshots + PDF report** (documentation/screenshots, project_report.html/pdf) show the old brand | Re-run the AE build script with new text and **re-render (~14 min — I will ask before rendering)**; re-capture screenshots and re-print the PDF after the new site is live |
+| **E. Docs** | README, PROJECT_LOG (historical — **leave the old entries as history**, add a rename entry), PHASE0_REPORT (historical), DESIGN_RESEARCH, CONTACT_SYSTEM, moodboard | Update README/CONTACT_SYSTEM/DESIGN_RESEARCH/moodboard; leave PHASE0 and old log entries untouched |
+| **F. Do NOT touch** | package names in lockfiles that merely derive from folder names (regenerated by npm), AE `… Logs` folder (git-ignored), `after-effects/*.aep` binary internals, historical log lines, your name/CV/project names | `package.json` name `aimanverse` → `aimverse` is safe (regenerates lock) |
+| **G. Missing today** | No favicon, no Open Graph / Twitter tags, no `og:image` | Add favicon + OG/Twitter metadata with the AIMVERSE logo treatment |
+
+Notes: the filenames `AIMANVERSE_Promo.mp4/.aep` would become `AIMVERSE_Promo.*` (the page's `PROMO_URL` changes with it). The repo is already named **AIMVERSE**. The Vercel URL (`frontend-opal-six-64`) does not contain the brand; renaming the Vercel project/domain is optional and yours to do.
+Layout risk: "AIMVERSE" is 2 characters shorter — the 3D outline word, header wordmark and the promo title card need spacing re-checks (I will verify visually, not assume).
+
+**Logo treatment:** today the brand is a Bricolage/Impact-style wordmark with the red "VERSE" accent. I propose keeping that language: `AIM` in bone + `VERSE` in the existing red, with a small NEDVERSE sub-mark (`NED` in a distinct green-teal) for Quest. I will inspect the current logo rendering before drawing the new one.
+
+## 4. Proposed NEDVERSE architecture
+New folder `frontend/src/nedverse/` (lazy-loaded chunk — the portfolio stays light). Reuse R3F/drei; **no new 3D libraries**. Collision is done with a small custom 2-D circle-vs-box system on a flat campus (cheaper and more reliable than adding a physics engine).
+
+```
+src/brand.ts                 central brand config (AIMVERSE, NEDVERSE, taglines, storage keys)
+src/nedverse/
+  NedverseEntry.tsx          Quest Mode entry screen (AIMVERSE brand, cinematic preview, Enter Campus / Open portfolio)
+  NedverseWorld.tsx          Canvas, lighting, post-processing, quality tiers, pause when hidden
+  campus/layout.ts           zone definitions, coordinates, roads, colliders, signage (single source for map + world + minimap)
+  campus/Environment.tsx     ground, roads, buildings, instanced trees/shrubs, props, sky, daylight presets
+  campus/buildings/*         EntranceGate, AcademicBlock, CSLab (lazy interior), Library, Garden, Auditorium, CommonArea
+  player/Player.tsx          avatar loader + animation state (idle/walk/run), movement, ground snap
+  player/ThirdPersonCamera   damped follow + mouse orbit + touch drag
+  player/collision.ts        circle-vs-AABB, slide along walls
+  interact/Interactions.ts   proximity detection, prompt ("PRESS E TO INTERACT"), click/tap
+  showcase/ProjectPanel.tsx  ONE reusable panel fed by data.ts (same data as the portfolio case sheets)
+  showcase/SkillPanel.tsx, AchievementPanel.tsx
+  quest/quests.ts            exploration quests (extends game.ts event store; migrates old keys)
+  ui/Hud, MiniMap, Objectives, PauseMenu, Controls (keyboard + joystick + interact button)
+```
+Shared-data rule: panels import `ISLANDS/FACTS/skills` from `data.ts`; nothing is duplicated. Each panel gets an "Open full project" path to the existing CaseSheet.
+
+## 5. Proposed campus layout (top-down draft — to be refined from the official map in Phase 2)
+```
+                     N
+        [F Auditorium & Exhibition]      [E Central Garden]
+                 │                        │ (lawn, trees, benches)
+   [D Library] ──┤        ┌── plaza loop ──┤
+                 │        │                │
+   [C CS Lab] ───┼── [B Academic Block] ───┼── [G Student Common Area]
+                 │        │
+                 └──── main avenue ─────┘
+                          │
+              [A Main Entrance & Welcome Plaza]  ← spawn, kiosk, guide, signboards
+                          S   (University Road side)
+```
+Walkable roads and paths between all seven areas; signboards at each junction; mini-map from the same `layout.ts`. **This is an NED-inspired arrangement, not a verified replica** — see §7.
+
+## 6. Gameplay mapping (what each interaction would show, from real data)
+| Location | Interaction | Content source |
+|---|---|---|
+| A Entrance | Welcome kiosk (E) → campus map, destinations, objective; optional guide | `layout.ts` |
+| C CS Lab | Workstations → project panel (title, thumbnail, description, tech, **my contribution**, solo/team, video/screens, verified link) | `ISLANDS` (existing fields: `role`, `team`, `stack`, `media`, `link`) |
+| D Library | Skill shelves → skills + related projects | skills table in `data.ts` (6 categories exist) |
+| F Auditorium | Achievement panels | `FACTS` + anything you supply |
+| B/E/G | Destination objectives, no extra tasks | — |
+
+Quests (all exploration-only, no timers, no failure): Welcome to NEDVERSE · Campus Explorer (3 destinations) · First Project Discovery · Knowledge Seeker · Innovation Showcase · Complete Campus Journey. XP/levels/badges from the existing derived engine; progress persists in localStorage (no accounts); reset button kept; "LEVEL 3 · CAMPUS EXPLORER" shown separately from the **QUEST MODE** entry label.
+
+## 7. Findings that need your decision (honest blockers/risks)
+1. **No walk/run animation exists for your avatar.** Options: **(A, recommended)** author real walk + run cycles in Blender on your existing rig (`Aiman_Avatar_Rigged.blend`, headless Blender is available), export a new GLB with 5 animations, same mesh/materials/proportions — most natural result; **(B)** procedural leg/arm swing in code on the existing bones (zero asset risk, less natural; the long abaya hides most leg motion, which helps); **(C)** both (B as instant fallback). Nothing is changed until you choose.
+2. **I cannot verify the real layout of NED Main Campus from text sources.** What I could confirm from NED's own pages: address University Road, Karachi 75270 (Main Campus), the campus was built on that site in 1975; NED's site has a **Campus Map** (`/campus-map` → image `campusMap.jpg`) and **Satellite Imagery** (`/satellite_image` → `satellite_image.png`), a logo page with no usage terms, and an **empty photo gallery ("Coming Soon")**. Neither the text nor my search names buildings or positions. I therefore **need to look at the official map/satellite image (download = needs your OK) and ideally your own photographs** of the entrance, your department, library, auditorium and a garden/common area. Without photos the result will be "NED-inspired", and I will label it that way in the UI ("an unofficial, student-made interpretation of NED Main Campus") rather than claim a replica.
+3. **NED name/logo:** the logo is downloadable but no usage terms are stated. Recommendation: do **not** put NED's official logo in the world; use a neutral crest-free signage style and the text "NED University" as a factual place name, plus the "unofficial" disclaimer. Say so if you have permission and want the logo used.
+4. **Realism expectations:** I can build believable architecture procedurally (proportioned blocks, window grids, brick/concrete/glass materials, instanced trees, roads, daylight, shadows) at web-performance budget. It will look like a polished stylised game, not a photo-scan. Photos let me match facades/colours much better.
+5. **Category mismatches in your data.** Requested lab categories (Game, **Web**, Cyber, AI/CV, VR/XR) vs your data islands (Game, Cyber, VR, AI, **Motion**): there is no "Web" island — web projects (Orb Rush, CYBERVERSE, this portfolio?) sit elsewhere. Requested library categories include **"Computer Science Fundamentals"**, which your CV skills table does not have as a category. I will not invent content: proposal = map 5 workstations to your real islands (+ Motion as a 6th desk or in the auditorium) and build the library from your 6 real skill categories, leaving "CS Fundamentals" out unless you supply it.
+6. **Achievements:** the auditorium can only show what is in your data today (Speech competition winner, matriculation 98.3% position holder, CEGA training, KDA internship, NED enrolment, projects, CyberNex/CEGA events as already listed). Certifications/photos of awards were not supplied → I will not invent them; send any you want shown.
+7. **Performance:** today Quest is a second WebGL scene stacked on the main scene. NEDVERSE will pause/unmount the portfolio scene while open, use instancing (trees, benches, lamps), lazy-load the CS-lab interior, 2 quality tiers + a simple non-3D fallback list (kept from the current no-WebGL path).
+8. **Process conflict to note:** your prompt wants a top-down layout and prototype *before* full build; I will follow your phases exactly (2 → 3 → …), pausing for approval each time.
+9. **Cost/time:** this is a large build. Phase 3 (visual prototype) comes first so you can judge quality before I expand.
+
+## 8. Phase plan (unchanged from your prompt, with my deliverables)
+1 Audit + branding plan (this doc) → 2 Campus design (layout drawing, reference board, asset plan) → 3 Environment prototype (entrance plaza + one building, screenshots) → 4 Player (avatar, walk/run, camera, collisions) → 5 Campus expansion → 6 Portfolio interactions → 7 Quest system → 8 Testing/optimisation → 9 Deployment. The global **AIMVERSE rebrand** itself is a small, mechanical job; I propose doing it right after you approve this audit (before Phase 2) so everything new is born with the right name.
+
+## 9. Decisions / inputs I need from you
+1. Approve this audit and the rebrand scope (§3), including **re-rendering the promo** (≈14 min) — yes/no.
+2. Avatar locomotion: **A / B / C** (§7.1).
+3. OK to **download** NED's official campus map (`campusMap.jpg`) and satellite image (`satellite_image.png`) from neduet.edu.pk for layout reference only (kept local, not published)?
+4. Can you share a few photos of the campus (entrance, your department, library, auditorium, garden)? Even phone photos help. Any certificates / award photos for the exhibition hall?
+5. Logo: confirm "no official NED logo; text + disclaimer" (§7.3).
+6. Category mapping (§7.5): OK with 5 workstations from real islands + Motion?

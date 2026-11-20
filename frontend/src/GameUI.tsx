@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
 import { useGame, useHud } from './game'
 import { STATIONS, StationGame, type StationId } from './QuestGames'
 import { ProgressPanel } from './ProgressPanel'
+import { BRAND } from './brand'
 
 // The 3D world is a separate chunk: it is only downloaded when a visitor opens Quest.
 const QuestWorld = lazy(() => import('./QuestWorld'))
@@ -39,7 +40,7 @@ function QuestMenu({ onClose }: { onClose: () => void }) {
   const s = STATIONS.find((x) => x.id === game)
   return (
     <div className="qm" data-lenis-prevent>
-      <header><p className="mono">AIMANVERSE QUEST</p><button className="mono" onClick={onClose} autoFocus>Close ✕</button></header>
+      <header><p className="mono">{BRAND.name} QUEST</p><button className="mono" onClick={onClose} autoFocus>Close ✕</button></header>
       <p className="note mono">Your browser can’t show the 3D Quest World, so here are the four games as a simple list.</p>
       {s ? (
         <section className="qm-game" style={{ ['--c' as string]: s.color }}>
@@ -78,7 +79,7 @@ export function Dashboard({ onClose }: { onClose: () => void }) {
     return () => { d.removeEventListener('cancel', cancel); d.close() }
   }, [])
   return (
-    <dialog ref={dlg} className="questworld" aria-label="AIMANVERSE Quest World">
+    <dialog ref={dlg} className="questworld" aria-label={`${BRAND.name} Quest World`}>
       {gl ? (
         <Suspense fallback={<div className="qw-loading mono">Loading the Quest World…</div>}>
           <QuestWorld onClose={onClose} />

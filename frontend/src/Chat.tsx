@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { audio } from './audio'
 import { track } from './game'
+import { BRAND } from './brand'
 
 export type Source = { n: number; title: string; doc: string; ref: string }
 export type Msg = { id: number; role: 'user' | 'assistant'; text: string; sources?: Source[]; mode?: string; note?: string; error?: boolean }
@@ -85,7 +86,7 @@ export default function Chat({ msgs, setMsgs, onClose, onProject, onSection }: {
         <header>
           <div>
             <p className="mono">Ask Aiman AI</p>
-            <h2 id="chat-title">Your guide to AIMANVERSE</h2>
+            <h2 id="chat-title">Your guide to {BRAND.name}</h2>
           </div>
           <button className="mono" onClick={onClose} aria-label="Close chat">Close ✕</button>
         </header>

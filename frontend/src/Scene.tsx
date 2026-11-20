@@ -9,6 +9,7 @@ import { ActiveCtx, Islands, Reveal } from './world/Islands'
 import { Constellation, EXTRA_POS, FactOrbs, Journey } from './world/Extras'
 import { Rig } from './world/Rig'
 import { fx, scroll } from './world/state'
+import { BRAND } from './brand'
 
 export type Quality = 'low' | 'high'
 
@@ -35,7 +36,7 @@ export default function Scene({ quality, reduced, narrow, near, onSection, onRea
       camera={{ fov: 46, position: [0, 1.7, 7.5], near: 0.1, far: 400 }}
       gl={{ antialias: quality === 'high', powerPreference: 'high-performance' }}
       onCreated={onReady}
-      aria-label="Interactive 3D AIMANVERSE world. Scroll to travel."
+      aria-label={`Interactive 3D ${BRAND.name} world. Scroll to travel.`}
     >
       <fog attach="fog" args={['#2a0f08', 14, 60]} />
       <hemisphereLight args={['#9db0ff', '#1a0d10', 0.55]} />
