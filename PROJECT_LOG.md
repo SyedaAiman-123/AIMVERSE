@@ -162,3 +162,9 @@
 ## 2026-11-21 — Phase 8: GitHub
 - Created PRIVATE repo https://github.com/SyedaAiman-123/AIMVERSE (name as typed by the owner; rename possible) and pushed branch main (single commit; author uses the GitHub noreply email). Pre-push scan: no API keys, .env excluded, no file > 100 MB.
 - Not done: Vercel deployment (needs owner's go-ahead and a regenerated GEMINI_API_KEY), live-site verification.
+
+## 2026-11-21 — Phase 8: Vercel deployment verified (live)
+- Owner deployed from the GitHub repo (root dir frontend). Live: https://frontend-opal-six-64.vercel.app/
+- Verified on the live URL: HTML 200; CV PDF 200 application/pdf with attachment Content-Disposition; promo MP4 200 (9.7 MB) and plays in the page dialog (49.67 s, 1920 px, no media error); avatar GLB and project videos 200; browser console clean; WebGL scene renders.
+- Live /api/chat with the real Gemini model: "What is Orb Rush?" and "Where did Aiman intern?" -> mode=rag with sources and no fallback note (model reached); phone-number question -> blocked; "capital of France" -> refused.
+- NOT yet verified live: contact-form email from the deployed site (needs the owner's OK to send one real message), that the Gemini key was regenerated, phone/Firefox/Safari, the 3D world performance on the live site.
