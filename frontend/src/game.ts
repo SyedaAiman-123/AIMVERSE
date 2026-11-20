@@ -14,8 +14,8 @@ export type Quest = { id: string; title: string; desc: string; xp: number; goal:
 export type Badge = { id: string; title: string; how: string; glyph: string; color: string; test: (c: Counter, done: Set<string>) => boolean }
 export type Counter = { has: (e: string) => boolean; count: (prefix: string) => number }
 
-/** ids of the Quest Arcade mini-games */
-export const ARCADE = ['orb', 'memory', 'quiz'] as const
+/** ids of the Quest World station games (Portal Tuner, Keyframe Rhythm, Three-Point Light, Retrieval Radar) */
+export const ARCADE = ['portal', 'keyframe', 'light', 'radar'] as const
 
 const gi = (id: string) => ISLANDS.findIndex((i) => i.id === id)
 
@@ -30,8 +30,8 @@ export const QUESTS: Quest[] = [
   { id: 'know-aiman', title: 'Know Aiman', desc: 'Open four of the fact orbs around her.', xp: 50, goal: 4, progress: (c) => Math.min(4, c.count('fact:')) },
   { id: 'time-traveller', title: 'Time Traveller', desc: 'Visit every year in the Journey: 2023, 2024, 2025 and 2026.', xp: 75, goal: 4, progress: (c) => c.count('year:') },
   { id: 'ai-enthusiast', title: 'AI Enthusiast', desc: 'Ask Aiman AI three questions.', xp: 75, goal: 3, progress: (c) => Math.min(3, c.count('ask:')) },
-  { id: 'arcade-rookie', title: 'Arcade Rookie', desc: 'Clear any mini-game in the Quest Arcade.', xp: 50, goal: 1, progress: (c) => (ARCADE.some((g) => c.has(`game:${g}:clear`)) ? 1 : 0) },
-  { id: 'arcade-champion', title: 'Arcade Champion', desc: 'Clear all three mini-games: Orb Pop, Memory Match and Know Aiman.', xp: 100, goal: ARCADE.length, progress: (c) => ARCADE.filter((g) => c.has(`game:${g}:clear`)).length },
+  { id: 'arcade-rookie', title: 'Station Rookie', desc: 'Clear any station game in the Quest World.', xp: 50, goal: 1, progress: (c) => (ARCADE.some((g) => c.has(`game:${g}:clear`)) ? 1 : 0) },
+  { id: 'arcade-champion', title: 'Station Master', desc: 'Clear all four station games: Portal Tuner, Keyframe Rhythm, Three-Point Light and Retrieval Radar.', xp: 100, goal: ARCADE.length, progress: (c) => ARCADE.filter((g) => c.has(`game:${g}:clear`)).length },
   { id: 'full-tour', title: 'Full Tour', desc: 'Visit all ten stops, from the Gateway to Contact.', xp: 100, goal: 10, progress: (c) => c.count('section:') },
 ]
 
@@ -43,7 +43,7 @@ export const BADGES: Badge[] = [
   { id: 'constellation-mapper', title: 'Constellation Mapper', how: 'Explore all six skill categories.', glyph: 'SK', color: '#6BB8FF', test: (c) => c.count('skillcat:') >= 6 },
   { id: 'time-traveller', title: 'Time Traveller', how: 'Complete the Time Traveller quest.', glyph: 'TT', color: '#FF8A3D', test: (_, d) => d.has('time-traveller') },
   { id: 'ai-enthusiast', title: 'AI Enthusiast', how: 'Complete the AI Enthusiast quest.', glyph: 'AI', color: '#C6FF3D', test: (_, d) => d.has('ai-enthusiast') },
-  { id: 'arcade-champion', title: 'Arcade Champion', how: 'Clear all three Quest Arcade mini-games.', glyph: 'AC', color: '#7DF9FF', test: (_, d) => d.has('arcade-champion') },
+  { id: 'arcade-champion', title: 'Station Master', how: 'Clear all four Quest World station games.', glyph: 'AC', color: '#7DF9FF', test: (_, d) => d.has('arcade-champion') },
   { id: 'master-explorer', title: 'Master Explorer', how: 'Complete every quest.', glyph: 'ME', color: '#B8FF3D', test: (_, d) => QUESTS.every((q) => d.has(q.id)) },
 ]
 
@@ -60,7 +60,7 @@ const eventXp = (e: string) => {
   if (e === 'hello') return 0 // paid by its quest
   if (e.startsWith('section:')) return e === 'section:0' ? 0 : 10
   if (/^(project|skillcat|fact|year):/.test(e)) return 5
-  if (e.startsWith('game:')) return e.endsWith(':perfect') ? 15 : 20 // mini-games: clear = 20, flawless = +15 (each once)
+  if (ARCADE.some((g) => e.startsWith(`game:${g}:`))) return e.endsWith(':perfect') ? 15 : 20 // station games: clear = 20, flawless = +15 (each once)
   return 0
 }
 

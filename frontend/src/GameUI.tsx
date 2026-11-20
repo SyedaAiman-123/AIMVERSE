@@ -1,15 +1,19 @@
-import { useEffect, useRef, useState } from 'react'
-import { LEVELS, resetProgress, setHud, useGame, useHud } from './game'
-import { Arcade } from './Arcade'
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
+import { useGame, useHud } from './game'
+import { STATIONS, StationGame, type StationId } from './QuestGames'
+import { ProgressPanel } from './ProgressPanel'
 
-/** Header button: level + XP bar. Opens the dashboard. */
+// The 3D world is a separate chunk: it is only downloaded when a visitor opens Quest.
+const QuestWorld = lazy(() => import('./QuestWorld'))
+
+/** Header button: level + XP bar. Opens the Quest World. */
 export function QuestButton({ onOpen }: { onOpen: () => void }) {
   const g = useGame()
   const hud = useHud()
   const span = g.nextXp ? g.nextXp - g.levelFrom : 1
   const pct = g.nextXp ? Math.min(100, ((g.xp - g.levelFrom) / span) * 100) : 100
   return (
-    <button className="qbtn" onClick={onOpen} aria-label={`Open Quest dashboard. Level ${g.level + 1}, ${g.xp} XP`}>
+    <button className="qbtn" onClick={onOpen} aria-label={`Open the Quest World. Level ${g.level + 1}, ${g.xp} XP`}>
       {hud ? (
         <>
           <span className="qlvl">LVL {g.level + 1}</span>
@@ -23,97 +27,63 @@ export function QuestButton({ onOpen }: { onOpen: () => void }) {
   )
 }
 
-function Hex({ glyph, color, on }: { glyph: string; color: string; on: boolean }) {
+/** Fallback when WebGL is unavailable: the same four games and the same progress, as a plain page. */
+function QuestMenu({ onClose }: { onClose: () => void }) {
+  const g = useGame()
+  const [game, setGame] = useState<StationId | null>(null)
+  useEffect(() => {
+    const esc = () => { if (game) setGame(null); else onClose() }
+    window.addEventListener('quest:escape', esc)
+    return () => window.removeEventListener('quest:escape', esc)
+  }, [game, onClose])
+  const s = STATIONS.find((x) => x.id === game)
   return (
-    <svg viewBox="0 0 64 72" className={'hex' + (on ? ' on' : '')} aria-hidden="true">
-      <polygon points="32,3 61,19 61,53 32,69 3,53 3,19" fill={on ? color : 'none'} fillOpacity={on ? 0.16 : 0} stroke={on ? color : '#5a5c66'} strokeWidth="2.5" />
-      <text x="32" y="43" textAnchor="middle" fontFamily="Bricolage,sans-serif" fontWeight="800" fontSize="20" fill={on ? color : '#5a5c66'}>{on ? glyph : '?'}</text>
-    </svg>
+    <div className="qm" data-lenis-prevent>
+      <header><p className="mono">AIMANVERSE QUEST</p><button className="mono" onClick={onClose} autoFocus>Close ✕</button></header>
+      <p className="note mono">Your browser can’t show the 3D Quest World, so here are the four games as a simple list.</p>
+      {s ? (
+        <section className="qm-game" style={{ ['--c' as string]: s.color }}>
+          <button className="mono qm-back" onClick={() => setGame(null)}>← All games</button>
+          <h3>{s.title}</h3><p>{s.blurb}</p><p className="mono">{s.goal}</p>
+          <StationGame key={s.id} id={s.id} onExit={() => setGame(null)} />
+        </section>
+      ) : (
+        <ul className="qw-stations">
+          {STATIONS.map((x) => (
+            <li key={x.id} style={{ ['--c' as string]: x.color }}>
+              <p className="mono">{x.tag}</p><h3>{x.title}</h3><p>{x.blurb}</p><p className="mono g">{x.goal}</p>
+              <p className="mono st">{g.events.has(`game:${x.id}:perfect`) ? '★ Flawless' : g.events.has(`game:${x.id}:clear`) ? '✓ Cleared' : 'Not cleared yet'}</p>
+              <button className="qg-btn" onClick={() => setGame(x.id)}>Play</button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {!s && <ProgressPanel />}
+    </div>
   )
 }
 
-/** The Quest interface: a separate full-screen hub (Arcade mini-games + Progress). Nothing from it ever overlays the portfolio. */
+const hasWebGL = () => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')) } catch { return false } }
+
+/** The Quest interface: a separate full-screen 3D world. Nothing from it ever overlays the portfolio. */
 export function Dashboard({ onClose }: { onClose: () => void }) {
-  const g = useGame()
-  const hud = useHud()
   const dlg = useRef<HTMLDialogElement>(null)
-  const [confirm, setConfirm] = useState(false)
-  const [tab, setTab] = useState<'arcade' | 'progress'>('arcade')
+  const gl = useMemo(hasWebGL, [])
   useEffect(() => {
     const d = dlg.current!
     d.showModal()
-    const cancel = (e: Event) => { e.preventDefault(); onClose() }
+    // Escape is handled by the content (it first closes a game / panel, and only then the whole Quest)
+    const cancel = (e: Event) => { e.preventDefault(); window.dispatchEvent(new Event('quest:escape')) }
     d.addEventListener('cancel', cancel)
     return () => { d.removeEventListener('cancel', cancel); d.close() }
-  }, [onClose])
-  const span = g.nextXp ? g.nextXp - g.levelFrom : 1
-  const pct = g.nextXp ? Math.min(100, ((g.xp - g.levelFrom) / span) * 100) : 100
-  const doneQ = g.quests.filter((q) => q.done).length
-  const earned = g.badges.filter((b) => b.earned).length
-
+  }, [])
   return (
-    <dialog ref={dlg} className="quest arcade" aria-labelledby="quest-title" onClick={(e) => e.target === dlg.current && onClose()}>
-      <div className="quest-in" data-lenis-prevent>
-        <header>
-          <p className="mono">AIMANVERSE QUEST — Explore. Discover. Unlock.</p>
-          <button className="mono" onClick={onClose} autoFocus>Close ✕</button>
-        </header>
-        <h2 id="quest-title">{g.levelName}</h2>
-        <p className="mono sub">Level {g.level + 1} of {LEVELS.length} · {g.xp} XP{g.nextXp ? ` · ${g.nextXp - g.xp} XP to ${LEVELS[g.level + 1].name}` : ' · maximum level reached'}</p>
-        <div className="xbar" role="progressbar" aria-label="Progress to next level" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}><i style={{ width: `${pct}%` }} /></div>
-        <p className="note mono">Optional. Everything on this site is open to you whether or not you play. Progress is saved only in this browser — no account, nothing is sent anywhere.</p>
-
-        <div className="arc-tabs" role="tablist" aria-label="Quest sections">
-          <button role="tab" id="tab-arcade" aria-selected={tab === 'arcade'} aria-controls="panel-arcade" className="mono" onClick={() => setTab('arcade')}>Arcade</button>
-          <button role="tab" id="tab-progress" aria-selected={tab === 'progress'} aria-controls="panel-progress" className="mono" onClick={() => setTab('progress')}>Progress</button>
-        </div>
-
-        {tab === 'arcade' && <div role="tabpanel" id="panel-arcade" aria-labelledby="tab-arcade"><Arcade /></div>}
-
-        {tab === 'progress' && <div role="tabpanel" id="panel-progress" aria-labelledby="tab-progress">
-        <h3>Exploration — {g.exploration}%</h3>
-        <ul className="parts">
-          {g.parts.map((p) => (
-            <li key={p.label}><span className="mono">{p.label}</span><b className="mono">{p.have}/{p.of}</b><div className="xbar sm"><i style={{ width: `${(p.have / p.of) * 100}%` }} /></div></li>
-          ))}
-        </ul>
-
-        <h3>Quests — {doneQ}/{g.quests.length}</h3>
-        <ul className="qlist">
-          {g.quests.map((q) => (
-            <li key={q.id} className={q.done ? 'done' : ''}>
-              <div className="qh"><b>{q.title}</b><span className="mono">{q.done ? '✓ done' : `${q.value}/${q.goal}`} · {q.xp} XP</span></div>
-              <p>{q.desc}</p>
-              <div className="xbar sm"><i style={{ width: `${(q.value / q.goal) * 100}%` }} /></div>
-            </li>
-          ))}
-        </ul>
-
-        <h3>Badges — {earned}/{g.badges.length}</h3>
-        <ul className="badges">
-          {g.badges.map((b) => (
-            <li key={b.id} className={b.earned ? 'on' : ''}>
-              <Hex glyph={b.glyph} color={b.color} on={b.earned} />
-              <b>{b.title}</b>
-              <span className="mono">{b.earned ? 'Unlocked' : b.how}</span>
-            </li>
-          ))}
-        </ul>
-        </div>}
-
-        <footer>
-          <label className="mono"><input type="checkbox" checked={hud} onChange={(e) => setHud(e.target.checked)} /> Show XP bar in the header</label>
-          {confirm ? (
-            <span className="confirm">
-              <span className="mono">Erase all progress?</span>
-              <button className="mono danger" onClick={() => { resetProgress(); setConfirm(false) }}>Yes, reset</button>
-              <button className="mono" onClick={() => setConfirm(false)}>Cancel</button>
-            </span>
-          ) : (
-            <button className="mono" onClick={() => setConfirm(true)}>Reset progress</button>
-          )}
-        </footer>
-      </div>
+    <dialog ref={dlg} className="questworld" aria-label="AIMANVERSE Quest World">
+      {gl ? (
+        <Suspense fallback={<div className="qw-loading mono">Loading the Quest World…</div>}>
+          <QuestWorld onClose={onClose} />
+        </Suspense>
+      ) : <QuestMenu onClose={onClose} />}
     </dialog>
   )
 }
