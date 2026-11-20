@@ -9,7 +9,7 @@ import type { Quality } from './Scene'
 import { ACCENTS, SECTION_COUNT, avatarBus, fx, intro, scroll } from './world/state'
 import { audio } from './audio'
 import { track } from './game'
-import { Dashboard, QuestButton, Toasts } from './GameUI'
+import { Dashboard, QuestButton } from './GameUI'
 import Chat, { type Msg } from './Chat'
 import Contact from './Contact'
 import PromoVideo from './PromoVideo'
@@ -473,7 +473,6 @@ export default function App() {
       </main>
       <div className="peek" ref={peek} aria-hidden="true"><img alt="" /></div>
 
-      {entered && <Toasts />}
       {questOpen && <Dashboard onClose={() => setQuestOpen(false)} />}
       {contactOpen && <Contact onClose={() => setContactOpen(false)} />}
       {promoOpen && <PromoVideo onClose={() => setPromoOpen(false)} />}

@@ -1,7 +1,8 @@
 // AIMANVERSE QUEST — optional, anonymous, local-only gamification.
 // Design: the only stored data is a set of "events" the visitor has triggered by genuinely using the site.
 // XP, levels, quests and badges are all DERIVED from that set, so nothing can be double-counted.
-// No accounts, no network calls, no leaderboard, no hidden items.
+// No accounts, no network calls, no leaderboard, no hidden items. Rewards are shown only inside the Quest interface
+// (never as pop-ups over the portfolio), so nothing can cover the content.
 import { useSyncExternalStore } from 'react'
 import { ISLANDS } from './data'
 
@@ -12,6 +13,9 @@ const HUD_KEY = 'aimanverse:quest:hud'
 export type Quest = { id: string; title: string; desc: string; xp: number; goal: number; progress: (c: Counter) => number }
 export type Badge = { id: string; title: string; how: string; glyph: string; color: string; test: (c: Counter, done: Set<string>) => boolean }
 export type Counter = { has: (e: string) => boolean; count: (prefix: string) => number }
+
+/** ids of the Quest Arcade mini-games */
+export const ARCADE = ['orb', 'memory', 'quiz'] as const
 
 const gi = (id: string) => ISLANDS.findIndex((i) => i.id === id)
 
@@ -26,6 +30,8 @@ export const QUESTS: Quest[] = [
   { id: 'know-aiman', title: 'Know Aiman', desc: 'Open four of the fact orbs around her.', xp: 50, goal: 4, progress: (c) => Math.min(4, c.count('fact:')) },
   { id: 'time-traveller', title: 'Time Traveller', desc: 'Visit every year in the Journey: 2023, 2024, 2025 and 2026.', xp: 75, goal: 4, progress: (c) => c.count('year:') },
   { id: 'ai-enthusiast', title: 'AI Enthusiast', desc: 'Ask Aiman AI three questions.', xp: 75, goal: 3, progress: (c) => Math.min(3, c.count('ask:')) },
+  { id: 'arcade-rookie', title: 'Arcade Rookie', desc: 'Clear any mini-game in the Quest Arcade.', xp: 50, goal: 1, progress: (c) => (ARCADE.some((g) => c.has(`game:${g}:clear`)) ? 1 : 0) },
+  { id: 'arcade-champion', title: 'Arcade Champion', desc: 'Clear all three mini-games: Orb Pop, Memory Match and Know Aiman.', xp: 100, goal: ARCADE.length, progress: (c) => ARCADE.filter((g) => c.has(`game:${g}:clear`)).length },
   { id: 'full-tour', title: 'Full Tour', desc: 'Visit all ten stops, from the Gateway to Contact.', xp: 100, goal: 10, progress: (c) => c.count('section:') },
 ]
 
@@ -37,6 +43,7 @@ export const BADGES: Badge[] = [
   { id: 'constellation-mapper', title: 'Constellation Mapper', how: 'Explore all six skill categories.', glyph: 'SK', color: '#6BB8FF', test: (c) => c.count('skillcat:') >= 6 },
   { id: 'time-traveller', title: 'Time Traveller', how: 'Complete the Time Traveller quest.', glyph: 'TT', color: '#FF8A3D', test: (_, d) => d.has('time-traveller') },
   { id: 'ai-enthusiast', title: 'AI Enthusiast', how: 'Complete the AI Enthusiast quest.', glyph: 'AI', color: '#C6FF3D', test: (_, d) => d.has('ai-enthusiast') },
+  { id: 'arcade-champion', title: 'Arcade Champion', how: 'Clear all three Quest Arcade mini-games.', glyph: 'AC', color: '#7DF9FF', test: (_, d) => d.has('arcade-champion') },
   { id: 'master-explorer', title: 'Master Explorer', how: 'Complete every quest.', glyph: 'ME', color: '#B8FF3D', test: (_, d) => QUESTS.every((q) => d.has(q.id)) },
 ]
 
@@ -53,6 +60,7 @@ const eventXp = (e: string) => {
   if (e === 'hello') return 0 // paid by its quest
   if (e.startsWith('section:')) return e === 'section:0' ? 0 : 10
   if (/^(project|skillcat|fact|year):/.test(e)) return 5
+  if (e.startsWith('game:')) return e.endsWith(':perfect') ? 15 : 20 // mini-games: clear = 20, flawless = +15 (each once)
   return 0
 }
 
@@ -113,49 +121,20 @@ const subs = new Set<() => void>()
 const emit = () => subs.forEach((f) => f())
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...events])) } catch { /* ignore */ } }
 
-export type Toast = { id: number; kind: 'xp' | 'quest' | 'badge' | 'level'; text: string; sub?: string }
-let toasts: Toast[] = []
-let tid = 0
-const tsubs = new Set<() => void>()
-const pushToast = (t: Omit<Toast, 'id'>) => {
-  const toast = { ...t, id: ++tid }
-  toasts = [...toasts, toast].slice(-4)
-  tsubs.forEach((f) => f())
-  setTimeout(() => { toasts = toasts.filter((x) => x.id !== toast.id); tsubs.forEach((f) => f()) }, 5200)
-}
-
 /** Record that the visitor did something real. Duplicates are ignored, so rewards can never be farmed. */
 export function track(e: string) {
   if (events.has(e)) return
-  const before = snap
   events = new Set(events).add(e)
   snap = derive(events)
   save()
-  const gained = snap.xp - before.xp
-  const newQuests = snap.quests.filter((q, i) => q.done && !before.quests[i].done)
-  newQuests.forEach((q) => pushToast({ kind: 'quest', text: `Quest complete: ${q.title}`, sub: `+${q.xp} XP` }))
-  snap.badges.forEach((b, i) => { if (b.earned && !before.badges[i].earned) pushToast({ kind: 'badge', text: `Badge unlocked: ${b.title}` }) })
-  const questXp = newQuests.reduce((n, q) => n + q.xp, 0)
-  if (gained - questXp > 0) pushToast({ kind: 'xp', text: `+${gained - questXp} XP`, sub: labelFor(e) })
-  if (snap.level > before.level) pushToast({ kind: 'level', text: `Level up: ${snap.levelName}` })
   emit()
-}
-function labelFor(e: string) {
-  if (e.startsWith('section:')) return 'New stop discovered'
-  if (e.startsWith('project:')) return 'Project explored'
-  if (e.startsWith('skillcat:')) return 'Skill category explored'
-  if (e.startsWith('fact:')) return 'Fact discovered'
-  if (e.startsWith('year:')) return 'Year visited'
-  return ''
 }
 
 export function resetProgress() {
   events = new Set()
   snap = derive(events)
-  toasts = []
   save()
   emit()
-  tsubs.forEach((f) => f())
 }
 export function setHud(v: boolean) {
   hud = v
@@ -165,4 +144,3 @@ export function setHud(v: boolean) {
 
 export const useGame = () => useSyncExternalStore((f) => { subs.add(f); return () => { subs.delete(f) } }, () => snap)
 export const useHud = () => useSyncExternalStore((f) => { subs.add(f); return () => { subs.delete(f) } }, () => hud)
-export const useToasts = () => useSyncExternalStore((f) => { tsubs.add(f); return () => { tsubs.delete(f) } }, () => toasts)

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { BADGES, LEVELS, resetProgress, setHud, useGame, useHud, useToasts } from './game'
-import { audio } from './audio'
+import { LEVELS, resetProgress, setHud, useGame, useHud } from './game'
+import { Arcade } from './Arcade'
 
 /** Header button: level + XP bar. Opens the dashboard. */
 export function QuestButton({ onOpen }: { onOpen: () => void }) {
@@ -23,31 +23,6 @@ export function QuestButton({ onOpen }: { onOpen: () => void }) {
   )
 }
 
-/** Live-region toasts for XP, quests, badges and level-ups. */
-export function Toasts() {
-  const t = useToasts()
-  const last = useRef(0)
-  useEffect(() => {
-    const n = t[t.length - 1]
-    if (n && n.id !== last.current) {
-      last.current = n.id
-      if (n.kind === 'level') audio.chime()
-      else if (n.kind === 'quest' || n.kind === 'badge') audio.select()
-      else audio.tick()
-    }
-  }, [t])
-  return (
-    <div className="toasts" role="status" aria-live="polite">
-      {t.map((x) => (
-        <div key={x.id} className={`toast ${x.kind}`}>
-          <b>{x.text}</b>
-          {x.sub && <span className="mono">{x.sub}</span>}
-        </div>
-      ))}
-    </div>
-  )
-}
-
 function Hex({ glyph, color, on }: { glyph: string; color: string; on: boolean }) {
   return (
     <svg viewBox="0 0 64 72" className={'hex' + (on ? ' on' : '')} aria-hidden="true">
@@ -57,12 +32,13 @@ function Hex({ glyph, color, on }: { glyph: string; color: string; on: boolean }
   )
 }
 
-/** Exploration dashboard: level, quests, badges, progress, reset. */
+/** The Quest interface: a separate full-screen hub (Arcade mini-games + Progress). Nothing from it ever overlays the portfolio. */
 export function Dashboard({ onClose }: { onClose: () => void }) {
   const g = useGame()
   const hud = useHud()
   const dlg = useRef<HTMLDialogElement>(null)
   const [confirm, setConfirm] = useState(false)
+  const [tab, setTab] = useState<'arcade' | 'progress'>('arcade')
   useEffect(() => {
     const d = dlg.current!
     d.showModal()
@@ -76,7 +52,7 @@ export function Dashboard({ onClose }: { onClose: () => void }) {
   const earned = g.badges.filter((b) => b.earned).length
 
   return (
-    <dialog ref={dlg} className="quest" aria-labelledby="quest-title" onClick={(e) => e.target === dlg.current && onClose()}>
+    <dialog ref={dlg} className="quest arcade" aria-labelledby="quest-title" onClick={(e) => e.target === dlg.current && onClose()}>
       <div className="quest-in" data-lenis-prevent>
         <header>
           <p className="mono">AIMANVERSE QUEST — Explore. Discover. Unlock.</p>
@@ -87,6 +63,14 @@ export function Dashboard({ onClose }: { onClose: () => void }) {
         <div className="xbar" role="progressbar" aria-label="Progress to next level" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}><i style={{ width: `${pct}%` }} /></div>
         <p className="note mono">Optional. Everything on this site is open to you whether or not you play. Progress is saved only in this browser — no account, nothing is sent anywhere.</p>
 
+        <div className="arc-tabs" role="tablist" aria-label="Quest sections">
+          <button role="tab" id="tab-arcade" aria-selected={tab === 'arcade'} aria-controls="panel-arcade" className="mono" onClick={() => setTab('arcade')}>Arcade</button>
+          <button role="tab" id="tab-progress" aria-selected={tab === 'progress'} aria-controls="panel-progress" className="mono" onClick={() => setTab('progress')}>Progress</button>
+        </div>
+
+        {tab === 'arcade' && <div role="tabpanel" id="panel-arcade" aria-labelledby="tab-arcade"><Arcade /></div>}
+
+        {tab === 'progress' && <div role="tabpanel" id="panel-progress" aria-labelledby="tab-progress">
         <h3>Exploration — {g.exploration}%</h3>
         <ul className="parts">
           {g.parts.map((p) => (
@@ -115,6 +99,7 @@ export function Dashboard({ onClose }: { onClose: () => void }) {
             </li>
           ))}
         </ul>
+        </div>}
 
         <footer>
           <label className="mono"><input type="checkbox" checked={hud} onChange={(e) => setHud(e.target.checked)} /> Show XP bar in the header</label>
