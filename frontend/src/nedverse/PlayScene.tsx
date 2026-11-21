@@ -27,10 +27,17 @@ export default function PlayScene({ touch }: { touch: boolean }) {
   const modal = !!card || paused
   // Low tier (phones, ?q=low): smaller shadow map, no bloom/SMAA, dpr 1. High tier otherwise (?q=high forces it).
   const qp = new URLSearchParams(location.search).get('q')
-  const quality: Quality = qp === 'low' || (qp !== 'high' && (touch || (navigator.hardwareConcurrency || 8) <= 4)) ? 'low' : 'high'
+  const [forceLow, setForceLow] = useState(false)
+  const quality: Quality = forceLow || qp === 'low' || (qp !== 'high' && (touch || (navigator.hardwareConcurrency || 8) <= 4)) ? 'low' : 'high'
 
   useEffect(() => { const off = attachInput(wrap.current!); return () => { off(); resetInput() } }, [])
   useEffect(() => { setInputEnabled(!modal) }, [modal])
+  // adaptive quality: if the machine cannot hold ~24 fps after warm-up, drop to the light tier once (smaller shadows, no bloom/SMAA)
+  useEffect(() => {
+    if (qp) return
+    let bad = 0; const iv = window.setInterval(() => { const f = window.__ned?.fps; if (!f) return; bad = f < 24 ? bad + 1 : 0; if (bad >= 3) { setForceLow(true); window.clearInterval(iv) } }, 2000)
+    return () => window.clearInterval(iv)
+  }, [qp])
   // Esc: close the card, else toggle pause. Polled via the input store so it works with every focus state.
   useEffect(() => {
     const iv = window.setInterval(() => {

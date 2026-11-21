@@ -228,3 +228,6 @@
 
 ## 2026-11-21 — NEDVERSE Phase 4b: car tour
 User request: walking is too slow; add a car GLB, have the avatar approach it and tour the campus by car, with meaningful interactive objects for the portfolio. Built: original Blender-authored car GLB, enter/exit sequence, arcade driving with collisions and chase camera, 8 roadside portfolio stops fed from data.ts, objective panel. Tests: driving 19/19 (after re-running one steering check in open space), on-foot 20/20. Report: documentation/NEDVERSE_PHASE4B_CAR_TOUR.md. Not pushed.
+
+## 2026-11-21 — Phase 4b round 2
+User supplied lowpoly-sedan-wagon.zip (corolla.glb): replaced my Blender car with it (sedan variant). First-person approach + dip-to-black into third-person chase. Speeds raised (walk 2.5, run 5.6, car 18/25 m/s), render extrapolation, adaptive quality. Tests: driving 20/20, on-foot 20/20. Local only, not pushed. Licence of the supplied car model unconfirmed.

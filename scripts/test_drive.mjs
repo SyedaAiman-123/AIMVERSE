@@ -3,7 +3,7 @@
 import { spawn } from 'node:child_process'
 import { writeFileSync, mkdirSync } from 'node:fs'
 const OUT = process.argv[2] || 'reference/play_test'; mkdirSync(OUT, { recursive: true })
-const PORT = 9337, W = 640, H = 360
+const PORT = 9365, W = 640, H = 360
 const edge = spawn('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', ['--headless=new', `--remote-debugging-port=${PORT}`, `--window-size=${W},${H}`, '--force-device-scale-factor=1', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--user-data-dir=' + process.env.TEMP + '/aim_drive_profile', 'about:blank'], { stdio: 'ignore' })
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 let targets; for (let i = 0; i < 40; i++) { try { targets = await (await fetch(`http://127.0.0.1:${PORT}/json`)).json(); if (targets.find((t) => t.type === 'page')) break } catch {} await sleep(500) }
@@ -37,7 +37,7 @@ check('"GET IN THE CAR" prompt appears next to the car', !!near && !!(await ev("
 const x0 = s.x, z0 = s.z
 await tap('e')
 const entering = await stateIs('entering'); check('E starts the enter sequence (avatar walks to the driver door)', !!entering)
-await sleep(1500); await shot('entering')
+await sleep(300); const fp = await S(); check('camera switches to first-person (wide FOV, avatar hidden) while getting in', fp.mode === 'entering' && fp.fov > 62, `fov=${fp.fov.toFixed(1)}`); await shot('entering')
 const driving = await stateIs('driving'); s = await S()
 check('she gets in and the player is now driving', !!driving, `mode=${s.mode}`)
 await shot('driving_start')
@@ -45,11 +45,12 @@ await shot('driving_start')
 // ---------- 2. driving physics ----------
 await down('w'); const acc = await waitFor(async () => { const t = await S(); return t.carV > 6 && t }, 60000)
 check('W accelerates the car smoothly', !!acc, acc ? `v=${acc.carV.toFixed(1)} m/s` : 'no acceleration')
-const top = await waitFor(async () => { const t = await S(); return t.carV > 10.5 && t }, 60000); s = await S()
-check('top speed ~11 m/s (about 8x walking speed)', !!top && s.carV < 11.5, `v=${s.carV.toFixed(2)}`)
-const yaw0 = s.carYaw; await down('a'); await sleep(2500); await up('a'); s = await S()
+const top = await waitFor(async () => { const t = await S(); return t.carV > 17 && t }, 90000); s = await S()
+check('top speed ~18 m/s (65 km/h, about 7x walking speed)', !!top && s.carV < 18.5, `v=${s.carV.toFixed(2)}`)
+await up('w'); s = await load('&drive=1&car=20,21,-1.5708&cam=1.5708'); await down('w'); await waitFor(async () => (await S()).carV > 10, 60000); s = await S()
+const yaw0 = s.carYaw; await down('a'); await sleep(1200); await up('a'); s = await S()
 check('A steers left (yaw increases) while moving', s.carYaw - yaw0 > 0.15, `yaw ${yaw0.toFixed(2)} -> ${s.carYaw.toFixed(2)}`); await shot('steering')
-await down('d'); await sleep(2500); await up('d'); const s2 = await S()
+await up('w'); s = await load('&drive=1&car=20,21,-1.5708&cam=1.5708'); await down('w'); await waitFor(async () => (await S()).carV > 10, 60000); s = await S(); const yd = s.carYaw; await down('d'); await sleep(1200); await up('d'); const s2 = await S(); s.carYaw = yd
 check('D steers right (yaw decreases)', s2.carYaw < s.carYaw - 0.15, `yaw ${s.carYaw.toFixed(2)} -> ${s2.carYaw.toFixed(2)}`)
 await up('w'); await down('space'); const braked = await waitFor(async () => { const t = await S(); return Math.abs(t.carV) < 0.3 && t }, 60000); await up('space')
 check('Space brakes to a stop', !!braked, braked ? `v=${braked.carV.toFixed(2)}` : 'did not stop')

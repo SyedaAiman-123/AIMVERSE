@@ -22,20 +22,20 @@ const SPECIAL: Record<string, { title: string; label: string }> = {
 
 /** Tour objective: next unvisited stop, its distance and a compass arrow (polls the player's live position a few times a second). */
 function Objective({ visited, mode }: { visited: ReadonlySet<string>; mode: Mode }) {
-  const [v, setV] = useState({ d: 0, a: 0 })
+  const [v, setV] = useState({ d: 0, a: 0, kmh: 0 })
   const next = STOPS.find((s) => !visited.has(s.id))
   useEffect(() => {
     const iv = window.setInterval(() => {
       const n = window.__ned; if (!n || !next) return
       const px = mode === 'driving' ? n.carX : n.x, pz = mode === 'driving' ? n.carZ : n.z
       const dx = next.x - px, dz = next.z - pz, fx = -Math.sin(n.camYaw), fz = -Math.cos(n.camYaw)
-      setV({ d: Math.hypot(dx, dz), a: Math.atan2(dx * -fz + dz * fx, dx * fx + dz * fz) })
+      setV({ d: Math.hypot(dx, dz), a: Math.atan2(dx * -fz + dz * fx, dx * fx + dz * fz), kmh: Math.abs(n.carV) * 3.6 })
     }, 200)
     return () => window.clearInterval(iv)
   }, [next, mode])
   return (
     <div className="nv-obj" aria-live="polite">
-      <small>CAMPUS TOUR · {visited.size}/{STOPS.length} stops</small>
+      <small>CAMPUS TOUR · {visited.size}/{STOPS.length} stops{mode === 'driving' ? ` · ${Math.round(v.kmh)} km/h` : ''}</small>
       {next ? (
         <div className="nv-obj-row">
           <span className="nv-arrow" style={{ transform: `rotate(${v.a}rad)`, color: next.color }} aria-hidden>▲</span>
@@ -76,6 +76,7 @@ export function PlayHud({ near, card, paused, mode, visited, onCloseCard, onResu
   const modal = !!c || !!stopCard
   return (
     <div className="nv-hud" data-ui>
+      <div className="nv-fade" aria-hidden />
       <div className="nv-tag"><b>{BRAND.quest}</b><span>{BRAND.questTagline}</span><small>{BRAND.name} · unofficial NED-inspired campus</small></div>
       {!modal && !paused && nearItem && mode !== 'entering' && (
         <button className="nv-prompt" data-ui onClick={() => { input.interact = true }}><kbd>E</kbd><span><b>{nearItem.title}</b><small>{nearItem.label}</small></span></button>

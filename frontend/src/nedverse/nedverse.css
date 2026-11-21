@@ -30,3 +30,5 @@
 .nv-obj{position:absolute;top:14px;right:14px;max-width:280px;padding:10px 14px;background:rgba(8,9,13,.72);border:1px solid rgba(236,231,219,.22);color:#ece7db;pointer-events:none}
 .nv-obj small{display:block;font:700 .66rem Consolas,monospace;letter-spacing:.12em;color:#9a9588;margin-bottom:6px}.nv-obj-row{display:flex;gap:10px;align-items:center}.nv-obj b{display:block;font-size:.9rem}.nv-obj em{font-style:normal;color:#9a9588;font-size:.78rem}
 .nv-arrow{font-size:1.5rem;line-height:1;transition:transform .2s linear;filter:drop-shadow(0 0 6px currentColor)}
+
+.nv-fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:5}
