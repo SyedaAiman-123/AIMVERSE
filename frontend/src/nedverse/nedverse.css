@@ -77,3 +77,20 @@
 .nv-badges i{display:inline-block;font-style:normal;font:800 .85rem Consolas,monospace;width:34px;height:34px;line-height:34px;border-radius:50%;background:var(--c);color:#07080c;margin-bottom:4px}.nv-badges b{display:block;font-size:.8rem}.nv-badges small{display:block;font-size:.66rem;color:#9a9588}
 .nv-levels li{padding:4px 0;font:600 .78rem Consolas,monospace;color:#6a665c}.nv-levels li.on{color:#4DF3C8}.nv-levels small{margin-left:8px;color:#6a665c}
 @media (prefers-reduced-motion:reduce){.nv-qtoast{animation:none}}
+
+.nv-settings{display:grid;gap:8px;margin:.5rem 0 .6rem}.nv-set{display:flex;align-items:center;justify-content:space-between;gap:12px;font:600 .78rem Consolas,monospace;color:#c9c4b6}
+.nv-set>div{display:flex;gap:4px}.nv-seg{padding:5px 10px;background:transparent;border:1px solid #6a665c;color:#ece7db;font:700 .72rem Consolas,monospace;cursor:pointer}.nv-seg.on{background:#4DF3C8;border-color:#4DF3C8;color:#07080c}
+.nv-seg:focus-visible,.nv-btn:focus-visible,.nv-skip:focus-visible,.nv-mute:focus-visible,.nv-qbtn:focus-visible,.nv-prompt:focus-visible{outline:2px solid #FFC53D;outline-offset:2px}
+.nv-set input[type=range]{width:min(220px,48vw);accent-color:#4DF3C8}
+.nv-fps{position:absolute;right:14px;bottom:14px;padding:4px 9px;background:rgba(8,9,13,.72);border:1px solid rgba(236,231,219,.2);font:600 .68rem Consolas,monospace;color:#4DF3C8;pointer-events:none}
+html[data-nv-reduce="1"] .nv-speed,html[data-nv-reduce="1"] .nv-confetti{display:none!important}
+html[data-nv-reduce="1"] .nv-slide,html[data-nv-reduce="1"] .nv-bar,html[data-nv-reduce="1"] .nv-qtoast,html[data-nv-reduce="1"] .nv-toast,html[data-nv-reduce="1"] .nv-card,html[data-nv-reduce="1"] .nv-pause{animation:none!important}
+html[data-nv-reduce="1"] .nv-slide{opacity:1;transform:translate(-50%,-50%)}
+
+.is-modal .nv-tag,.is-modal .nv-obj,.is-modal .nv-map,.is-modal .nv-qbtn,.is-modal .nv-fps{visibility:hidden}
+@media (max-width:700px),(pointer:coarse){
+  .nv-tag{max-width:58vw;padding:8px 10px}.nv-tag span{display:none}.nv-tag>small{display:none}.nv-level{margin-top:4px;padding-top:4px}.nv-level .nv-xpbar{width:44px}
+  .nv-obj{top:12px;right:10px;max-width:40vw;padding:7px 9px}.nv-obj b{font-size:.78rem}.nv-obj em{font-size:.68rem}.nv-obj small{font-size:.58rem;letter-spacing:.06em}
+  .nv-map{top:78px!important;left:10px}.nv-toast,.nv-toasts{top:38%}.nv-toast{max-width:84vw}
+  .nv-mute{bottom:186px;left:14px}.nv-qbtn{bottom:236px;left:14px}.nv-help{display:none}
+}

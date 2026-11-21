@@ -10,6 +10,7 @@ import { DOORS, SPAWNS, roomBounds, type Place, type RoomId } from './interiors'
 import { BOUNDS } from './layout'
 import { input, readMove } from './input'
 import { audio } from './audio'
+import { isReduced } from './settings'
 
 /* Third-person player. On foot: your avatar (existing GLB + the Blender-authored Walk/Run clips) with smooth acceleration, natural
    turning, wall-sliding collisions. By car: walk to the parked car, press E, she gets in and the player tours the campus by car
@@ -21,14 +22,14 @@ const RADIUS = 0.38, STEP = 1 / 60, CAR_R = 0.95, CAR_OFFS = [-1.25, 0, 1.25], W
 const DOOR = { x: -1.9, z: 0.35 }
 
 export type Mode = 'foot' | 'entering' | 'driving' | 'exiting'
-export type PlayerDebug = { x: number; y: number; z: number; yaw: number; speed: number; state: string; camYaw: number; camDist: number; near: string | null; fps: number; animTime: number; mode: Mode; place: Place; carX: number; carZ: number; carYaw: number; carV: number; fov: number }
+export type PlayerDebug = { x: number; y: number; z: number; yaw: number; speed: number; state: string; camYaw: number; camDist: number; near: string | null; fps: number; animTime: number; mode: Mode; place: Place; carX: number; carZ: number; carYaw: number; carV: number; fov: number; calls: number; tris: number; geos: number; tex: number }
 declare global { interface Window { __ned?: PlayerDebug } }
 
 const wrap = (a: number) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a }
 const toWorld = (c: { x: number; z: number; yaw: number }, lx: number, lz: number) => ({ x: c.x + lx * Math.cos(c.yaw) + lz * Math.sin(c.yaw), z: c.z - lx * Math.sin(c.yaw) + lz * Math.cos(c.yaw) })
 
 export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter, intro, onPlace }: { colliders: Collider[]; onNear: (id: string | null) => void; onInteract: (id: string) => void; onMode: (m: Mode) => void; entered: boolean; onEnter: () => void; intro: boolean; onPlace: (p: Place) => void }) {
-  const { camera } = useThree()
+  const { camera, gl } = useThree()
   const { scene, animations } = useGLTF('/models/aiman-web.glb')
   const loco = useGLTF('/models/aiman-locomotion.glb')
   const carGltf = useGLTF('/models/corolla.glb')
@@ -119,8 +120,10 @@ export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter
     c.spin += (c.v / WHEEL_R) * STEP
   }
 
+  useEffect(() => { gl.info.autoReset = false }, [gl])
   useFrame((state, dtRaw) => {
     const s = st.current, c = s.car
+    const inf = gl.info; const calls = inf.render.calls, tris = inf.render.triangles; inf.reset()   // totals of the previous complete frame (all passes)
     const dt = Math.min(dtRaw, 0.1)
     // ---- camera look / zoom ----
     if (input.lookDX || input.lookDY) { s.camYaw -= input.lookDX * 0.0055; s.camPitch = Math.max(-0.2, Math.min(1.1, s.camPitch + input.lookDY * 0.0045)); input.lookDX = input.lookDY = 0; s.lastLook = state.clock.elapsedTime }
@@ -205,7 +208,7 @@ export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter
       for (const it of INTERACTABLES) { if (it.place !== s.place || (!enteredRef.current && it.id.startsWith('stop:'))) continue;
         const d = Math.hypot(it.x - s.x, it.z - s.z); if (d > it.radius) continue
         const facing = ((it.x - s.x) * Math.sin(s.yaw) + (it.z - s.z) * Math.cos(s.yaw)) / (d || 1)   // 1 = looking straight at it
-        if (facing > -0.2 && d < bd) { bd = d; best = it.id }
+        if ((facing > -0.2 || it.id.startsWith('exit:')) && d < bd) { bd = d; best = it.id }   // the way out never needs to be faced
       }
       if (!best && s.place === 'campus' && Math.hypot(c.x - s.x, c.z - s.z) < 4.0) best = 'car'
     } else if (s.mode === 'driving') {
@@ -236,7 +239,7 @@ export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter
     const pc = camera as THREE.PerspectiveCamera
     if (introRef.current) {
       if (introT0.current === null) introT0.current = state.clock.elapsedTime
-      const t = state.clock.elapsedTime - introT0.current
+      const t = isReduced() ? 6 : state.clock.elapsedTime - introT0.current   // reduced motion: a still establishing shot instead of the camera move
       const p = new THREE.Vector3(66 - t * 1.7, Math.max(5.5, 17 - t * 0.6), 20 - t * 1.3), l = new THREE.Vector3(22 - t * 0.15, 5, 0)
       cam.pos.copy(p); cam.look.copy(l); cam.init = true; camera.position.copy(p); camera.lookAt(l)
       if (Math.abs(pc.fov - 48) > 0.05) { pc.fov += (48 - pc.fov) * (1 - Math.exp(-3 * dt)); pc.updateProjectionMatrix() }
@@ -260,7 +263,7 @@ export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter
       const settle = Math.max(0, 1 - (state.clock.elapsedTime - s.camSwitch) / 1.2)               // gentle glide from cockpit to chase view
       const kk = 1 - Math.exp(-(driving ? 9 - 5 * settle : 12) * dtRaw); cam.pos.lerp(want, kk); cam.look.lerp(new THREE.Vector3(tx, ty + 0.05, tz), 1 - Math.exp(-(14 - 8 * settle) * dtRaw))
       camera.position.copy(cam.pos); camera.lookAt(cam.look)
-      const wantFov = 58 + (driving ? Math.min(16, Math.abs(c.v) * 0.6) : 0)
+      const wantFov = 58 + (driving && !isReduced() ? Math.min(16, Math.abs(c.v) * 0.6) : 0)
       if (Math.abs(pc.fov - wantFov) > 0.05) { pc.fov += (wantFov - pc.fov) * (1 - Math.exp(-3 * dt)); pc.updateProjectionMatrix() }
     }
     // dip-to-black while stepping into the car, then fade back in on the chase view
@@ -268,7 +271,7 @@ export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter
     if (fadeEl) { const f0 = s.tr ? (s.tr.t < 0.4 ? s.tr.t / 0.4 : Math.max(0, 1 - (s.tr.t - 0.4) / 0.45)) : 0; const f = f0 || entering ? Math.min(1, Math.max(0, (s.t - 0.1) / 0.4)) : Math.max(0, 1 - (state.clock.elapsedTime - s.camSwitch) / 0.6); fadeEl.style.opacity = String(f0 > 0 ? f0 : f) }
     // ---- debug / test hook ----
     s.frames++; s.fpsT += dtRaw; if (s.fpsT >= 1) { s.fps = s.frames / s.fpsT; s.frames = 0; s.fpsT = 0 }
-    window.__ned = { x: s.x, y: s.y, z: s.z, yaw: s.yaw, speed: driving ? Math.abs(c.v) : speed, state: s.state, camYaw: s.camYaw, camDist: s.camDist, near: s.near, fps: s.fps, animTime: state.clock.elapsedTime, mode: s.mode, place: s.place, carX: c.x, carZ: c.z, carYaw: c.yaw, carV: c.v, fov: (camera as THREE.PerspectiveCamera).fov }
+    window.__ned = { x: s.x, y: s.y, z: s.z, yaw: s.yaw, speed: driving ? Math.abs(c.v) : speed, state: s.state, camYaw: s.camYaw, camDist: s.camDist, near: s.near, fps: s.fps, animTime: state.clock.elapsedTime, mode: s.mode, place: s.place, carX: c.x, carZ: c.z, carYaw: c.yaw, carV: c.v, fov: (camera as THREE.PerspectiveCamera).fov, calls, tris, geos: gl.info.memory.geometries, tex: gl.info.memory.textures }
   })
 
   return (

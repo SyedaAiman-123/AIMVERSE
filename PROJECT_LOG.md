@@ -249,3 +249,6 @@ Lazy walk-in rooms (CS lab 15 workstations, library 6 skill shelves, exhibition 
 
 ## 2026-11-22 — NEDVERSE Phase 7: quest system + Quest Mode entry
 12 exploration quests, XP/levels (L3 = Campus Explorer), 7 badges, journal (J), toasts, two-step reset, localStorage persistence. Header QUEST MODE button -> /nedverse.html (production entry, vite multi-page). Old Quest World + station games + game.ts removed. Tests: quests 11/11, rooms 15/15, driving 20/20, on-foot 20/20, arrival 13/13, campus 6/6; vite build OK. Local only; awaiting approval.
+
+## 2026-11-22 — NEDVERSE Phase 8: optimisation, accessibility, settings
+Triangles/frame 2.1M -> ~0.5M (tree LOD, 50 m instance cells, shrub LOD, player-following shadow box, no shadows indoors); settings (quality, day/evening, volume, reduced motion, FPS counter); focus traps; phone HUD layout; fixes: exhibit trigger, exit facing. Tests: drive 20/20, play 20/20, enter 13/13, campus 6/6, rooms 15/15, quests 11/11, settings 9/9; vite build OK. Firefox/Safari + real devices untested. Local only; awaiting approval.

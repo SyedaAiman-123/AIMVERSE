@@ -45,7 +45,7 @@ export const exhibitsIn = (r: RoomId) => exhibits.filter((e) => e.room === r)
 export type Interactable = { id: string; label: string; x: number; z: number; radius: number; carRadius: number; place: Place }
 /** prompts for the interior: one per exhibit (stand just in front of it) + the exit door */
 export const INTERIOR_INTERACTABLES: Interactable[] = [
-  ...exhibits.map((e) => ({ id: e.id, label: e.label, x: e.x, z: e.z + (e.room === 'hall' ? 1.5 : 1.35), radius: 1.5, carRadius: 0, place: e.room as Place })),
+  ...exhibits.map((e) => ({ id: e.id, label: e.label, x: e.x, z: e.z, radius: e.room === 'cs' ? 2.1 : e.room === 'lib' ? 2.5 : 2.5, carRadius: 0, place: e.room as Place })),
   ...(Object.keys(ROOMS) as RoomId[]).map((r) => ({ id: `exit:${r}`, label: 'Leave — back to the campus', x: OX, z: dz(r) - 0.8, radius: 2.4, carRadius: 0, place: r as Place })),
 ]
 export const DOOR_INTERACTABLES: Interactable[] = (Object.keys(DOORS) as RoomId[]).map((r) => ({ id: `door:${r}`, label: DOORS[r].label, x: DOORS[r].x, z: DOORS[r].z, radius: 2.0, carRadius: 0, place: 'campus' as Place }))

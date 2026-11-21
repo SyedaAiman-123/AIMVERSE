@@ -59,17 +59,39 @@ function CameraRig({ cam, still, free }: { cam: Cam; still: boolean; free: boole
 }
 
 export type Quality = 'low' | 'high'
-export function World({ withAvatar = true, quality = 'high' }: { withAvatar?: boolean; quality?: Quality }) {
+export type Mood = 'day' | 'evening'
+const MOODS = {
+  day: { bg: '#9fc4e8', fog: '#b9d2ec', sun: new THREE.Vector3(-70, 50, 78).normalize(), sunColor: '#fff0d8', sunI: 3.0, hemi: ['#b4cdf2', '#7a8a58', 0.95] as [string, string, number], fill: '#a9c0ea', fillI: 0.55, turb: 1.6, ray: 3.2, glow: 0.15 },
+  evening: { bg: '#e2a27c', fog: '#d9a07f', sun: new THREE.Vector3(-80, 20, 60).normalize(), sunColor: '#ffb070', sunI: 3.0, hemi: ['#b3a4d0', '#6b6850', 1.25] as [string, string, number], fill: '#9a8cc8', fillI: 0.9, turb: 8, ray: 2.2, glow: 3.2 },
+}
+/** keeps the sun's shadow box centred on the player: shadows stay sharp and only nearby objects are drawn into the shadow map */
+function SunRig({ mood, low, shadows }: { mood: Mood; low: boolean; shadows: boolean }) {
+  const light = useRef<THREE.DirectionalLight>(null!)
+  const m = MOODS[mood], R = low ? 40 : 46
+  useFrame(() => {
+    const n = window.__ned, px = n ? (n.mode === 'driving' ? n.carX : n.x) : 22, pz = n ? (n.mode === 'driving' ? n.carZ : n.z) : 0
+    const snap = (2 * R) / (low ? 1536 : 3072), x = Math.round(px / snap) * snap, z = Math.round(pz / snap) * snap   // snap to texels: no shimmering
+    light.current.position.set(x + m.sun.x * 110, m.sun.y * 110, z + m.sun.z * 110); light.current.target.position.set(x, 0, z); light.current.target.updateMatrixWorld()
+  })
+  return (
+    <>
+      <directionalLight ref={light} intensity={m.sunI} color={m.sunColor} castShadow={shadows} shadow-mapSize={low ? [1536, 1536] : [3072, 3072]} shadow-camera-left={-R} shadow-camera-right={R} shadow-camera-top={R} shadow-camera-bottom={-R} shadow-camera-near={1} shadow-camera-far={260} shadow-bias={-0.0004} shadow-normalBias={0.04} />
+    </>
+  )
+}
+
+export function World({ withAvatar = true, quality = 'high', mood = 'day', shadows = true }: { withAvatar?: boolean; quality?: Quality; mood?: Mood; shadows?: boolean }) {
   const low = quality === 'low'
+  const M = MOODS[mood]
   const sc = useMemo(buildScatter, [])
   return (
     <>
-      <color attach="background" args={['#9fc4e8']} />
-      <fog attach="fog" args={['#b9d2ec', 140, 440]} />
-      <Sky distance={4500} sunPosition={SUN.clone().multiplyScalar(100).toArray()} turbidity={1.6} rayleigh={3.2} mieCoefficient={0.0025} mieDirectionalG={0.75} />
-      <hemisphereLight args={['#b4cdf2', '#7a8a58', 0.95]} />
-      <directionalLight position={[70, 35, -50]} intensity={0.55} color="#a9c0ea" />
-      <directionalLight position={SUN.clone().multiplyScalar(110).toArray()} intensity={3.0} color="#fff0d8" castShadow shadow-mapSize={low ? [1536, 1536] : [4096, 4096]} shadow-camera-left={-80} shadow-camera-right={80} shadow-camera-top={80} shadow-camera-bottom={-80} shadow-camera-near={1} shadow-camera-far={300} shadow-bias={-0.0004} shadow-normalBias={0.04} />
+      <color attach="background" args={[M.bg]} />
+      <fog attach="fog" args={[M.fog, 140, 440]} />
+      <Sky distance={4500} sunPosition={M.sun.clone().multiplyScalar(100).toArray()} turbidity={M.turb} rayleigh={M.ray} mieCoefficient={0.0025} mieDirectionalG={0.75} />
+      <hemisphereLight args={M.hemi} />
+      <directionalLight position={[70, 35, -50]} intensity={M.fillI} color={M.fill} />
+      <SunRig mood={mood} low={low} shadows={shadows} />
       <Ground />
       <Roads />
       <BoundaryWall />
@@ -83,10 +105,10 @@ export function World({ withAvatar = true, quality = 'high' }: { withAvatar?: bo
       <Cars />
       <FarField />
       {CONTEXT_BLOCKS.map(([x, z, f], i) => <Block key={i} pos={[x, 0, z]} w={20 + (i % 3) * 4} d={12} floors={f} wall={['#d9c8a4', '#cdbd9a', '#dccfae'][i % 3]} rot={Math.PI / 2} roofKit />)}
-      <Trees spots={sc.trees} />
+      <Trees spots={sc.trees} low={low} />
       <Palms spots={sc.palms} />
       <Shrubs spots={sc.shrubs} />
-      <Lamps spots={sc.lamps} />
+      <Lamps spots={sc.lamps} glow={M.glow} />
       <Benches spots={sc.benches} />
       {withAvatar && <Safe><Suspense fallback={null}><Avatar /></Suspense></Safe>}
       <EffectComposer multisampling={0}>

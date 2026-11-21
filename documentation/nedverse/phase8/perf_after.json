@@ -1,0 +1,114 @@
+[
+ {
+  "tier": "low",
+  "view": "gate approach",
+  "calls": 561,
+  "tris": 387293,
+  "geos": 380,
+  "tex": 37
+ },
+ {
+  "tier": "low",
+  "view": "plaza",
+  "calls": 603,
+  "tris": 451525,
+  "geos": 402,
+  "tex": 42
+ },
+ {
+  "tier": "low",
+  "view": "avenue",
+  "calls": 432,
+  "tris": 306943,
+  "geos": 393,
+  "tex": 40
+ },
+ {
+  "tier": "low",
+  "view": "garden",
+  "calls": 509,
+  "tris": 486465,
+  "geos": 380,
+  "tex": 35
+ },
+ {
+  "tier": "low",
+  "view": "CS lab",
+  "calls": 111,
+  "tris": 33336,
+  "geos": 369,
+  "tex": 46
+ },
+ {
+  "tier": "low",
+  "view": "library",
+  "calls": 50,
+  "tris": 32272,
+  "geos": 308,
+  "tex": 45
+ },
+ {
+  "tier": "low",
+  "view": "hall",
+  "calls": 54,
+  "tris": 32432,
+  "geos": 312,
+  "tex": 41
+ },
+ {
+  "tier": "high",
+  "view": "gate approach",
+  "calls": 601,
+  "tris": 445327,
+  "geos": 381,
+  "tex": 60
+ },
+ {
+  "tier": "high",
+  "view": "plaza",
+  "calls": 648,
+  "tris": 517423,
+  "geos": 404,
+  "tex": 65
+ },
+ {
+  "tier": "high",
+  "view": "avenue",
+  "calls": 477,
+  "tris": 373771,
+  "geos": 395,
+  "tex": 63
+ },
+ {
+  "tier": "high",
+  "view": "garden",
+  "calls": 529,
+  "tris": 581883,
+  "geos": 382,
+  "tex": 58
+ },
+ {
+  "tier": "high",
+  "view": "CS lab",
+  "calls": 129,
+  "tris": 33354,
+  "geos": 369,
+  "tex": 69
+ },
+ {
+  "tier": "high",
+  "view": "library",
+  "calls": 68,
+  "tris": 32290,
+  "geos": 308,
+  "tex": 68
+ },
+ {
+  "tier": "high",
+  "view": "hall",
+  "calls": 53,
+  "tris": 32116,
+  "geos": 334,
+  "tex": 65
+ }
+]

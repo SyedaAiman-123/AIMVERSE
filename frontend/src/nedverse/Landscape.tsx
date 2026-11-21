@@ -8,6 +8,7 @@ function smooth(g: THREE.BufferGeometry) { g.deleteAttribute('normal'); g.delete
 import { asphalt, grass, grassPatch, paving, rng } from './textures'
 import { KerbLine } from './Architecture'
 import { AVENUE, ROAD_LINKS, TURNAROUNDS } from './layout'
+import { isReduced } from './settings'
 
 const windU = { time: { value: 0 } }
 
@@ -66,11 +67,11 @@ export function BoundaryWall() {
 }
 
 /* ------------------------------------------------------------------ vegetation (instanced) */
-function useCanopy() {
+function useCanopy(low: boolean) {
   return useMemo(() => {
     const r = rng(77), parts: THREE.BufferGeometry[] = [], dark = new THREE.Color('#1b3416'), light = new THREE.Color('#648f32')
-    for (let i = 0; i < 15; i++) {
-      const g = smooth(new THREE.IcosahedronGeometry(1, 3)), sc = 0.55 + r() * 0.55, ang = r() * 6.28, rad = Math.sqrt(r()) * 1.7, y = 0.3 + r() * 2.0 - rad * 0.22
+    for (let i = 0; i < (low ? 9 : 13); i++) {
+      const g = smooth(new THREE.IcosahedronGeometry(1, 2)), sc = 0.55 + r() * 0.55, ang = r() * 6.28, rad = Math.sqrt(r()) * 1.7, y = 0.3 + r() * 2.0 - rad * 0.22
       g.scale(sc * 1.2, sc * 0.85, sc * 1.2); g.translate(Math.cos(ang) * rad, y, Math.sin(ang) * rad)
       const pos = g.attributes.position, arr = new Float32Array(pos.count * 3), c = new THREE.Color()
       for (let k = 0; k < pos.count; k++) {
@@ -82,7 +83,7 @@ function useCanopy() {
       g.computeVertexNormals(); g.setAttribute('color', new THREE.BufferAttribute(arr, 3)); parts.push(g)
     }
     return mergeGeometries(parts)!
-  }, [])
+  }, [low])
 }
 
 function windPatch(mat: THREE.MeshStandardMaterial, amp: number) {
@@ -102,12 +103,19 @@ function windPatch(mat: THREE.MeshStandardMaterial, amp: number) {
 }
 
 export type TreeSpot = { x: number; z: number; s: number; rot: number }
-export function Trees({ spots }: { spots: TreeSpot[] }) {
-  const canopy = useCanopy()
-  const canopyRef = useRef<THREE.InstancedMesh>(null!), trunkRef = useRef<THREE.InstancedMesh>(null!)
+/** Trees are drawn as instanced meshes split into ~50 m cells, so cells outside the camera view are skipped entirely (instanced meshes are otherwise drawn whole). */
+export function Trees({ spots, low = false }: { spots: TreeSpot[]; low?: boolean }) {
+  const canopy = useCanopy(low)
   const cMat = useMemo(() => { const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, flatShading: false }); windPatch(m, 0.03); return m }, [])
   const tMat = useMemo(() => new THREE.MeshStandardMaterial({ color: '#4a3a2a', roughness: 1 }), [])
   const trunkG = useMemo(() => { const g = new THREE.CylinderGeometry(0.22, 0.42, 4.2, 8); g.translate(0, 2.1, 0); return g }, [])
+  const cells = useMemo(() => { const m = new Map<string, TreeSpot[]>(); for (const t of spots) { const k = `${Math.floor(t.x / 50)},${Math.floor(t.z / 50)}`; (m.get(k) ?? m.set(k, []).get(k)!).push(t) } return [...m.values()] }, [spots])
+  useFrame((s) => { if (!isReduced()) windU.time.value = s.clock.elapsedTime })
+  return <>{cells.map((c, i) => <TreeCell key={i} spots={c} canopy={canopy} cMat={cMat} tMat={tMat} trunkG={trunkG} />)}</>
+}
+
+function TreeCell({ spots, canopy, cMat, tMat, trunkG }: { spots: TreeSpot[]; canopy: THREE.BufferGeometry; cMat: THREE.Material; tMat: THREE.Material; trunkG: THREE.BufferGeometry }) {
+  const canopyRef = useRef<THREE.InstancedMesh>(null!), trunkRef = useRef<THREE.InstancedMesh>(null!)
   useLayoutEffect(() => {
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), p = new THREE.Vector3(), sc = new THREE.Vector3()
     spots.forEach((t, i) => {
@@ -118,8 +126,8 @@ export function Trees({ spots }: { spots: TreeSpot[] }) {
     spots.forEach((t, i) => canopyRef.current.setColorAt(i, tint[Math.floor(Math.abs(Math.sin(t.x * 12.9 + t.z * 78.2)) * 5) % 5]))
     if (canopyRef.current.instanceColor) canopyRef.current.instanceColor.needsUpdate = true
     trunkRef.current.instanceMatrix.needsUpdate = canopyRef.current.instanceMatrix.needsUpdate = true
+    trunkRef.current.computeBoundingSphere(); canopyRef.current.computeBoundingSphere()
   }, [spots])
-  useFrame((s) => { windU.time.value = s.clock.elapsedTime })
   return <>
     <instancedMesh ref={trunkRef} args={[trunkG, tMat, spots.length]} castShadow receiveShadow />
     <instancedMesh ref={canopyRef} args={[canopy, cMat, spots.length]} castShadow receiveShadow />
@@ -145,8 +153,8 @@ export function Shrubs({ spots }: { spots: { x: number; z: number; s: number; c:
   const leaf = useRef<THREE.InstancedMesh>(null!), bloom = useRef<THREE.InstancedMesh>(null!)
   const { leafG, bloomG } = useMemo(() => {
     const r = rng(5), L: THREE.BufferGeometry[] = [], B: THREE.BufferGeometry[] = []
-    for (let i = 0; i < 9; i++) { const g = smooth(new THREE.IcosahedronGeometry(0.34, 2)), a = r() * 6.28, d = Math.sqrt(r()) * 0.55; g.translate(Math.cos(a) * d, 0.28 + r() * 0.35, Math.sin(a) * d); L.push(g) }
-    for (let i = 0; i < 22; i++) { const g = smooth(new THREE.IcosahedronGeometry(0.085, 2)), a = r() * 6.28, d = Math.sqrt(r()) * 0.62; g.translate(Math.cos(a) * d, 0.5 + r() * 0.3 - d * 0.25, Math.sin(a) * d); B.push(g) }
+    for (let i = 0; i < 7; i++) { const g = smooth(new THREE.IcosahedronGeometry(0.34, 1)), a = r() * 6.28, d = Math.sqrt(r()) * 0.55; g.translate(Math.cos(a) * d, 0.28 + r() * 0.35, Math.sin(a) * d); L.push(g) }
+    for (let i = 0; i < 12; i++) { const g = smooth(new THREE.IcosahedronGeometry(0.085, 1)), a = r() * 6.28, d = Math.sqrt(r()) * 0.62; g.translate(Math.cos(a) * d, 0.5 + r() * 0.3 - d * 0.25, Math.sin(a) * d); B.push(g) }
     return { leafG: mergeGeometries(L)!, bloomG: mergeGeometries(B)! }
   }, [])
   const lm = useMemo(() => new THREE.MeshStandardMaterial({ roughness: 0.9 }), []), bm = useMemo(() => new THREE.MeshStandardMaterial({ roughness: 0.6 }), [])
@@ -175,13 +183,13 @@ export function FarField() {
   </>
 }
 
-export function Lamps({ spots }: { spots: [number, number][] }) {
+export function Lamps({ spots, glow = 0.15 }: { spots: [number, number][]; glow?: number }) {
   const pole = useMemo(() => new THREE.MeshStandardMaterial({ color: '#2e3036', roughness: 0.5, metalness: 0.5 }), [])
   return <>{spots.map(([x, z], i) => (
     <group key={i} position={[x, 0, z]}>
       <mesh position={[0, 3.4, 0]} material={pole} castShadow><cylinderGeometry args={[0.07, 0.1, 6.8, 8]} /></mesh>
       <mesh position={[0.5, 6.7, 0]} material={pole}><boxGeometry args={[1.2, 0.1, 0.14]} /></mesh>
-      <mesh position={[0.95, 6.58, 0]}><boxGeometry args={[0.5, 0.14, 0.3]} /><meshStandardMaterial color="#f5f1e0" emissive="#fff4d0" emissiveIntensity={0.15} /></mesh>
+      <mesh position={[0.95, 6.58, 0]}><boxGeometry args={[0.5, 0.14, 0.3]} /><meshStandardMaterial color="#f5f1e0" emissive="#fff4d0" emissiveIntensity={glow} /></mesh>
     </group>
   ))}</>
 }

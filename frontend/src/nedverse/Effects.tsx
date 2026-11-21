@@ -1,11 +1,17 @@
 import { useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
+import { isReduced, useSettings } from './settings'
 
 /* Atmosphere + guidance: drifting sunlit dust motes around the camera, and a floating guide arrow above the player that always points at the
    current objective (the main gate first, then the next tour stop). */
 
 export function Motes({ count = 220 }: { count?: number }) {
+  const reduced = isReduced(useSettings())
+  if (reduced) return null
+  return <MotesInner count={count} />
+}
+function MotesInner({ count }: { count: number }) {
   const { camera } = useThree()
   const ref = useRef<THREE.Points>(null!)
   const data = useMemo(() => {

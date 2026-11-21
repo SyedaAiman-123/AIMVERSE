@@ -6,6 +6,7 @@ import { TourStops } from './TourStops'
 import { Motes } from './Effects'
 import { audio } from './audio'
 import { resetQuests, track } from './quests'
+import { useSettings } from './settings'
 import { ZONES } from './layout'
 import { STOPS } from './tour'
 import { PlayHud } from './PlayHud'
@@ -43,16 +44,18 @@ export default function PlayScene({ touch }: { touch: boolean }) {
   // Low tier (phones, ?q=low): smaller shadow map, no bloom/SMAA, dpr 1. High tier otherwise (?q=high forces it).
   const qp = new URLSearchParams(location.search).get('q')
   const [forceLow, setForceLow] = useState(false)
-  const quality: Quality = forceLow || qp === 'low' || (qp !== 'high' && (touch || (navigator.hardwareConcurrency || 8) <= 4)) ? 'low' : 'high'
+  const settings = useSettings()
+  const auto: Quality = forceLow || (touch || (navigator.hardwareConcurrency || 8) <= 4) ? 'low' : 'high'
+  const quality: Quality = qp === 'low' || qp === 'high' ? qp : settings.quality === 'auto' ? auto : settings.quality
 
   useEffect(() => { const off = attachInput(wrap.current!); return () => { off(); resetInput() } }, [])
   useEffect(() => { setInputEnabled(!modal) }, [modal])
   // adaptive quality: if the machine cannot hold ~24 fps after warm-up, drop to the light tier once (smaller shadows, no bloom/SMAA)
   useEffect(() => {
-    if (qp) return
+    if (qp || settings.quality !== 'auto') return
     let bad = 0; const iv = window.setInterval(() => { const f = window.__ned?.fps; if (!f) return; bad = f < 24 ? bad + 1 : 0; if (bad >= 3) { setForceLow(true); window.clearInterval(iv) } }, 2000)
     return () => window.clearInterval(iv)
-  }, [qp])
+  }, [qp, settings.quality])
   // Esc: close the card, else toggle pause. Polled via the input store so it works with every focus state.
   useEffect(() => {
     const iv = window.setInterval(() => {
@@ -91,7 +94,7 @@ export default function PlayScene({ touch }: { touch: boolean }) {
     <Boundary>
       <div ref={wrap} style={{ position: 'fixed', inset: 0, touchAction: 'none', cursor: modal ? 'default' : 'grab' }}>
         <Canvas shadows dpr={quality === 'low' ? 1 : [1, 1.5]} camera={{ fov: 55, near: 0.1, far: 700, position: [26, 4, 8] }} gl={{ antialias: false, powerPreference: 'high-performance' }}>
-          <World withAvatar={false} quality={quality} />
+          <World withAvatar={false} quality={quality} mood={settings.mood} shadows={place === 'campus'} />
           {place === 'campus' && <TourStops visited={visited} nextId={nextId} entered={entered} />}
           {place !== 'campus' && <Suspense fallback={null}><Interior room={place as RoomId} viewed={viewed} /></Suspense>}
           <Motes />

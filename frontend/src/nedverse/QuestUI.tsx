@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useFocusTrap } from './focus'
 import { LEVELS, useQuests, type Derived } from './quests'
 
 /* In-world quest UI: level chip, reward toasts (quest complete / level up / badge) and the quest journal (J). Exploration only. */
@@ -35,10 +36,11 @@ export function QuestToasts() {
 
 export function Journal({ onClose, onReset }: { onClose: () => void; onReset: () => void }) {
   const g = useQuests()
-  const [sure, setSure] = useState(false)
+  const [sure, setSure] = useState(false), box = useRef<HTMLDivElement>(null)
+  useFocusTrap(box)
   const span = g.nextXp ? g.nextXp - g.levelFrom : 1, pct = g.nextXp ? Math.min(100, ((g.xp - g.levelFrom) / span) * 100) : 100
   return (
-    <div className="nv-card nv-stop nv-journal" role="dialog" aria-modal="true" aria-label="Quest journal">
+    <div ref={box} className="nv-card nv-stop nv-journal" role="dialog" aria-modal="true" aria-label="Quest journal">
       <small style={{ color: '#4DF3C8' }}>QUEST MODE · JOURNAL</small>
       <h3>{g.label}</h3>
       <div className="nv-xprow"><span className="nv-xpbar big" aria-hidden><i style={{ width: `${pct}%` }} /></span><span>{g.xp} XP{g.nextXp ? ` · next level at ${g.nextXp}` : ' · highest level'}</span></div>

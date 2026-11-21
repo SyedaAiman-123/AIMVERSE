@@ -9,6 +9,7 @@ let eng: { o1: OscillatorNode; o2: OscillatorNode; lp: BiquadFilterNode; g: Gain
 let wind: { g: GainNode; bp: BiquadFilterNode } | null = null
 let horn: { o: OscillatorNode[]; g: GainNode } | null = null
 let noiseBuf: AudioBuffer | null = null
+let volume = 0.8
 let muted = (() => { try { return localStorage.getItem(KEY) === '1' } catch { return false } })()
 const subs = new Set<() => void>()
 let stepDist = 0, birdT = 4
@@ -59,7 +60,7 @@ export const audio = {
       if (ctx) { if (ctx.state === 'suspended') void ctx.resume(); return }
       const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
       if (!AC) return
-      ctx = new AC(); master = ctx.createGain(); master.gain.value = muted ? 0 : 0.8; master.connect(ctx.destination)
+      ctx = new AC(); master = ctx.createGain(); master.gain.value = muted ? 0 : volume; master.connect(ctx.destination)
       // noise buffer (shared)
       noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1
       // engine: two detuned oscillators through a low-pass
@@ -74,9 +75,10 @@ export const audio = {
   },
   setMuted(m: boolean) {
     muted = m; try { localStorage.setItem(KEY, m ? '1' : '0') } catch { /* private mode */ }
-    safe(() => { if (master && ctx) master.gain.setTargetAtTime(m ? 0 : 0.8, ctx.currentTime, 0.05) })
+    safe(() => { if (master && ctx) master.gain.setTargetAtTime(m ? 0 : volume, ctx.currentTime, 0.05) })
     subs.forEach((f) => f())
   },
+  setVolume(v: number) { volume = Math.min(1, Math.max(0, v)); safe(() => { if (master && ctx && !muted) master.gain.setTargetAtTime(volume, ctx.currentTime, 0.05) }) },
   toggle() { audio.setMuted(!muted); if (!muted) audio.click() },
 
   /** called every frame with the live state */

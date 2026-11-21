@@ -3,7 +3,7 @@
 import { spawn } from 'node:child_process'
 import { writeFileSync, mkdirSync } from 'node:fs'
 const OUT = process.argv[2] || 'reference/play_test'; mkdirSync(OUT, { recursive: true })
-const PORT = 9471, W = 640, H = 360
+const PORT = 9903, W = 640, H = 360
 const edge = spawn('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', ['--headless=new', `--remote-debugging-port=${PORT}`, `--window-size=${W},${H}`, '--force-device-scale-factor=1', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--user-data-dir=' + process.env.TEMP + '/aim_quest_profile', 'about:blank'], { stdio: 'ignore' })
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 let targets; for (let i = 0; i < 40; i++) { try { targets = await (await fetch(`http://127.0.0.1:${PORT}/json`)).json(); if (targets.find((t) => t.type === 'page')) break } catch {} await sleep(500) }
@@ -50,8 +50,9 @@ check('journal shows Arrival as done and states exploration-only', (await ev("do
 await tap('esc'); await waitFor(async () => !(await ev("!!document.querySelector('.nv-journal')")), 10000)
 check('Esc closes the journal', !(await ev("!!document.querySelector('.nv-journal')")))
 // ---- 4. exhibits feed quests; persistence without toast replay ----
-await ls('x', ''); await load('&intro=0&place=cs&x=900&z=4&yaw=3.1416&cam=0'); await down('w'); await till((t) => /^proj:/.test(t.near || '')); await up('w'); await sleep(2500); await tap('e')
-await waitFor(async () => (await txt('.nv-stop h3')), 20000); await tap('esc'); await sleep(1500)
+await ls('x', ''); await load('&intro=0&place=cs&x=900&z=4&yaw=3.1416&cam=0'); await down('w'); await till((t) => /^proj:/.test(t.near || '')); await up('w'); await sleep(2500)
+for (let k = 0; k < 4 && !(await txt('.nv-stop h3')); k++) { await tap('e'); await waitFor(async () => (await txt('.nv-stop h3')), 12000) }
+await tap('esc'); await sleep(1500)
 const saved = JSON.parse((await ls(QK)) || '[]')
 check('opening a workstation records progress (room + project events saved)', saved.includes('room:cs') && saved.some((e) => e.startsWith('proj:')), saved.join(','))
 await load('&intro=0&place=cs&x=900&z=4&yaw=3.1416&cam=0'); await sleep(2500)

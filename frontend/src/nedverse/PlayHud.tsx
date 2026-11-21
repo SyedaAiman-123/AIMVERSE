@@ -9,6 +9,8 @@ import { Minimap } from './Minimap'
 import { BY_YEAR, YEARS, YEAR_NOTE } from '../data'
 import { audio } from './audio'
 import { Journal, LevelChip, QuestToasts } from './QuestUI'
+import { useFocusTrap } from './focus'
+import { isReduced, setSettings, useSettings } from './settings'
 import { input, resetInput } from './input'
 import { BRAND } from '../brand'
 import './nedverse.css'
@@ -76,9 +78,10 @@ function Story({ onDone }: { onDone: () => void }) {
 }
 
 function PanelView({ panel, onClose, inside }: { panel: Panel; onClose: () => void; inside: boolean }) {
-  const c = panel, col = panel.accent
+  const c = panel, col = panel.accent, box = useRef<HTMLDivElement>(null)
+  useFocusTrap(box)
   return (
-    <div className="nv-card nv-stop" role="dialog" aria-modal="true" aria-label={c.title} style={{ borderColor: col, boxShadow: `0 0 60px ${col}33` }}>
+    <div ref={box} className="nv-card nv-stop" role="dialog" aria-modal="true" aria-label={c.title} style={{ borderColor: col, boxShadow: `0 0 60px ${col}33` }}>
       <div className="nv-confetti" aria-hidden>{Array.from({ length: 26 }, (_, i) => <i key={i} style={{ left: `${(i * 37) % 100}%`, background: [col, "#ffffff", "#FFC53D", "#4DF3C8"][i % 4], animationDelay: `${(i % 9) * 0.07}s`, animationDuration: `${1.4 + (i % 5) * 0.25}s` }} />)}</div>
       <small style={{ color: col }}>{c.kicker}</small>
       <h3>{c.title}</h3>
@@ -99,6 +102,35 @@ function PanelView({ panel, onClose, inside }: { panel: Panel; onClose: () => vo
   )
 }
 
+function Seg<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: { v: T; t: string }[]; onChange: (v: T) => void }) {
+  return (
+    <div className="nv-set" role="group" aria-label={label}>
+      <span>{label}</span>
+      <div>{options.map((o) => <button key={o.v} className={'nv-seg' + (o.v === value ? ' on' : '')} aria-pressed={o.v === value} onClick={() => onChange(o.v)}>{o.t}</button>)}</div>
+    </div>
+  )
+}
+
+/** pause-menu settings: graphics quality, time of day, volume, reduced motion, FPS readout */
+function SettingsPanel() {
+  const st = useSettings()
+  return (
+    <div className="nv-settings">
+      <Seg label="Graphics" value={st.quality} options={[{ v: 'auto', t: 'Auto' }, { v: 'low', t: 'Light' }, { v: 'high', t: 'Full' }]} onChange={(quality) => setSettings({ quality })} />
+      <Seg label="Time of day" value={st.mood} options={[{ v: 'day', t: 'Day' }, { v: 'evening', t: 'Evening' }]} onChange={(mood) => setSettings({ mood })} />
+      <div className="nv-set"><label htmlFor="nv-vol">Volume</label><input id="nv-vol" type="range" min={0} max={100} value={Math.round(st.volume * 100)} onChange={(e) => setSettings({ volume: +e.target.value / 100 })} aria-valuetext={`${Math.round(st.volume * 100)} percent`} /></div>
+      <Seg label="Reduced motion" value={st.reducedMotion === null ? 'os' : st.reducedMotion ? 'on' : 'off'} options={[{ v: 'os', t: isReduced() ? 'System (on)' : 'System' }, { v: 'on', t: 'On' }, { v: 'off', t: 'Off' }]} onChange={(v) => setSettings({ reducedMotion: v === 'os' ? null : v === 'on' })} />
+      <Seg label="FPS counter" value={st.showFps ? 'on' : 'off'} options={[{ v: 'off', t: 'Off' }, { v: 'on', t: 'On' }]} onChange={(v) => setSettings({ showFps: v === 'on' })} />
+    </div>
+  )
+}
+
+function FpsMeter() {
+  const [v, setV] = useState({ fps: 0, calls: 0, tris: 0 })
+  useEffect(() => { const iv = window.setInterval(() => { const n = window.__ned; if (n) setV({ fps: n.fps, calls: n.calls, tris: n.tris }) }, 500); return () => window.clearInterval(iv) }, [])
+  return <div className="nv-fps" aria-hidden>{v.fps.toFixed(0)} fps · {v.calls} calls · {(v.tris / 1000).toFixed(0)}k tris</div>
+}
+
 /** inside a building: which room and how many exhibits you have opened */
 function RoomObjective({ place, viewed }: { place: RoomId; viewed: ReadonlySet<string> }) {
   const ex = exhibitsIn(place), n = ex.filter((e) => viewed.has(e.id)).length
@@ -114,6 +146,7 @@ function RoomObjective({ place, viewed }: { place: RoomId; viewed: ReadonlySet<s
 export function PlayHud({ near, card, paused, mode, visited, entered, place, viewed, journal, onCloseJournal, onOpenJournal, intro, onIntroDone, onResetTour, onCloseCard, onResume, touch }: { near: string | null; card: string | null; paused: boolean; mode: Mode; visited: ReadonlySet<string>; entered: boolean; place: Place; viewed: ReadonlySet<string>; journal: boolean; onCloseJournal: () => void; onOpenJournal: () => void; intro: boolean; onIntroDone: () => void; onResetTour: () => void; onCloseCard: () => void; onResume: () => void; touch: boolean }) {
   const nearItem = near ? (SPECIAL[near] ? { label: SPECIAL[near].label, title: SPECIAL[near].title } : { label: INTERACTABLES.find((i) => i.id === near)?.label ?? '', title: near.startsWith('door:') ? 'PRESS E TO ENTER' : near.startsWith('exit:') ? 'PRESS E TO LEAVE' : /^(proj|skill|fact):/.test(near) ? 'PRESS E TO VIEW' : 'PRESS E TO INTERACT' }) : undefined
   const [help, setHelp] = useState(true)
+  const st = useSettings(), pauseRef = useRef<HTMLDivElement>(null)
   const [muted, setMuted] = useState(audio.muted)
   useEffect(() => audio.subscribe(() => setMuted(audio.muted)), [])
   const [welcome, setWelcome] = useState(false)
@@ -121,8 +154,9 @@ export function PlayHud({ near, card, paused, mode, visited, entered, place, vie
   useEffect(() => { const t = setTimeout(() => setHelp(false), 14000); return () => clearTimeout(t) }, [])
   const panel = card ? getPanel(card) : null, c = card && !panel ? CARDS[card] : null
   const modal = !!c || !!panel || journal
+  useFocusTrap(pauseRef, paused && !modal)
   return (
-    <div className="nv-hud" data-ui>
+    <div className={'nv-hud' + (modal || paused ? ' is-modal' : '')} data-ui>
       <div className="nv-fade" aria-hidden />
       <div className="nv-speed" aria-hidden />
       {intro && <Story onDone={onIntroDone} />}
@@ -147,9 +181,10 @@ export function PlayHud({ near, card, paused, mode, visited, entered, place, vie
           <button className="nv-btn" onClick={onCloseCard} autoFocus>Close (Esc)</button>
         </div>
       )}
+      {st.showFps && <FpsMeter />}
       {paused && !modal && (
-        <div className="nv-pause" role="dialog" aria-modal="true" aria-label="Paused">
-          <h3>Paused</h3><p>{BRAND.questDisclaimer}</p>
+        <div ref={pauseRef} className="nv-pause" role="dialog" aria-modal="true" aria-label="Paused">
+          <h3>Paused</h3><SettingsPanel /><p>{BRAND.questDisclaimer}</p>
           <div className="nv-row"><button className="nv-btn" onClick={onResume} autoFocus>Resume</button><button className="nv-btn ghost" onClick={onResetTour}>Reset quest progress</button><a className="nv-btn ghost" href="/">Exit to {BRAND.name} portfolio</a></div>
         </div>
       )}
