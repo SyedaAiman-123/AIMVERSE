@@ -3,7 +3,7 @@
 import { spawn } from 'node:child_process'
 import { writeFileSync, mkdirSync } from 'node:fs'
 const OUT = process.argv[2] || 'reference/play_test'; mkdirSync(OUT, { recursive: true })
-const PORT = 9335, W = 640, H = 360
+const PORT = 9345, W = 640, H = 360
 const edge = spawn('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', ['--headless=new', `--remote-debugging-port=${PORT}`, `--window-size=${W},${H}`, '--force-device-scale-factor=1', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--user-data-dir=' + process.env.TEMP + '/aim_play_profile', 'about:blank'], { stdio: 'ignore' })
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 let targets; for (let i = 0; i < 40; i++) { try { targets = await (await fetch(`http://127.0.0.1:${PORT}/json`)).json(); if (targets.find((t) => t.type === 'page')) break } catch {} await sleep(500) }
@@ -27,7 +27,7 @@ async function load(qs = '', wait = 180000) {
 await send('Page.enable'); await send('Runtime.enable'); await send('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: 1, mobile: false })
 
 // ---------- 1. spawn, idle, walk, run, stop ----------
-let s = await load()
+let s = await load('&x=15&z=1.5&yaw=-1.5708&cam=1.5708')
 check('player loads and spawns (avatar + clips)', !!s, s ? `x=${s.x.toFixed(2)} z=${s.z.toFixed(2)} fps=${s.fps.toFixed(1)}` : 'no state')
 const s0 = s; await sleep(1500); s = await S()
 check('idle at rest', s.state === 'Aiman_Idle' && s.speed < 0.05, `state=${s.state}`)

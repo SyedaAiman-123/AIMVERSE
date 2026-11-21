@@ -225,3 +225,6 @@
 - Tests: 20/20 with REAL key/mouse/touch events through DevTools (spawn, idle, walk 1.25->1.4 m/s, run ~3.2->3.4, decel to idle, mouse orbit, wall stop at predicted z=-25.32, no clipping, wall slide, E prompt, card, input locked while open, Esc restores exact position, pause/resume, touch joystick, no page errors). Bugs found by the tests and fixed: push-out counted as velocity (could fling the player); kiosk text overflow; a flower bed against the CS wall legitimately blocks walking along it (test moved to a clear wall).
 - Limits: software-rendered (~0.5 fps) so real GPU/mobile speed unmeasured; walk/run hem flapping on the long abaya at large leg swing (reduced); no turn-in-place clip; no auto-follow camera; Phase 4 placeholders (cards) await Phase 6.
 - Report: documentation/NEDVERSE_PHASE4_REPORT.md.
+
+## 2026-11-21 — NEDVERSE Phase 4b: car tour
+User request: walking is too slow; add a car GLB, have the avatar approach it and tour the campus by car, with meaningful interactive objects for the portfolio. Built: original Blender-authored car GLB, enter/exit sequence, arcade driving with collisions and chase camera, 8 roadside portfolio stops fed from data.ts, objective panel. Tests: driving 19/19 (after re-running one steering check in open space), on-foot 20/20. Report: documentation/NEDVERSE_PHASE4B_CAR_TOUR.md. Not pushed.

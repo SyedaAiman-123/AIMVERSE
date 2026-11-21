@@ -1,4 +1,5 @@
 import { BLOCKS, BOARD, BOUNDS, GATE_X, KIOSK, SIGNPOST, buildScatter } from './layout'
+import { STOPS } from './tour'
 
 /* 2-D collision on a flat campus: the player is a circle; obstacles are circles and oriented boxes (OBB). Overlaps are resolved by
    pushing the player out along the contact normal, which makes her SLIDE along walls instead of sticking. */
@@ -23,6 +24,7 @@ export function buildColliders(): Collider[] {
   out.push(B(KIOSK.pos[0], KIOSK.pos[2], 0.95, 0.5, KIOSK.rot))
   out.push(B(BOARD.pos[0], BOARD.pos[2], 1.25, 0.4, BOARD.rot))
   out.push(C(SIGNPOST.pos[0], SIGNPOST.pos[2], 0.3))
+  for (const st of STOPS) out.push(B(st.x, st.z, 1.5, 0.3, st.rot))            // roadside portfolio stop boards
   for (const t of s.trees) out.push(C(t.x, t.z, 0.35 * t.s + 0.2))
   for (const p of s.palms) out.push(C(p.x, p.z, 0.3 * p.s))
   for (const sh of s.shrubs) if (Math.hypot(sh.x, sh.z) > 5.3) out.push(C(sh.x, sh.z, 0.55 * sh.s))

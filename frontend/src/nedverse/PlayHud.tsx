@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { INTERACTABLES, SIGNPOST } from './layout'
+import { STOPS, stopById } from './tour'
+import type { Mode } from './Player'
 import { input, resetInput } from './input'
 import { BRAND } from '../brand'
 import './nedverse.css'
@@ -13,19 +15,75 @@ const CARDS: Record<string, { title: string; body: string[] }> = {
   signpost: { title: 'Campus signpost', body: SIGNPOST.items.map((s) => s.replace(/\s+/g, ' '))},
 }
 
-export function PlayHud({ near, card, paused, onCloseCard, onResume, touch }: { near: string | null; card: string | null; paused: boolean; onCloseCard: () => void; onResume: () => void; touch: boolean }) {
-  const nearItem = INTERACTABLES.find((i) => i.id === near)
+const SPECIAL: Record<string, { title: string; label: string }> = {
+  car: { title: 'PRESS E TO GET IN THE CAR', label: 'Tour the campus by car' },
+  exit: { title: 'PRESS E TO GET OUT', label: 'Slow down to step out' },
+}
+
+/** Tour objective: next unvisited stop, its distance and a compass arrow (polls the player's live position a few times a second). */
+function Objective({ visited, mode }: { visited: ReadonlySet<string>; mode: Mode }) {
+  const [v, setV] = useState({ d: 0, a: 0 })
+  const next = STOPS.find((s) => !visited.has(s.id))
+  useEffect(() => {
+    const iv = window.setInterval(() => {
+      const n = window.__ned; if (!n || !next) return
+      const px = mode === 'driving' ? n.carX : n.x, pz = mode === 'driving' ? n.carZ : n.z
+      const dx = next.x - px, dz = next.z - pz, fx = -Math.sin(n.camYaw), fz = -Math.cos(n.camYaw)
+      setV({ d: Math.hypot(dx, dz), a: Math.atan2(dx * -fz + dz * fx, dx * fx + dz * fz) })
+    }, 200)
+    return () => window.clearInterval(iv)
+  }, [next, mode])
+  return (
+    <div className="nv-obj" aria-live="polite">
+      <small>CAMPUS TOUR · {visited.size}/{STOPS.length} stops</small>
+      {next ? (
+        <div className="nv-obj-row">
+          <span className="nv-arrow" style={{ transform: `rotate(${v.a}rad)`, color: next.color }} aria-hidden>▲</span>
+          <span><b>{mode === 'foot' ? 'Walk to the car (or explore on foot)' : `Next: ${next.name}`}</b><em>{mode === 'foot' ? 'It is parked on the entrance road' : `${Math.round(v.d)} m`}</em></span>
+        </div>
+      ) : <b>Tour complete — thank you for visiting!</b>}
+    </div>
+  )
+}
+
+function StopCardView({ id, onClose }: { id: string; onClose: () => void }) {
+  const stop = stopById(id.replace('stop:', '')); if (!stop) return null
+  const c = stop.card
+  return (
+    <div className="nv-card nv-stop" role="dialog" aria-modal="true" aria-label={c.title} style={{ borderColor: stop.color, boxShadow: `0 0 60px ${stop.color}33` }}>
+      <small style={{ color: stop.color }}>{c.kicker}</small>
+      <h3>{c.title}</h3>
+      <div className="nv-scroll">
+        {c.sections.map((sec, i) => (
+          <section key={i}>
+            {sec.h && <h4>{sec.h}</h4>}{sec.sub && <em>{sec.sub}</em>}{sec.p && <p>{sec.p}</p>}
+            {sec.items && <ul>{sec.items.map((t, k) => <li key={k}>{t}</li>)}</ul>}
+            {sec.link && <a href={sec.link.href} target="_blank" rel="noopener noreferrer">{sec.link.label} ↗</a>}
+          </section>
+        ))}
+        {c.links && <div className="nv-row">{c.links.map((l) => <a key={l.href} className="nv-btn ghost" href={l.href} target="_blank" rel="noopener noreferrer">{l.label}</a>)}</div>}
+      </div>
+      <button className="nv-btn" onClick={onClose} autoFocus>Close (Esc) — back to the road</button>
+    </div>
+  )
+}
+
+export function PlayHud({ near, card, paused, mode, visited, onCloseCard, onResume, touch }: { near: string | null; card: string | null; paused: boolean; mode: Mode; visited: ReadonlySet<string>; onCloseCard: () => void; onResume: () => void; touch: boolean }) {
+  const nearItem = near ? (SPECIAL[near] ? { label: SPECIAL[near].label, title: SPECIAL[near].title } : { label: INTERACTABLES.find((i) => i.id === near)?.label ?? '', title: 'PRESS E TO INTERACT' }) : undefined
   const [help, setHelp] = useState(true)
   useEffect(() => { const t = setTimeout(() => setHelp(false), 14000); return () => clearTimeout(t) }, [])
-  const c = card ? CARDS[card] : null
+  const c = card && !card.startsWith('stop:') ? CARDS[card] : null, stopCard = card?.startsWith('stop:') ? card : null
+  const modal = !!c || !!stopCard
   return (
     <div className="nv-hud" data-ui>
       <div className="nv-tag"><b>{BRAND.quest}</b><span>{BRAND.questTagline}</span><small>{BRAND.name} · unofficial NED-inspired campus</small></div>
-      {!c && !paused && nearItem && (
-        <button className="nv-prompt" data-ui onClick={() => { input.interact = true }}><kbd>E</kbd><span><b>PRESS E TO INTERACT</b><small>{nearItem.label}</small></span></button>
+      {!modal && !paused && nearItem && mode !== 'entering' && (
+        <button className="nv-prompt" data-ui onClick={() => { input.interact = true }}><kbd>E</kbd><span><b>{nearItem.title}</b><small>{nearItem.label}</small></span></button>
       )}
-      {!touch && help && !c && !paused && (
-        <div className="nv-help" role="note"><b>Controls</b><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span><span><kbd>Shift</kbd> run</span><span>drag mouse · look</span><span>wheel · zoom</span><span><kbd>E</kbd> interact</span><span><kbd>Esc</kbd> pause</span></div>
+      {!modal && !paused && <Objective visited={visited} mode={mode} />}
+      {stopCard && <StopCardView id={stopCard} onClose={onCloseCard} />}
+      {!touch && help && !modal && !paused && (
+        <div className="nv-help" role="note"><b>Controls</b>{mode === 'driving' ? <><span><kbd>W</kbd><kbd>S</kbd> throttle / reverse</span><span><kbd>A</kbd><kbd>D</kbd> steer</span><span><kbd>Shift</kbd> boost</span><span><kbd>Space</kbd> brake</span></> : <><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span><span><kbd>Shift</kbd> run</span></>}<span>drag mouse · look</span><span>wheel · zoom</span><span><kbd>E</kbd> interact</span><span><kbd>Esc</kbd> pause</span></div>
       )}
       {c && (
         <div className="nv-card" role="dialog" aria-modal="true" aria-label={c.title}>
@@ -33,13 +91,13 @@ export function PlayHud({ near, card, paused, onCloseCard, onResume, touch }: { 
           <button className="nv-btn" onClick={onCloseCard} autoFocus>Close (Esc)</button>
         </div>
       )}
-      {paused && !c && (
+      {paused && !modal && (
         <div className="nv-pause" role="dialog" aria-modal="true" aria-label="Paused">
           <h3>Paused</h3><p>{BRAND.questDisclaimer}</p>
           <div className="nv-row"><button className="nv-btn" onClick={onResume} autoFocus>Resume</button><a className="nv-btn ghost" href="/">Exit to {BRAND.name} portfolio</a></div>
         </div>
       )}
-      {touch && !c && !paused && <TouchControls canInteract={!!nearItem} />}
+      {touch && !modal && !paused && <TouchControls canInteract={!!nearItem} />}
     </div>
   )
 }
