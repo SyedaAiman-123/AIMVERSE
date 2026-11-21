@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { INTERACTABLES, SIGNPOST } from './layout'
-import { STOPS, stopById } from './tour'
+import { STOPS } from './tour'
+import { getPanel, type Panel } from './content'
+import { ROOMS, exhibitsIn, type Place, type RoomId } from './interiors'
 import type { Mode } from './Player'
 import { GATE_TARGET } from './layout'
 import { Minimap } from './Minimap'
@@ -14,7 +16,6 @@ import './nedverse.css'
    skill / achievement panels arrive in Phase 6), pause menu and touch controls. Closing a card or the menu returns to the exact spot. */
 
 const CARDS: Record<string, { title: string; body: string[] }> = {
-  kiosk: { title: 'Welcome kiosk', body: ['Campus map and destinations will open here in Phase 6.', 'Planned destinations: Computer Science Lab · University Library · Central Garden · Auditorium & Exhibition Hall · Academic Block · Student Common Area.', 'Current objective: explore the campus.'] },
   board: { title: 'About NEDVERSE', body: [BRAND.questDisclaimer, 'Part of the AIMVERSE portfolio by Syeda Aiman Munawar. Exit at any time to browse the regular portfolio.'] },
   signpost: { title: 'Campus signpost', body: SIGNPOST.items.map((s) => s.replace(/\s+/g, ' '))},
 }
@@ -73,15 +74,16 @@ function Story({ onDone }: { onDone: () => void }) {
   )
 }
 
-function StopCardView({ id, onClose }: { id: string; onClose: () => void }) {
-  const stop = stopById(id.replace('stop:', '')); if (!stop) return null
-  const c = stop.card
+function PanelView({ panel, onClose, inside }: { panel: Panel; onClose: () => void; inside: boolean }) {
+  const c = panel, col = panel.accent
   return (
-    <div className="nv-card nv-stop" role="dialog" aria-modal="true" aria-label={c.title} style={{ borderColor: stop.color, boxShadow: `0 0 60px ${stop.color}33` }}>
-      <div className="nv-confetti" aria-hidden>{Array.from({ length: 26 }, (_, i) => <i key={i} style={{ left: `${(i * 37) % 100}%`, background: [stop.color, "#ffffff", "#FFC53D", "#4DF3C8"][i % 4], animationDelay: `${(i % 9) * 0.07}s`, animationDuration: `${1.4 + (i % 5) * 0.25}s` }} />)}</div>
-      <small style={{ color: stop.color }}>{c.kicker}</small>
+    <div className="nv-card nv-stop" role="dialog" aria-modal="true" aria-label={c.title} style={{ borderColor: col, boxShadow: `0 0 60px ${col}33` }}>
+      <div className="nv-confetti" aria-hidden>{Array.from({ length: 26 }, (_, i) => <i key={i} style={{ left: `${(i * 37) % 100}%`, background: [col, "#ffffff", "#FFC53D", "#4DF3C8"][i % 4], animationDelay: `${(i % 9) * 0.07}s`, animationDuration: `${1.4 + (i % 5) * 0.25}s` }} />)}</div>
+      <small style={{ color: col }}>{c.kicker}</small>
       <h3>{c.title}</h3>
       <div className="nv-scroll">
+        {c.hero?.video ? <video className="nv-hero" controls preload="metadata" poster={c.hero.img} src={c.hero.video} aria-label={c.hero.alt + ' demo video'} /> : c.hero?.img ? <img className="nv-hero" src={c.hero.img} alt={c.hero.alt} loading="lazy" /> : null}
+        {c.chips && <div className="nv-chips">{c.chips.map((t) => <span key={t} style={{ borderColor: col }}>{t}</span>)}</div>}
         {c.sections.map((sec, i) => (
           <section key={i}>
             {sec.h && <h4>{sec.h}</h4>}{sec.sub && <em>{sec.sub}</em>}{sec.p && <p>{sec.p}</p>}
@@ -91,35 +93,47 @@ function StopCardView({ id, onClose }: { id: string; onClose: () => void }) {
         ))}
         {c.links && <div className="nv-row">{c.links.map((l) => <a key={l.href} className="nv-btn ghost" href={l.href} target="_blank" rel="noopener noreferrer">{l.label}</a>)}</div>}
       </div>
-      <button className="nv-btn" onClick={onClose} autoFocus>Close (Esc) — back to the road</button>
+      <button className="nv-btn" onClick={onClose} autoFocus>{inside ? 'Close (Esc) — keep exploring' : 'Close (Esc) — back to the road'}</button>
     </div>
   )
 }
 
-export function PlayHud({ near, card, paused, mode, visited, entered, intro, onIntroDone, onResetTour, onCloseCard, onResume, touch }: { near: string | null; card: string | null; paused: boolean; mode: Mode; visited: ReadonlySet<string>; entered: boolean; intro: boolean; onIntroDone: () => void; onResetTour: () => void; onCloseCard: () => void; onResume: () => void; touch: boolean }) {
-  const nearItem = near ? (SPECIAL[near] ? { label: SPECIAL[near].label, title: SPECIAL[near].title } : { label: INTERACTABLES.find((i) => i.id === near)?.label ?? '', title: 'PRESS E TO INTERACT' }) : undefined
+/** inside a building: which room and how many exhibits you have opened */
+function RoomObjective({ place, viewed }: { place: RoomId; viewed: ReadonlySet<string> }) {
+  const ex = exhibitsIn(place), n = ex.filter((e) => viewed.has(e.id)).length
+  return (
+    <div className="nv-obj" aria-live="polite">
+      <small>INSIDE · {ROOMS[place].short.toUpperCase()} · {n}/{ex.length} viewed</small>
+      <b>{n < ex.length ? 'Walk up to a glowing ring and press E' : 'You have seen everything here'}</b>
+      <em>Leave through the door at the back (press E near it)</em>
+    </div>
+  )
+}
+
+export function PlayHud({ near, card, paused, mode, visited, entered, place, viewed, intro, onIntroDone, onResetTour, onCloseCard, onResume, touch }: { near: string | null; card: string | null; paused: boolean; mode: Mode; visited: ReadonlySet<string>; entered: boolean; place: Place; viewed: ReadonlySet<string>; intro: boolean; onIntroDone: () => void; onResetTour: () => void; onCloseCard: () => void; onResume: () => void; touch: boolean }) {
+  const nearItem = near ? (SPECIAL[near] ? { label: SPECIAL[near].label, title: SPECIAL[near].title } : { label: INTERACTABLES.find((i) => i.id === near)?.label ?? '', title: near.startsWith('door:') ? 'PRESS E TO ENTER' : near.startsWith('exit:') ? 'PRESS E TO LEAVE' : /^(proj|skill|fact):/.test(near) ? 'PRESS E TO VIEW' : 'PRESS E TO INTERACT' }) : undefined
   const [help, setHelp] = useState(true)
   const [muted, setMuted] = useState(audio.muted)
   useEffect(() => audio.subscribe(() => setMuted(audio.muted)), [])
   const [welcome, setWelcome] = useState(false)
   useEffect(() => { if (!entered) return; setWelcome(true); const t = setTimeout(() => setWelcome(false), 5000); return () => clearTimeout(t) }, [entered])
   useEffect(() => { const t = setTimeout(() => setHelp(false), 14000); return () => clearTimeout(t) }, [])
-  const c = card && !card.startsWith('stop:') ? CARDS[card] : null, stopCard = card?.startsWith('stop:') ? card : null
-  const modal = !!c || !!stopCard
+  const panel = card ? getPanel(card) : null, c = card && !panel ? CARDS[card] : null
+  const modal = !!c || !!panel
   return (
     <div className="nv-hud" data-ui>
       <div className="nv-fade" aria-hidden />
       <div className="nv-speed" aria-hidden />
       {intro && <Story onDone={onIntroDone} />}
-      {!intro && <Minimap entered={entered} visited={visited} />}
+      {!intro && place === 'campus' && <Minimap entered={entered} visited={visited} />}
       {welcome && <div className="nv-toast" role="status"><b>Welcome to the campus</b><span>{STOPS.length} tour stops are now open — follow the arrow and the light beams.</span></div>}
       <button className="nv-mute" data-ui onClick={() => audio.toggle()} aria-pressed={muted} aria-label={muted ? 'Unmute sound (M)' : 'Mute sound (M)'}>{muted ? '🔇' : '🔊'}<small>M</small></button>
       <div className="nv-tag"><b>{BRAND.quest}</b><span>{BRAND.questTagline}</span><small>{BRAND.name} · unofficial NED-inspired campus</small></div>
       {!modal && !paused && !intro && nearItem && mode !== 'entering' && (
         <button className="nv-prompt" data-ui onClick={() => { input.interact = true }}><kbd>E</kbd><span><b>{nearItem.title}</b><small>{nearItem.label}</small></span></button>
       )}
-      {!modal && !paused && !intro && <Objective visited={visited} mode={mode} entered={entered} />}
-      {stopCard && <StopCardView id={stopCard} onClose={onCloseCard} />}
+      {!modal && !paused && !intro && (place === 'campus' ? <Objective visited={visited} mode={mode} entered={entered} /> : <RoomObjective place={place as RoomId} viewed={viewed} />)}
+      {panel && <PanelView panel={panel} onClose={onCloseCard} inside={place !== 'campus'} />}
       {!touch && help && !modal && !paused && !intro && (
         <div className="nv-help" role="note"><b>Controls</b>{mode === 'driving' ? <><span><kbd>W</kbd><kbd>S</kbd> throttle / reverse</span><span><kbd>A</kbd><kbd>D</kbd> steer</span><span><kbd>Shift</kbd> boost</span><span><kbd>Space</kbd> brake</span><span><kbd>H</kbd> horn</span></> : <><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span><span><kbd>Shift</kbd> run</span></>}<span>drag mouse · look</span><span>wheel · zoom</span><span><kbd>E</kbd> interact</span><span><kbd>M</kbd> sound</span><span><kbd>Esc</kbd> pause</span></div>
       )}

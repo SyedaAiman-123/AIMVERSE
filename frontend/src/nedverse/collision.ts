@@ -4,6 +4,9 @@ import { STOPS } from './tour'
 /* 2-D collision on a flat campus: the player is a circle; obstacles are circles and oriented boxes (OBB). Overlaps are resolved by
    pushing the player out along the contact normal, which makes her SLIDE along walls instead of sticking. */
 
+let bounds = BOUNDS
+/** the walkable rectangle: the campus, or the room you are in */
+export function setBounds(b: typeof BOUNDS) { bounds = b }
 export type Circle = { kind: 'c'; x: number; z: number; r: number }
 export type Box = { kind: 'b'; x: number; z: number; hw: number; hd: number; rot: number } // rot = group rotation.y (three.js convention)
 export type Collider = Circle | Box
@@ -62,7 +65,7 @@ export function resolve(p: { x: number; z: number }, radius: number, cols: Colli
         moved = true
       }
     }
-    p.x = Math.max(BOUNDS.x0, Math.min(BOUNDS.x1, p.x)); p.z = Math.max(BOUNDS.z0, Math.min(BOUNDS.z1, p.z))
+    p.x = Math.max(bounds.x0, Math.min(bounds.x1, p.x)); p.z = Math.max(bounds.z0, Math.min(bounds.z1, p.z))
     if (!moved) break
   }
 }

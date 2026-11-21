@@ -1,6 +1,7 @@
 import { rng } from './textures'
 import type { TreeSpot } from './Landscape'
 import { STOPS } from './tour'
+import { DOOR_INTERACTABLES, INTERIOR_INTERACTABLES, type Interactable } from './interiors'
 
 /* Single source of truth for WHERE things are (local metres: plaza centre = origin, x east, z south).
    The scene draws from these lists and the collision system is built from them, so what you see is what stops you. */
@@ -48,12 +49,14 @@ export const BOUNDS = { x0: -78, x1: 56, z0: -100, z1: 96 }
 export const GROUND_PLAZA_R = 15
 
 /** Things the player can interact with (prompt "PRESS E TO INTERACT"). Real panels arrive in later phases. */
-export type Interactable = { id: string; label: string; x: number; z: number; radius: number; carRadius: number }
+export type { Interactable }
 export const INTERACTABLES: Interactable[] = [
-  { id: 'kiosk', label: 'Welcome kiosk', x: KIOSK.pos[0], z: KIOSK.pos[2], radius: 2.6, carRadius: 6 },
-  { id: 'board', label: 'About NEDVERSE', x: BOARD.pos[0], z: BOARD.pos[2], radius: 2.4, carRadius: 6 },
-  { id: 'signpost', label: 'Campus signpost', x: SIGNPOST.pos[0], z: SIGNPOST.pos[2], radius: 2.4, carRadius: 6 },
-  ...STOPS.map((st) => ({ id: 'stop:' + st.id, label: st.name, x: st.x, z: st.z, radius: 3.2, carRadius: 9 })),
+  { id: 'kiosk', label: 'Welcome kiosk', x: KIOSK.pos[0], z: KIOSK.pos[2], radius: 2.6, carRadius: 6, place: 'campus' },
+  { id: 'board', label: 'About NEDVERSE', x: BOARD.pos[0], z: BOARD.pos[2], radius: 2.4, carRadius: 6, place: 'campus' },
+  { id: 'signpost', label: 'Campus signpost', x: SIGNPOST.pos[0], z: SIGNPOST.pos[2], radius: 2.4, carRadius: 6, place: 'campus' },
+  ...STOPS.map((st) => ({ id: 'stop:' + st.id, label: st.name, x: st.x, z: st.z, radius: 3.2, carRadius: 9, place: 'campus' as const })),
+  ...DOOR_INTERACTABLES,
+  ...INTERIOR_INTERACTABLES,
 ]
 
 export function buildScatter() {

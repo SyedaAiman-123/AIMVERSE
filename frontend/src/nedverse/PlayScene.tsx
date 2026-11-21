@@ -1,4 +1,4 @@
-import { Component, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { Component, Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { World, type Quality } from './PrototypeScene'
 import { Player, type Mode } from './Player'
@@ -8,6 +8,8 @@ import { audio } from './audio'
 import { STOPS } from './tour'
 import { PlayHud } from './PlayHud'
 import { buildColliders } from './collision'
+import { buildInteriorColliders, type Place, type RoomId } from './interiors'
+const Interior = lazy(() => import('./InteriorScene'))   // interiors are only downloaded/mounted when you walk in
 import { attachInput, input, resetInput, setInputEnabled } from './input'
 
 /** Playable NEDVERSE prototype: the Phase 3 environment + the third-person player + minimal HUD. */
@@ -18,14 +20,17 @@ class Boundary extends Component<{ children: ReactNode }, { err: string | null }
 }
 
 export default function PlayScene({ touch }: { touch: boolean }) {
-  const colliders = useMemo(buildColliders, [])
+  const campusCols = useMemo(buildColliders, [])
+  const [place, setPlace] = useState<Place>(() => { const p = new URLSearchParams(location.search).get('place'); return p === 'cs' || p === 'lib' || p === 'hall' ? p : 'campus' })
+  const colliders = useMemo(() => (place === 'campus' ? campusCols : buildInteriorColliders(place as RoomId)), [place, campusCols])
+  const [viewed, setViewed] = useState<ReadonlySet<string>>(() => { try { return new Set<string>(JSON.parse(localStorage.getItem('aimverse:nedverse:viewed') || '[]')) } catch { return new Set<string>() } })
   const wrap = useRef<HTMLDivElement>(null)
   const [near, setNear] = useState<string | null>(null)
   const [card, setCard] = useState<string | null>(null)
   const [paused, setPaused] = useState(false)
   const [mode, setMode] = useState<Mode>('foot')
   const [entered, setEntered] = useState(false)
-  const [intro, setIntro] = useState(() => { const q = new URLSearchParams(location.search); return !(q.get('intro') === '0' || q.has('x') || q.has('z') || q.has('drive') || q.has('car')) })
+  const [intro, setIntro] = useState(() => { const q = new URLSearchParams(location.search); return !(q.get('intro') === '0' || q.has('x') || q.has('z') || q.has('drive') || q.has('car') || q.has('place')) })
   const [visited, setVisited] = useState<ReadonlySet<string>>(() => { try { return new Set<string>(JSON.parse(localStorage.getItem('aimverse:nedverse:tour') || '[]')) } catch { return new Set<string>() } })
   const nextStop = STOPS.find((s) => !visited.has(s.id)) ?? null, nextId = nextStop?.id ?? null
   const onEnter = useCallback(() => { setEntered(true); audio.unlock() }, [])
@@ -56,7 +61,8 @@ export default function PlayScene({ touch }: { touch: boolean }) {
   }, [card, intro])
   const onInteract = useCallback((id: string) => {
     setCard(id)
-    if (id.startsWith('stop:')) audio.chime(); else audio.click()
+    if (/^(stop|proj|skill|fact):/.test(id)) audio.chime(); else audio.click()
+    if (/^(proj|skill|fact):/.test(id)) setViewed((v) => { const n = new Set(v); n.add(id); try { localStorage.setItem('aimverse:nedverse:viewed', JSON.stringify([...n])) } catch { /* private mode */ } return n })
     if (id.startsWith('stop:')) setVisited((v) => { const n = new Set(v); n.add(id.slice(5)); try { localStorage.setItem('aimverse:nedverse:tour', JSON.stringify([...n])) } catch { /* private mode */ } return n })
   }, [])
 
@@ -65,12 +71,13 @@ export default function PlayScene({ touch }: { touch: boolean }) {
       <div ref={wrap} style={{ position: 'fixed', inset: 0, touchAction: 'none', cursor: modal ? 'default' : 'grab' }}>
         <Canvas shadows dpr={quality === 'low' ? 1 : [1, 1.5]} camera={{ fov: 55, near: 0.1, far: 700, position: [26, 4, 8] }} gl={{ antialias: false, powerPreference: 'high-performance' }}>
           <World withAvatar={false} quality={quality} />
-          <TourStops visited={visited} nextId={nextId} entered={entered} />
+          {place === 'campus' && <TourStops visited={visited} nextId={nextId} entered={entered} />}
+          {place !== 'campus' && <Suspense fallback={null}><Interior room={place as RoomId} viewed={viewed} /></Suspense>}
           <Motes />
-          <Suspense fallback={null}><Player colliders={colliders} onNear={setNear} onInteract={onInteract} onMode={setMode} entered={entered} onEnter={onEnter} intro={intro} /></Suspense>
+          <Suspense fallback={null}><Player colliders={colliders} onNear={setNear} onInteract={onInteract} onMode={setMode} entered={entered} onEnter={onEnter} intro={intro} onPlace={setPlace} /></Suspense>
         </Canvas>
       </div>
-      <PlayHud near={near} card={card} paused={paused} mode={mode} visited={visited} entered={entered} intro={intro} onIntroDone={() => setIntro(false)} onResetTour={() => { setVisited(new Set()); try { localStorage.removeItem('aimverse:nedverse:tour') } catch { /* ignore */ } }} onCloseCard={() => setCard(null)} onResume={() => setPaused(false)} touch={touch} />
+      <PlayHud near={near} card={card} paused={paused} mode={mode} visited={visited} entered={entered} intro={intro} place={place} viewed={viewed} onIntroDone={() => setIntro(false)} onResetTour={() => { setVisited(new Set()); try { localStorage.removeItem('aimverse:nedverse:tour') } catch { /* ignore */ } }} onCloseCard={() => setCard(null)} onResume={() => setPaused(false)} touch={touch} />
     </Boundary>
   )
 }

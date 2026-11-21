@@ -5,7 +5,9 @@ import * as THREE from 'three'
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js'
 import { AVATAR_HEIGHT, measureGrounding } from '../grounding'
 import { CAMPUS_ENTRY_X, CAR_START, INTERACTABLES, SPAWN, groundY } from './layout'
-import { clampCameraDistance, resolve, type Box, type Collider } from './collision'
+import { clampCameraDistance, resolve, setBounds, type Box, type Collider } from './collision'
+import { DOORS, SPAWNS, roomBounds, type Place, type RoomId } from './interiors'
+import { BOUNDS } from './layout'
 import { input, readMove } from './input'
 import { audio } from './audio'
 
@@ -19,13 +21,13 @@ const RADIUS = 0.38, STEP = 1 / 60, CAR_R = 0.95, CAR_OFFS = [-1.25, 0, 1.25], W
 const DOOR = { x: -1.9, z: 0.35 }
 
 export type Mode = 'foot' | 'entering' | 'driving' | 'exiting'
-export type PlayerDebug = { x: number; y: number; z: number; yaw: number; speed: number; state: string; camYaw: number; camDist: number; near: string | null; fps: number; animTime: number; mode: Mode; carX: number; carZ: number; carYaw: number; carV: number; fov: number }
+export type PlayerDebug = { x: number; y: number; z: number; yaw: number; speed: number; state: string; camYaw: number; camDist: number; near: string | null; fps: number; animTime: number; mode: Mode; place: Place; carX: number; carZ: number; carYaw: number; carV: number; fov: number }
 declare global { interface Window { __ned?: PlayerDebug } }
 
 const wrap = (a: number) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a }
 const toWorld = (c: { x: number; z: number; yaw: number }, lx: number, lz: number) => ({ x: c.x + lx * Math.cos(c.yaw) + lz * Math.sin(c.yaw), z: c.z - lx * Math.sin(c.yaw) + lz * Math.cos(c.yaw) })
 
-export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter, intro }: { colliders: Collider[]; onNear: (id: string | null) => void; onInteract: (id: string) => void; onMode: (m: Mode) => void; entered: boolean; onEnter: () => void; intro: boolean }) {
+export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter, intro, onPlace }: { colliders: Collider[]; onNear: (id: string | null) => void; onInteract: (id: string) => void; onMode: (m: Mode) => void; entered: boolean; onEnter: () => void; intro: boolean; onPlace: (p: Place) => void }) {
   const { camera } = useThree()
   const { scene, animations } = useGLTF('/models/aiman-web.glb')
   const loco = useGLTF('/models/aiman-locomotion.glb')
@@ -47,11 +49,11 @@ export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter
   const { actions } = useAnimations(clips, group)
 
   // QA hook: ?x=&z=&yaw= overrides the spawn point; ?car=x,z,yaw moves the parked car; ?drive=1 starts inside the car (used by the automated tests)
-  const q = new URLSearchParams(location.search), sx = q.has('x') ? +q.get('x')! : SPAWN.x, sz = q.has('z') ? +q.get('z')! : SPAWN.z, syaw = q.has('yaw') ? +q.get('yaw')! : SPAWN.yaw
+  const q = new URLSearchParams(location.search), sp = (SPAWNS as Record<string, { x: number; z: number; yaw: number }>)[q.get('place') ?? ''], sx = q.has('x') ? +q.get('x')! : sp ? sp.x : SPAWN.x, sz = q.has('z') ? +q.get('z')! : sp ? sp.z : SPAWN.z, syaw = q.has('yaw') ? +q.get('yaw')! : sp ? sp.yaw : SPAWN.yaw
   const cs = q.get('car')?.split(',').map(Number)
   const st = useRef({
     x: sx, z: sz, y: groundY(sx, sz), vx: 0, vz: 0, yaw: syaw, vis: 1, mode: 'foot' as Mode, t: 0, door: { x: 0, z: 0 },
-    camYaw: q.has('cam') ? +q.get('cam')! : SPAWN.yaw + Math.PI, camPitch: 0.28, camDist: 4.4, wantDist: 4.4, footDist: 4.4, carDist: 7.6, lastLook: -9, camSwitch: -9,
+    camYaw: q.has('cam') ? +q.get('cam')! : syaw + Math.PI, place: (sp ? q.get('place') : 'campus') as Place, tr: null as null | { t: number; to: Place; done: boolean }, camPitch: 0.28, camDist: 4.4, wantDist: 4.4, footDist: 4.4, carDist: 7.6, lastLook: -9, camSwitch: -9,
     dp: false, state: 'Idle', near: null as string | null, acc: 0, frames: 0, fpsT: 0, fps: 0,
     car: { x: cs?.[0] ?? CAR_START.x, z: cs?.[1] ?? CAR_START.z, yaw: cs?.[2] ?? CAR_START.yaw, v: 0, steer: 0, spin: 0, roll: 0, pitch: 0, yawRate: 0, fov: 55, thr: 0, sti: 0 },
   })
@@ -75,8 +77,17 @@ export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter
   }
   useEffect(() => {
     actions['Aiman_Idle']?.reset().play(); st.current.state = 'Aiman_Idle'
+    if (sp) { setBounds(roomBounds(q.get('place') as RoomId)); onPlace(q.get('place') as Place) }
     if (q.get('drive') === '1') { const s = st.current; s.vis = 0; s.camYaw = s.car.yaw + Math.PI; s.wantDist = s.carDist; setMode('driving') }
   }, [actions])  // eslint-disable-line react-hooks/exhaustive-deps
+
+  /** door transition: the screen fades out, she is moved to the other side (a room, or back to the porch), the screen fades in */
+  const teleport = (to: Place) => {
+    const s = st.current, from = s.place
+    if (to === 'campus') { const d = DOORS[from as RoomId].exit; s.x = d.x; s.z = d.z; s.yaw = d.yaw; setBounds(BOUNDS) }
+    else { const p = SPAWNS[to as RoomId]; s.x = p.x; s.z = p.z; s.yaw = p.yaw; setBounds(roomBounds(to as RoomId)) }
+    s.y = groundY(s.x, s.z); s.vx = s.vz = 0; s.camYaw = wrap(s.yaw + Math.PI); s.camDist = 3.2; cam.init = false; s.place = to; onPlace(to)
+  }
 
   /** one 60 Hz car physics step (arcade bicycle model) */
   const driveStep = () => {
@@ -119,6 +130,7 @@ export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter
     let speed = Math.hypot(s.vx, s.vz)
     while (s.acc >= STEP) {
       s.acc -= STEP
+      if (s.tr) { const tr = s.tr; tr.t += STEP; s.vx = s.vz = 0; speed = 0; if (!tr.done && tr.t >= 0.4) { tr.done = true; teleport(tr.to) } if (tr.t >= 0.85) s.tr = null; continue }
       if (s.mode === 'foot') {
         carBox.x = c.x; carBox.z = c.z; carBox.rot = c.yaw
         c.v = 0
@@ -183,22 +195,22 @@ export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter
     if (!enteredRef.current && epx < CAMPUS_ENTRY_X && (Math.abs(epz) < 14 || epx < 12)) { enteredRef.current = true; onEnter() }
     if (input.mute) { input.mute = false; audio.toggle() }
     audio.hornOn(s.mode === 'driving' && input.keys.has('KeyH'))
-    audio.update({ driving: s.mode === 'driving', carV: c.v, footSpeed: speed, onFoot: s.mode === 'foot', dt, campus: enteredRef.current })
+    audio.update({ driving: s.mode === 'driving', carV: c.v, footSpeed: speed, onFoot: s.mode === 'foot', dt, campus: enteredRef.current && s.place === 'campus' })
     const spEl = document.querySelector<HTMLElement>('.nv-speed'); if (spEl) spEl.style.opacity = s.mode === 'driving' ? String(Math.min(1, Math.max(0, (Math.abs(c.v) - 12) / 10))) : '0'
     // ---- interaction detection ----
     let best: string | null = null
     const carPos = s.mode === 'driving' ? c : s
     if (s.mode === 'foot') {
       let bd = 1e9
-      for (const it of INTERACTABLES) { if (!enteredRef.current && it.id.startsWith('stop:')) continue;
+      for (const it of INTERACTABLES) { if (it.place !== s.place || (!enteredRef.current && it.id.startsWith('stop:'))) continue;
         const d = Math.hypot(it.x - s.x, it.z - s.z); if (d > it.radius) continue
         const facing = ((it.x - s.x) * Math.sin(s.yaw) + (it.z - s.z) * Math.cos(s.yaw)) / (d || 1)   // 1 = looking straight at it
         if (facing > -0.2 && d < bd) { bd = d; best = it.id }
       }
-      if (!best && Math.hypot(c.x - s.x, c.z - s.z) < 4.0) best = 'car'
+      if (!best && s.place === 'campus' && Math.hypot(c.x - s.x, c.z - s.z) < 4.0) best = 'car'
     } else if (s.mode === 'driving') {
       let bd = 1e9
-      for (const it of INTERACTABLES) { if (!enteredRef.current && it.id.startsWith('stop:')) continue; const d = Math.hypot(it.x - carPos.x, it.z - carPos.z); if (d < it.carRadius && d < bd) { bd = d; best = it.id } }
+      for (const it of INTERACTABLES) { if (it.place !== 'campus' || it.carRadius <= 0 || (!enteredRef.current && it.id.startsWith('stop:'))) continue; const d = Math.hypot(it.x - carPos.x, it.z - carPos.z); if (d < it.carRadius && d < bd) { bd = d; best = it.id } }
       if (!best && Math.abs(c.v) < 1.5) best = 'exit'
     }
     if (best !== s.near) { s.near = best; onNear(best) }
@@ -206,6 +218,8 @@ export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter
       input.interact = false
       if (s.mode === 'foot' && s.near === 'car') {
         s.door = toWorld(c, DOOR.x, DOOR.z); s.t = 0; s.dp = false; s.vx = s.vz = 0; setMode('entering')
+      } else if (s.mode === 'foot' && s.near && (s.near.startsWith('door:') || s.near.startsWith('exit:'))) {
+        s.tr = { t: 0, to: s.near.startsWith('door:') ? (s.near.slice(5) as Place) : 'campus', done: false }; audio.door()
       } else if (s.mode === 'foot' && s.near) onInteract(s.near)
       else if (s.mode === 'driving' && s.near && s.near !== 'exit') onInteract(s.near)
       else if (s.mode === 'driving' && Math.abs(c.v) < 1.5) {
@@ -251,10 +265,10 @@ export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter
     }
     // dip-to-black while stepping into the car, then fade back in on the chase view
     const fadeEl = document.querySelector<HTMLElement>('.nv-fade')
-    if (fadeEl) { const f = entering ? Math.min(1, Math.max(0, (s.t - 0.1) / 0.4)) : Math.max(0, 1 - (state.clock.elapsedTime - s.camSwitch) / 0.6); fadeEl.style.opacity = String(f) }
+    if (fadeEl) { const f0 = s.tr ? (s.tr.t < 0.4 ? s.tr.t / 0.4 : Math.max(0, 1 - (s.tr.t - 0.4) / 0.45)) : 0; const f = f0 || entering ? Math.min(1, Math.max(0, (s.t - 0.1) / 0.4)) : Math.max(0, 1 - (state.clock.elapsedTime - s.camSwitch) / 0.6); fadeEl.style.opacity = String(f0 > 0 ? f0 : f) }
     // ---- debug / test hook ----
     s.frames++; s.fpsT += dtRaw; if (s.fpsT >= 1) { s.fps = s.frames / s.fpsT; s.frames = 0; s.fpsT = 0 }
-    window.__ned = { x: s.x, y: s.y, z: s.z, yaw: s.yaw, speed: driving ? Math.abs(c.v) : speed, state: s.state, camYaw: s.camYaw, camDist: s.camDist, near: s.near, fps: s.fps, animTime: state.clock.elapsedTime, mode: s.mode, carX: c.x, carZ: c.z, carYaw: c.yaw, carV: c.v, fov: (camera as THREE.PerspectiveCamera).fov }
+    window.__ned = { x: s.x, y: s.y, z: s.z, yaw: s.yaw, speed: driving ? Math.abs(c.v) : speed, state: s.state, camYaw: s.camYaw, camDist: s.camDist, near: s.near, fps: s.fps, animTime: state.clock.elapsedTime, mode: s.mode, place: s.place, carX: c.x, carZ: c.z, carYaw: c.yaw, carV: c.v, fov: (camera as THREE.PerspectiveCamera).fov }
   })
 
   return (

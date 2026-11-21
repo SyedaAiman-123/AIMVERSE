@@ -243,3 +243,6 @@ Library, Auditorium & Exhibition Hall, Central Garden (animated fountain), Stude
 
 ## 2026-11-21 — Phase 5b road network
 Link roads left/right inside the gate, rounded corners, turnarounds, avenue shortened, obstacles removed, steering tweak. route_check.mjs (reachability) + scripted driver both routes. Regression suites pass. Local only.
+
+## 2026-11-22 — NEDVERSE Phase 6: portfolio interactions
+Lazy walk-in rooms (CS lab 15 workstations, library 6 skill shelves, exhibition hall 7 verified-fact panels), door transitions, panels from data.ts, kiosk map. Tests: rooms 15/15, driving 20/20, on-foot 20/20, arrival 13/13, campus 6/6. Campus guide not built. Report: documentation/NEDVERSE_PHASE6_REPORT.md. Local only; awaiting approval.
