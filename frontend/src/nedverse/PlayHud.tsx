@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { INTERACTABLES, SIGNPOST } from './layout'
 import { STOPS, stopById } from './tour'
 import type { Mode } from './Player'
+import { GATE_TARGET } from './layout'
+import { audio } from './audio'
 import { input, resetInput } from './input'
 import { BRAND } from '../brand'
 import './nedverse.css'
@@ -21,9 +23,10 @@ const SPECIAL: Record<string, { title: string; label: string }> = {
 }
 
 /** Tour objective: next unvisited stop, its distance and a compass arrow (polls the player's live position a few times a second). */
-function Objective({ visited, mode }: { visited: ReadonlySet<string>; mode: Mode }) {
+function Objective({ visited, mode, entered }: { visited: ReadonlySet<string>; mode: Mode; entered: boolean }) {
   const [v, setV] = useState({ d: 0, a: 0, kmh: 0 })
-  const next = STOPS.find((s) => !visited.has(s.id))
+  const nextStop = STOPS.find((s) => !visited.has(s.id))
+  const next = entered ? nextStop : { ...GATE_TARGET, color: '#ffffff', name: 'Main Gate' }
   useEffect(() => {
     const iv = window.setInterval(() => {
       const n = window.__ned; if (!n || !next) return
@@ -32,14 +35,14 @@ function Objective({ visited, mode }: { visited: ReadonlySet<string>; mode: Mode
       setV({ d: Math.hypot(dx, dz), a: Math.atan2(dx * -fz + dz * fx, dx * fx + dz * fz), kmh: Math.abs(n.carV) * 3.6 })
     }, 200)
     return () => window.clearInterval(iv)
-  }, [next, mode])
+  }, [next, mode, entered])
   return (
     <div className="nv-obj" aria-live="polite">
-      <small>CAMPUS TOUR · {visited.size}/{STOPS.length} stops{mode === 'driving' ? ` · ${Math.round(v.kmh)} km/h` : ''}</small>
+      <small>{entered ? 'CAMPUS TOUR' : 'ARRIVAL'} · {visited.size}/{STOPS.length} stops{mode === 'driving' ? ` · ${Math.round(v.kmh)} km/h` : ''}</small>
       {next ? (
         <div className="nv-obj-row">
           <span className="nv-arrow" style={{ transform: `rotate(${v.a}rad)`, color: next.color }} aria-hidden>▲</span>
-          <span><b>{mode === 'foot' ? 'Walk to the car (or explore on foot)' : `Next: ${next.name}`}</b><em>{mode === 'foot' ? 'It is parked on the entrance road' : `${Math.round(v.d)} m`}</em></span>
+          <span><b>{mode === 'foot' ? 'Walk to the car, press E to get in' : entered ? `Next: ${next.name}` : 'Drive through the main gate'}</b><em>{mode === 'foot' ? 'It is parked beside you on University Road' : `${Math.round(v.d)} m`}</em></span>
         </div>
       ) : <b>Tour complete — thank you for visiting!</b>}
     </div>
@@ -51,6 +54,7 @@ function StopCardView({ id, onClose }: { id: string; onClose: () => void }) {
   const c = stop.card
   return (
     <div className="nv-card nv-stop" role="dialog" aria-modal="true" aria-label={c.title} style={{ borderColor: stop.color, boxShadow: `0 0 60px ${stop.color}33` }}>
+      <div className="nv-confetti" aria-hidden>{Array.from({ length: 26 }, (_, i) => <i key={i} style={{ left: `${(i * 37) % 100}%`, background: [stop.color, "#ffffff", "#FFC53D", "#4DF3C8"][i % 4], animationDelay: `${(i % 9) * 0.07}s`, animationDuration: `${1.4 + (i % 5) * 0.25}s` }} />)}</div>
       <small style={{ color: stop.color }}>{c.kicker}</small>
       <h3>{c.title}</h3>
       <div className="nv-scroll">
@@ -68,23 +72,31 @@ function StopCardView({ id, onClose }: { id: string; onClose: () => void }) {
   )
 }
 
-export function PlayHud({ near, card, paused, mode, visited, onCloseCard, onResume, touch }: { near: string | null; card: string | null; paused: boolean; mode: Mode; visited: ReadonlySet<string>; onCloseCard: () => void; onResume: () => void; touch: boolean }) {
+export function PlayHud({ near, card, paused, mode, visited, entered, onCloseCard, onResume, touch }: { near: string | null; card: string | null; paused: boolean; mode: Mode; visited: ReadonlySet<string>; entered: boolean; onCloseCard: () => void; onResume: () => void; touch: boolean }) {
   const nearItem = near ? (SPECIAL[near] ? { label: SPECIAL[near].label, title: SPECIAL[near].title } : { label: INTERACTABLES.find((i) => i.id === near)?.label ?? '', title: 'PRESS E TO INTERACT' }) : undefined
   const [help, setHelp] = useState(true)
+  const [muted, setMuted] = useState(audio.muted)
+  useEffect(() => audio.subscribe(() => setMuted(audio.muted)), [])
+  const [welcome, setWelcome] = useState(false)
+  useEffect(() => { if (!entered) return; setWelcome(true); const t = setTimeout(() => setWelcome(false), 5000); return () => clearTimeout(t) }, [entered])
   useEffect(() => { const t = setTimeout(() => setHelp(false), 14000); return () => clearTimeout(t) }, [])
   const c = card && !card.startsWith('stop:') ? CARDS[card] : null, stopCard = card?.startsWith('stop:') ? card : null
   const modal = !!c || !!stopCard
   return (
     <div className="nv-hud" data-ui>
       <div className="nv-fade" aria-hidden />
+      <div className="nv-speed" aria-hidden />
+      <div className="nv-intro" aria-hidden><b>{BRAND.quest}</b><span>{BRAND.questTagline}</span><small>Walk to the car and press E</small></div>
+      {welcome && <div className="nv-toast" role="status"><b>Welcome to the campus</b><span>{STOPS.length} tour stops are now open — follow the arrow and the light beams.</span></div>}
+      <button className="nv-mute" data-ui onClick={() => audio.toggle()} aria-pressed={muted} aria-label={muted ? 'Unmute sound (M)' : 'Mute sound (M)'}>{muted ? '🔇' : '🔊'}<small>M</small></button>
       <div className="nv-tag"><b>{BRAND.quest}</b><span>{BRAND.questTagline}</span><small>{BRAND.name} · unofficial NED-inspired campus</small></div>
       {!modal && !paused && nearItem && mode !== 'entering' && (
         <button className="nv-prompt" data-ui onClick={() => { input.interact = true }}><kbd>E</kbd><span><b>{nearItem.title}</b><small>{nearItem.label}</small></span></button>
       )}
-      {!modal && !paused && <Objective visited={visited} mode={mode} />}
+      {!modal && !paused && <Objective visited={visited} mode={mode} entered={entered} />}
       {stopCard && <StopCardView id={stopCard} onClose={onCloseCard} />}
       {!touch && help && !modal && !paused && (
-        <div className="nv-help" role="note"><b>Controls</b>{mode === 'driving' ? <><span><kbd>W</kbd><kbd>S</kbd> throttle / reverse</span><span><kbd>A</kbd><kbd>D</kbd> steer</span><span><kbd>Shift</kbd> boost</span><span><kbd>Space</kbd> brake</span></> : <><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span><span><kbd>Shift</kbd> run</span></>}<span>drag mouse · look</span><span>wheel · zoom</span><span><kbd>E</kbd> interact</span><span><kbd>Esc</kbd> pause</span></div>
+        <div className="nv-help" role="note"><b>Controls</b>{mode === 'driving' ? <><span><kbd>W</kbd><kbd>S</kbd> throttle / reverse</span><span><kbd>A</kbd><kbd>D</kbd> steer</span><span><kbd>Shift</kbd> boost</span><span><kbd>Space</kbd> brake</span><span><kbd>H</kbd> horn</span></> : <><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span><span><kbd>Shift</kbd> run</span></>}<span>drag mouse · look</span><span>wheel · zoom</span><span><kbd>E</kbd> interact</span><span><kbd>M</kbd> sound</span><span><kbd>Esc</kbd> pause</span></div>
       )}
       {c && (
         <div className="nv-card" role="dialog" aria-modal="true" aria-label={c.title}>

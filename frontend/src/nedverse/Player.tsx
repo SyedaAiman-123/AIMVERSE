@@ -4,9 +4,10 @@ import { useAnimations, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js'
 import { AVATAR_HEIGHT, measureGrounding } from '../grounding'
-import { CAR_START, INTERACTABLES, SPAWN, groundY } from './layout'
+import { CAMPUS_ENTRY_X, CAR_START, INTERACTABLES, SPAWN, groundY } from './layout'
 import { clampCameraDistance, resolve, type Box, type Collider } from './collision'
 import { input, readMove } from './input'
+import { audio } from './audio'
 
 /* Third-person player. On foot: your avatar (existing GLB + the Blender-authored Walk/Run clips) with smooth acceleration, natural
    turning, wall-sliding collisions. By car: walk to the parked car, press E, she gets in and the player tours the campus by car
@@ -24,7 +25,7 @@ declare global { interface Window { __ned?: PlayerDebug } }
 const wrap = (a: number) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a }
 const toWorld = (c: { x: number; z: number; yaw: number }, lx: number, lz: number) => ({ x: c.x + lx * Math.cos(c.yaw) + lz * Math.sin(c.yaw), z: c.z - lx * Math.sin(c.yaw) + lz * Math.cos(c.yaw) })
 
-export function Player({ colliders, onNear, onInteract, onMode }: { colliders: Collider[]; onNear: (id: string | null) => void; onInteract: (id: string) => void; onMode: (m: Mode) => void }) {
+export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter }: { colliders: Collider[]; onNear: (id: string | null) => void; onInteract: (id: string) => void; onMode: (m: Mode) => void; entered: boolean; onEnter: () => void }) {
   const { camera } = useThree()
   const { scene, animations } = useGLTF('/models/aiman-web.glb')
   const loco = useGLTF('/models/aiman-locomotion.glb')
@@ -51,9 +52,10 @@ export function Player({ colliders, onNear, onInteract, onMode }: { colliders: C
   const st = useRef({
     x: sx, z: sz, y: groundY(sx, sz), vx: 0, vz: 0, yaw: syaw, vis: 1, mode: 'foot' as Mode, t: 0, door: { x: 0, z: 0 },
     camYaw: q.has('cam') ? +q.get('cam')! : SPAWN.yaw + Math.PI, camPitch: 0.28, camDist: 4.4, wantDist: 4.4, footDist: 4.4, carDist: 7.6, lastLook: -9, camSwitch: -9,
-    state: 'Idle', near: null as string | null, acc: 0, frames: 0, fpsT: 0, fps: 0,
+    dp: false, state: 'Idle', near: null as string | null, acc: 0, frames: 0, fpsT: 0, fps: 0,
     car: { x: cs?.[0] ?? CAR_START.x, z: cs?.[1] ?? CAR_START.z, yaw: cs?.[2] ?? CAR_START.yaw, v: 0, steer: 0, spin: 0, roll: 0, pitch: 0, yawRate: 0, fov: 55 },
   })
+  const enteredRef = useRef(entered); enteredRef.current = entered
   const cam = useMemo(() => ({ pos: new THREE.Vector3(), look: new THREE.Vector3(), init: false }), [])
   // the parked car is an obstacle for the avatar on foot (a box that follows the car)
   const carBox = useMemo<Box>(() => ({ kind: 'b', x: 0, z: 0, hw: 1.0, hd: 2.2, rot: 0 }), [])
@@ -96,7 +98,7 @@ export function Player({ colliders, onNear, onInteract, onMode }: { colliders: C
       resolve(p, CAR_R, colliders); c.x += p.x - bx; c.z += p.z - bz
     }
     const real = ((c.x - ox) * fx + (c.z - oz) * fz) / STEP
-    if (Math.abs(real) < Math.abs(c.v) * 0.35) c.v = real          // head-on: stop dead (arcade); glancing blows keep rolling
+    if (Math.abs(real) < Math.abs(c.v) * 0.35) { if (Math.abs(c.v) > 3.5) audio.thud(Math.abs(c.v)); c.v = real }          // head-on: stop dead (arcade); glancing blows keep rolling
     c.spin += (c.v / WHEEL_R) * STEP
   }
 
@@ -140,9 +142,10 @@ export function Player({ colliders, onNear, onInteract, onMode }: { colliders: C
           s.yaw += wrap(Math.atan2(dx, dz) - s.yaw) * (1 - Math.exp(-12 * STEP))
         } else {
           speed = 0; s.t += STEP
+          if (!s.dp) { s.dp = true; audio.door() }
           s.yaw += wrap(Math.atan2(c.x - s.x, c.z - s.z) - s.yaw) * (1 - Math.exp(-10 * STEP))      // face the car
           s.vis = 0                                                                                 // first-person: no avatar in view
-          if (s.t > 0.62) { s.vis = 0; cam.init = false; s.vx = s.vz = 0; s.camYaw = wrap(c.yaw + Math.PI); s.wantDist = s.carDist; s.t = 0; s.camSwitch = state.clock.elapsedTime; setMode('driving') }
+          if (s.t > 0.62) { s.vis = 0; cam.init = false; s.vx = s.vz = 0; s.camYaw = wrap(c.yaw + Math.PI); s.wantDist = s.carDist; s.t = 0; s.camSwitch = state.clock.elapsedTime; audio.ignition(); setMode('driving') }
         }
       } else if (s.mode === 'driving') {
         driveStep(); speed = 0
@@ -169,12 +172,19 @@ export function Player({ colliders, onNear, onInteract, onMode }: { colliders: C
     c.roll += (-c.yawRate * c.v * 0.012 * lean - c.roll) * (1 - Math.exp(-6 * dt)); c.pitch += (0 - c.pitch) * (1 - Math.exp(-6 * dt))
     carBody.current.rotation.set(0, 0, THREE.MathUtils.clamp(c.roll, -0.07, 0.07))
     const w = carObj.wheels; w.FL.rotation.set(c.spin, c.steer, 0); w.FR.rotation.set(c.spin, c.steer, 0); w.RL.rotation.set(c.spin, 0, 0); w.RR.rotation.set(c.spin, 0, 0)
+    // ---- campus entry (tour stops unlock once she is through the main gate), sound, horn, speed lines ----
+    const epx = s.mode === 'driving' ? c.x : s.x, epz = s.mode === 'driving' ? c.z : s.z
+    if (!enteredRef.current && epx < CAMPUS_ENTRY_X && (Math.abs(epz) < 14 || epx < 12)) { enteredRef.current = true; onEnter() }
+    if (input.mute) { input.mute = false; audio.toggle() }
+    audio.hornOn(s.mode === 'driving' && input.keys.has('KeyH'))
+    audio.update({ driving: s.mode === 'driving', carV: c.v, footSpeed: speed, onFoot: s.mode === 'foot', dt, campus: enteredRef.current })
+    const spEl = document.querySelector<HTMLElement>('.nv-speed'); if (spEl) spEl.style.opacity = s.mode === 'driving' ? String(Math.min(1, Math.max(0, (Math.abs(c.v) - 12) / 10))) : '0'
     // ---- interaction detection ----
     let best: string | null = null
     const carPos = s.mode === 'driving' ? c : s
     if (s.mode === 'foot') {
       let bd = 1e9
-      for (const it of INTERACTABLES) {
+      for (const it of INTERACTABLES) { if (!enteredRef.current && it.id.startsWith('stop:')) continue;
         const d = Math.hypot(it.x - s.x, it.z - s.z); if (d > it.radius) continue
         const facing = ((it.x - s.x) * Math.sin(s.yaw) + (it.z - s.z) * Math.cos(s.yaw)) / (d || 1)   // 1 = looking straight at it
         if (facing > -0.2 && d < bd) { bd = d; best = it.id }
@@ -182,14 +192,14 @@ export function Player({ colliders, onNear, onInteract, onMode }: { colliders: C
       if (!best && Math.hypot(c.x - s.x, c.z - s.z) < 4.0) best = 'car'
     } else if (s.mode === 'driving') {
       let bd = 1e9
-      for (const it of INTERACTABLES) { const d = Math.hypot(it.x - carPos.x, it.z - carPos.z); if (d < it.carRadius && d < bd) { bd = d; best = it.id } }
+      for (const it of INTERACTABLES) { if (!enteredRef.current && it.id.startsWith('stop:')) continue; const d = Math.hypot(it.x - carPos.x, it.z - carPos.z); if (d < it.carRadius && d < bd) { bd = d; best = it.id } }
       if (!best && Math.abs(c.v) < 1.5) best = 'exit'
     }
     if (best !== s.near) { s.near = best; onNear(best) }
     if (input.interact) {
       input.interact = false
       if (s.mode === 'foot' && s.near === 'car') {
-        s.door = toWorld(c, DOOR.x, DOOR.z); s.t = 0; s.vx = s.vz = 0; setMode('entering')
+        s.door = toWorld(c, DOOR.x, DOOR.z); s.t = 0; s.dp = false; s.vx = s.vz = 0; setMode('entering')
       } else if (s.mode === 'foot' && s.near) onInteract(s.near)
       else if (s.mode === 'driving' && s.near && s.near !== 'exit') onInteract(s.near)
       else if (s.mode === 'driving' && Math.abs(c.v) < 1.5) {
@@ -198,7 +208,7 @@ export function Player({ colliders, onNear, onInteract, onMode }: { colliders: C
         for (const k of cands) { const p = toWorld(c, k.x, k.z), b = { ...p }; resolve(p, RADIUS, footCols); if (Math.hypot(p.x - b.x, p.z - b.z) < 0.05) { pick = p; break } }
         resolve(pick, RADIUS, colliders)
         s.x = pick.x; s.z = pick.z; s.y = groundY(s.x, s.z); s.yaw = c.yaw; s.vx = s.vz = 0; s.t = 0; s.vis = 0.01
-        s.wantDist = s.footDist; setMode('exiting')
+        s.wantDist = s.footDist; audio.door(); setMode('exiting')
       }
     }
     // ---- camera: damped orbit (on foot) / first-person while getting in / chase (driving), kept out of walls ----

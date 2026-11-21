@@ -3,7 +3,7 @@
 import { spawn } from 'node:child_process'
 import { writeFileSync, mkdirSync } from 'node:fs'
 const OUT = process.argv[2] || 'reference/play_test'; mkdirSync(OUT, { recursive: true })
-const PORT = 9365, W = 640, H = 360
+const PORT = 9377, W = 640, H = 360
 const edge = spawn('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', ['--headless=new', `--remote-debugging-port=${PORT}`, `--window-size=${W},${H}`, '--force-device-scale-factor=1', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--user-data-dir=' + process.env.TEMP + '/aim_drive_profile', 'about:blank'], { stdio: 'ignore' })
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 let targets; for (let i = 0; i < 40; i++) { try { targets = await (await fetch(`http://127.0.0.1:${PORT}/json`)).json(); if (targets.find((t) => t.type === 'page')) break } catch {} await sleep(500) }
@@ -30,7 +30,7 @@ const tap = async (k) => { await down(k); await sleep(120); await up(k) }
 const stateIs = (m) => waitFor(async () => { const t = await S(); return t.mode === m && t }, 120000, 500)
 
 // ---------- 1. walk-up to the car, prompt, enter ----------
-let s = await load('&x=17.2&z=-1.5&yaw=2.5&cam=5.67')
+let s = await load('&x=17.2&z=-1.5&yaw=2.5&cam=5.67&car=19,-4.2,1.5708')
 check('starts on foot, car parked on the road', s.mode === 'foot' && Math.hypot(s.carX - 19, s.carZ + 4.2) < 0.01, `mode=${s.mode} car=(${s.carX.toFixed(1)},${s.carZ.toFixed(1)})`)
 const near = await waitFor(async () => { const t = await S(); return t.near === 'car' && t }, 20000)
 check('"GET IN THE CAR" prompt appears next to the car', !!near && !!(await ev("document.querySelector('.nv-prompt')?.textContent.includes('GET IN THE CAR')")), `near=${near && near.near}`); await shot('car_prompt')

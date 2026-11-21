@@ -32,3 +32,15 @@
 .nv-arrow{font-size:1.5rem;line-height:1;transition:transform .2s linear;filter:drop-shadow(0 0 6px currentColor)}
 
 .nv-fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:5}
+
+.nv-speed{position:absolute;inset:0;opacity:0;pointer-events:none;background:repeating-conic-gradient(from 0deg at 50% 52%,rgba(255,255,255,0) 0 3.2deg,rgba(255,255,255,.16) 3.2deg 3.7deg);-webkit-mask:radial-gradient(circle at 50% 52%,transparent 38%,#000 92%);mask:radial-gradient(circle at 50% 52%,transparent 38%,#000 92%);transition:opacity .15s}
+.nv-intro{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;animation:nvintro 6s both;color:#fff;text-shadow:0 4px 40px rgba(0,0,0,.6)}
+.nv-intro b{display:block;font-size:clamp(2.6rem,9vw,6rem);letter-spacing:-.05em;line-height:1}.nv-intro span{display:block;margin-top:.5rem;font:600 clamp(.8rem,2vw,1.1rem) Consolas,monospace;letter-spacing:.22em;text-transform:uppercase;color:#4DF3C8}.nv-intro small{display:block;margin-top:1.4rem;font:600 .8rem Consolas,monospace;letter-spacing:.14em;color:#ece7db}
+@keyframes nvintro{0%{opacity:0;transform:translate(-50%,-44%) scale(.96)}14%{opacity:1;transform:translate(-50%,-50%) scale(1)}78%{opacity:1}100%{opacity:0;transform:translate(-50%,-56%)}}
+.nv-toast{position:absolute;left:50%;top:16%;transform:translateX(-50%);padding:12px 22px;background:rgba(8,9,13,.82);border:1px solid #4DF3C8;box-shadow:0 0 40px rgba(77,243,200,.3);text-align:center;color:#ece7db;pointer-events:none;animation:nvtoast 5s both;max-width:92vw}
+.nv-toast b{display:block;font-size:1.15rem;color:#4DF3C8}.nv-toast span{font-size:.85rem}
+@keyframes nvtoast{0%{opacity:0;transform:translate(-50%,-14px)}10%,85%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+.nv-mute{position:absolute;left:14px;bottom:14px;display:flex;align-items:center;gap:6px;padding:8px 12px;background:rgba(8,9,13,.72);border:1px solid rgba(236,231,219,.25);color:#ece7db;font-size:1.05rem;cursor:pointer}.nv-mute small{font:700 .62rem Consolas,monospace;color:#9a9588}
+.nv-confetti{position:absolute;left:0;right:0;top:0;height:0;overflow:visible;pointer-events:none}.nv-confetti i{position:absolute;top:-8px;width:7px;height:12px;opacity:0;animation:nvconf 1.8s ease-out both}
+@keyframes nvconf{0%{opacity:1;transform:translateY(0) rotate(0)}100%{opacity:0;transform:translateY(300px) rotate(540deg)}}
+@media (prefers-reduced-motion:reduce){.nv-intro{animation:none;opacity:0}.nv-toast{animation:none}.nv-confetti,.nv-speed{display:none}}

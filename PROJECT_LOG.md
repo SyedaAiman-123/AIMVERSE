@@ -231,3 +231,6 @@ User request: walking is too slow; add a car GLB, have the avatar approach it an
 
 ## 2026-11-21 — Phase 4b round 2
 User supplied lowpoly-sedan-wagon.zip (corolla.glb): replaced my Blender car with it (sedan variant). First-person approach + dip-to-black into third-person chase. Speeds raised (walk 2.5, run 5.6, car 18/25 m/s), render extrapolation, adaptive quality. Tests: driving 20/20, on-foot 20/20. Local only, not pushed. Licence of the supplied car model unconfirmed.
+
+## 2026-11-21 — Phase 4b round 3
+Start outside the gate; stops unlock after entering; synthesised WebAudio sound (engine, steps, door, horn, chime, birds, wind) with mute; guide arrow, stop icons, motes, speed lines, confetti, intro card. Tests: arrival 10/10, driving 20/20, on-foot 20/20. Local only. Sound untested by ear.

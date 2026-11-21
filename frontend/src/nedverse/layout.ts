@@ -18,8 +18,10 @@ export const GATE_X = 22
 export const KIOSK = { pos: [-5, 0, -5] as [number, number, number], rot: Math.PI / 2 + 0.2 }
 export const BOARD = { pos: [-8.5, 0, 7] as [number, number, number], rot: Math.PI / 2 + 0.5 }
 export const SIGNPOST = { pos: [-12, 0, 12] as [number, number, number], rot: Math.PI / 2 - 0.35, items: ['CS & IT Dept  ↑', 'Library  ←', 'Auditorium  ←'] }
-export const SPAWN = { x: 15, z: 1.5, yaw: 2.53 } // just inside the gate, facing the parked car (yaw: facing direction, 0 = +z)
-export const CAR_START = { x: 19, z: -4.2, yaw: Math.PI / 2 } // parked on the entrance road, nose toward the gate; driver door on the south side
+export const SPAWN = { x: 45, z: -0.6, yaw: -0.91 } // OUTSIDE the university, on University Road, facing the parked car (yaw: facing direction, 0 = +z)
+export const CAR_START = { x: 42, z: 4, yaw: -Math.PI / 2 } // parked outside the wall, nose toward the main gate (west); driver door on the north side
+export const GATE_TARGET = { x: 22, z: 0 }          // the main gate; the tour stops unlock once the player is through it
+export const CAMPUS_ENTRY_X = 24
 export const BOUNDS = { x0: -78, x1: 56, z0: -100, z1: 96 }
 export const GROUND_PLAZA_R = 15
 

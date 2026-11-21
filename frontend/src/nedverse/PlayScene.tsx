@@ -3,6 +3,9 @@ import { Canvas } from '@react-three/fiber'
 import { World, type Quality } from './PrototypeScene'
 import { Player, type Mode } from './Player'
 import { TourStops } from './TourStops'
+import { GuideArrow, Motes } from './Effects'
+import { audio } from './audio'
+import { GATE_TARGET } from './layout'
 import { STOPS } from './tour'
 import { PlayHud } from './PlayHud'
 import { buildColliders } from './collision'
@@ -22,8 +25,13 @@ export default function PlayScene({ touch }: { touch: boolean }) {
   const [card, setCard] = useState<string | null>(null)
   const [paused, setPaused] = useState(false)
   const [mode, setMode] = useState<Mode>('foot')
+  const [entered, setEntered] = useState(false)
   const [visited, setVisited] = useState<ReadonlySet<string>>(() => { try { return new Set<string>(JSON.parse(localStorage.getItem('aimverse:nedverse:tour') || '[]')) } catch { return new Set<string>() } })
-  const nextId = STOPS.find((s) => !visited.has(s.id))?.id ?? null
+  const nextStop = STOPS.find((s) => !visited.has(s.id)) ?? null, nextId = nextStop?.id ?? null
+  const target = entered ? (nextStop ? { x: nextStop.x, z: nextStop.z, color: nextStop.color } : null) : { ...GATE_TARGET, color: '#ffffff' }
+  const onEnter = useCallback(() => { setEntered(true); audio.unlock() }, [])
+  // browsers only allow sound after a gesture: start the audio engine on the first key press / click / tap
+  useEffect(() => { const go = () => audio.start(); window.addEventListener('keydown', go); window.addEventListener('pointerdown', go); return () => { window.removeEventListener('keydown', go); window.removeEventListener('pointerdown', go) } }, [])
   const modal = !!card || paused
   // Low tier (phones, ?q=low): smaller shadow map, no bloom/SMAA, dpr 1. High tier otherwise (?q=high forces it).
   const qp = new URLSearchParams(location.search).get('q')
@@ -49,6 +57,7 @@ export default function PlayScene({ touch }: { touch: boolean }) {
   }, [card])
   const onInteract = useCallback((id: string) => {
     setCard(id)
+    if (id.startsWith('stop:')) audio.chime(); else audio.click()
     if (id.startsWith('stop:')) setVisited((v) => { const n = new Set(v); n.add(id.slice(5)); try { localStorage.setItem('aimverse:nedverse:tour', JSON.stringify([...n])) } catch { /* private mode */ } return n })
   }, [])
 
@@ -57,11 +66,12 @@ export default function PlayScene({ touch }: { touch: boolean }) {
       <div ref={wrap} style={{ position: 'fixed', inset: 0, touchAction: 'none', cursor: modal ? 'default' : 'grab' }}>
         <Canvas shadows dpr={quality === 'low' ? 1 : [1, 1.5]} camera={{ fov: 55, near: 0.1, far: 700, position: [26, 4, 8] }} gl={{ antialias: false, powerPreference: 'high-performance' }}>
           <World withAvatar={false} quality={quality} />
-          <TourStops visited={visited} nextId={nextId} />
-          <Suspense fallback={null}><Player colliders={colliders} onNear={setNear} onInteract={onInteract} onMode={setMode} /></Suspense>
+          <TourStops visited={visited} nextId={nextId} entered={entered} />
+          <Motes /><GuideArrow target={target} />
+          <Suspense fallback={null}><Player colliders={colliders} onNear={setNear} onInteract={onInteract} onMode={setMode} entered={entered} onEnter={onEnter} /></Suspense>
         </Canvas>
       </div>
-      <PlayHud near={near} card={card} paused={paused} mode={mode} visited={visited} onCloseCard={() => setCard(null)} onResume={() => setPaused(false)} touch={touch} />
+      <PlayHud near={near} card={card} paused={paused} mode={mode} visited={visited} entered={entered} onCloseCard={() => setCard(null)} onResume={() => setPaused(false)} touch={touch} />
     </Boundary>
   )
 }

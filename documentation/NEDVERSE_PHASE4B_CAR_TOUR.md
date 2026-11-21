@@ -25,3 +25,10 @@ Date: 2026-11-21. Dev preview: http://localhost:5173/nedverse.html?play=1
 - The car has no engine sound yet. Touch has no steering wheel UI: the left joystick steers and accelerates.
 - The stops use placeholder boards, not final campus buildings, until Phase 5.
 - Phase 4 and 4b are committed locally and not pushed.
+
+## Round 3: arrival story, sound, spark
+- **Start outside the university.** She stands on University Road beside the parked car. Walk to it, press E, she gets in (first-person), and you drive west through the main gate. **The 8 portfolio stops only appear once you are through the gate** (they pop in one after another with a welcome message). Before that the objective panel says "ARRIVAL - drive through the main gate" and a guide arrow points at the gate.
+- **Sound (all synthesised in the browser, no audio files):** engine hum that rises with speed, wind, footsteps, car door and ignition, horn (H), impact thud, chime on opening a stop, unlock jingle on entering, UI click, distant birds on campus. **M** or the speaker button mutes, and the choice is remembered.
+- **Visual spark (inspired by the Bruno Simon-style vehicle exploration in your references):** a floating guide arrow above the car or avatar that always points at the next objective; a different glowing 3D icon above each stop; stops pop in with a little overshoot; light beams and rings; drifting sunlit dust; speed lines at high speed; confetti when a stop opens; an intro title card.
+- **Tests:** new arrival test 10/10 (starts outside, no stops yet, walks to car, drives through the gate without hitting the piers, stops unlock, toast shown), driving 20/20, on-foot 20/20.
+- **Not verified:** I cannot hear the sound in this environment, so the mix and volume levels are untested by ear. Real-GPU performance is still unmeasured.

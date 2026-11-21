@@ -8,10 +8,11 @@ export const input = {
   lookDX: 0, lookDY: 0, zoom: 0,    // accumulated since the last frame
   interact: false,                  // edge-triggered
   escape: false,                    // edge-triggered
+  mute: false,                      // edge-triggered (M)
   enabled: true,                    // false while a panel / pause menu is open: movement is ignored, nothing can drift
 }
 
-export function resetInput() { input.keys.clear(); input.stick.x = input.stick.y = 0; input.lookDX = input.lookDY = input.zoom = 0; input.interact = input.escape = false }
+export function resetInput() { input.keys.clear(); input.stick.x = input.stick.y = 0; input.lookDX = input.lookDY = input.zoom = 0; input.interact = input.escape = input.mute = false }
 export function setInputEnabled(on: boolean) { input.enabled = on; if (!on) { input.keys.clear(); input.stick.x = input.stick.y = 0 } }
 
 /** Current movement intent: x = right, z = forward (both −1..1), run flag. */
@@ -26,12 +27,13 @@ export function readMove() {
   return { x, z, run }
 }
 
-const MOVE_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight', 'Space'])
+const MOVE_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight', 'Space', 'KeyH'])
 
 /** Attach listeners to the window + a canvas wrapper element; returns a detach function. */
 export function attachInput(el: HTMLElement) {
   const kd = (e: KeyboardEvent) => {
     if (e.code === 'Escape') { if (!e.repeat) input.escape = true; return }
+    if (e.code === 'KeyM' && !e.repeat) { input.mute = true; return }
     if (!input.enabled) return
     if (MOVE_KEYS.has(e.code)) { input.keys.add(e.code); e.preventDefault() }
     else if (e.code === 'KeyE' && !e.repeat) input.interact = true
