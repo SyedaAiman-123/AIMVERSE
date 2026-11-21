@@ -15,7 +15,7 @@ import { audio } from './audio'
 
 export const WALK_SPEED = 2.5, RUN_SPEED = 5.6, NAT_WALK = 1.3, NAT_RUN = 3.1   // m/s; NAT_* = speed the authored cycles cover at 1x
 export const CAR_SPEED = 18, CAR_BOOST = 25, CAR_REVERSE = 7                    // m/s  (18 m/s = ~65 km/h)
-const RADIUS = 0.38, STEP = 1 / 60, WHEELBASE = 2.6, CAR_R = 0.95, CAR_OFFS = [-1.25, 0, 1.25], WHEEL_R = 0.3
+const RADIUS = 0.38, STEP = 1 / 60, CAR_R = 0.95, CAR_OFFS = [-1.25, 0, 1.25], WHEEL_R = 0.3
 const DOOR = { x: -1.9, z: 0.35 }
 
 export type Mode = 'foot' | 'entering' | 'driving' | 'exiting'
@@ -84,16 +84,19 @@ export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter
     const space = input.keys.has('Space')
     const vmax = m.run ? CAR_BOOST : CAR_SPEED
     c.thr += (m.z - c.thr) * (1 - Math.exp(-(m.z !== 0 ? 5.5 : 8) * STEP))          // pedals and steering ramp in/out instead of snapping
-    c.sti += (m.x - c.sti) * (1 - Math.exp(-(m.x !== 0 ? 4.5 : 9) * STEP))
+    c.sti += (m.x - c.sti) * (1 - Math.exp(-(m.x !== 0 ? 6.5 : 11) * STEP))
     const throttle = Math.abs(c.thr) < 0.04 ? 0 : c.thr
     const target = throttle > 0 ? vmax * throttle : throttle < 0 ? CAR_REVERSE * throttle : 0
     if (space) c.v -= Math.sign(c.v) * Math.min(Math.abs(c.v), 26 * STEP)
     else if (throttle * Math.sign(c.v || throttle) < 0) c.v -= Math.sign(c.v) * Math.min(Math.abs(c.v), 22 * Math.min(1, Math.abs(throttle) * 1.6) * STEP)   // braking
     else if (throttle !== 0) { const a = (target > c.v ? (c.v < 0 ? 6 : 8.5) : 10) * STEP; c.v += Math.max(-a, Math.min(a, target - c.v)) }
     else c.v -= Math.sign(c.v) * Math.min(Math.abs(c.v), (2.6 + Math.abs(c.v) * 0.25) * STEP)                     // coast
-    const want = -c.sti * 0.62 / (1 + Math.abs(c.v) * 0.07)
-    c.steer += (want - c.steer) * (1 - Math.exp(-9 * STEP))
-    c.yawRate += ((c.v / WHEELBASE) * Math.tan(c.steer) - c.yawRate) * (1 - Math.exp(-10 * STEP)); c.yaw += c.yawRate * STEP
+    // turning is yaw-rate based (easy to control): full lock turns ~130 deg/s at low speed, ~70 deg/s at top speed, and eases to zero as the car stops
+    const av = Math.abs(c.v), dir = c.v < 0 ? -1 : 1
+    const maxRate = av < 4 ? 2.3 * (av / 4) : 2.3 - Math.min(1.1, (av - 4) * 0.075)
+    c.yawRate += (-c.sti * maxRate * dir - c.yawRate) * (1 - Math.exp(-9 * STEP)); c.yaw += c.yawRate * STEP
+    c.steer += (-c.sti * 0.5 - c.steer) * (1 - Math.exp(-10 * STEP))            // front-wheel angle (visual only)
+    if (Math.abs(c.sti) > 0.5 && av > 13) c.v -= dir * (av - 13) * 1.2 * STEP    // corner assist: eases off the speed in hard turns
     const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw), ox = c.x, oz = c.z
     c.x += fx * c.v * STEP; c.z += fz * c.v * STEP
     for (let pass = 0; pass < 2; pass++) for (const off of CAR_OFFS) {
@@ -233,7 +236,7 @@ export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter
       camera.position.copy(cam.pos); camera.lookAt(cam.look)
       const wf = 72; if (Math.abs(pc.fov - wf) > 0.05) { pc.fov += (wf - pc.fov) * (1 - Math.exp(-5 * dt)); pc.updateProjectionMatrix() }
     } else {
-      if (driving && state.clock.elapsedTime - s.lastLook > 1.6) s.camYaw += wrap(c.yaw + Math.PI - s.camYaw) * (1 - Math.exp(-2.6 * dt))
+      if (driving && state.clock.elapsedTime - s.lastLook > 1.6) s.camYaw += wrap(c.yaw + Math.PI - s.camYaw) * (1 - Math.exp(-3.2 * dt))
       const tx = driving ? crx : rx, ty = driving ? 1.25 : s.y + 1.45, tz = driving ? crz : rz
       const cp = Math.cos(s.camPitch), dir = new THREE.Vector3(Math.sin(s.camYaw) * cp, Math.sin(s.camPitch), Math.cos(s.camYaw) * cp)
       const safe = clampCameraDistance(tx, tz, dir.x, dir.z, s.wantDist, colliders)
