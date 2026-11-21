@@ -214,3 +214,7 @@
 - Iteration: first render too hazy/blobby shrubs/avatar hidden -> fixed scale, smooth canopies, relit from SW (initial SE sun backlit everything), moved context blocks back, sign above porch, barred gate leaves, narrower lettering, error boundary so a failed avatar load cannot blank the world.
 - Verified by scripted headless Edge screenshots (scripts/capture_proto.mjs; software GL) — 5 views saved in documentation/nedverse/; tsc, contact tests 22/22, mock-gemini 0 fails, production build pass. NOT measured: real-GPU/mobile frame rate, other browsers.
 - Report: documentation/NEDVERSE_PHASE3_REPORT.md. Open: owner approval of visual direction, higher-res emblem OK, extra photos, push decision (rebrand + promo + AIM AI rename are committed locally, not pushed).
+
+## 2026-11-21 — Fix: avatar sunk into the ground (owner report)
+- Cause: the avatar GLB's origin is at hip height (measured: feet at -0.95 m, total height 1.897 m), but she was placed at y~0, so the lower half was underground. New shared helper src/grounding.ts (measureGrounding = real bounding box; AVATAR_HEIGHT 1.68 m, uniform scale so proportions are unchanged). Used by the NEDVERSE prototype (feet exactly on the floor) and by the existing Quest World host (same bug there).
+- Verified visually in the prototype (street-level view: full figure, shadow on the paving, plausible next to the bench); tsc passes. NOT visually checked: the old Quest World host after the change (to be replaced by NEDVERSE anyway). Not pushed.

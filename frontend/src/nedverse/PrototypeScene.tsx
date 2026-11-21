@@ -8,6 +8,7 @@ import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js'
 import { Block, Cars, DisclaimerBoard, Gate, Kiosk, SignPost } from './Architecture'
 import { Benches, BoundaryWall, FarField, Ground, Lamps, Palms, PlazaPlanter, Roads, Shrubs, Trees, type TreeSpot } from './Landscape'
 import { rng } from './textures'
+import { AVATAR_HEIGHT, measureGrounding } from '../grounding'
 
 /* PHASE 3 PROTOTYPE — "Main Gate & Welcome Plaza" of NEDVERSE (unofficial, NED-inspired). Local metres: plaza centre = origin,
    the gate stands at x = +22 on University Road side, the CS & IT building is to the north (-z). Morning light preset. */
@@ -32,11 +33,15 @@ class Safe extends Component<{ children: ReactNode }, { bad: boolean }> {
 
 function Avatar() {
   const { scene, animations } = useGLTF('/models/aiman-web.glb')
-  const model = useMemo(() => { const m = clone(scene); m.traverse((o) => { if ((o as THREE.Mesh).isMesh) { o.castShadow = true; o.receiveShadow = true } }); return m }, [scene])
+  const { model, lift, height } = useMemo(() => {
+    const m = clone(scene); m.traverse((o) => { if ((o as THREE.Mesh).isMesh) { o.castShadow = true; o.receiveShadow = true } })
+    return { model: m, ...measureGrounding(m) }
+  }, [scene])
   const g = useRef<THREE.Group>(null!)
   const { actions } = useAnimations(animations, g)
   useEffect(() => { actions['Aiman_Idle']?.reset().fadeIn(0.3).play() }, [actions])
-  return <group ref={g} position={[8.8, 0.05, 4.2]} rotation={[0, -Math.PI / 2 + 0.5, 0]} scale={1.08}><primitive object={model} /></group>
+  const S = AVATAR_HEIGHT / height // uniform scale: proportions unchanged
+  return <group ref={g} position={[8.8, lift * S, 4.2]} rotation={[0, -Math.PI / 2 + 0.5, 0]} scale={S}><primitive object={model} /></group>
 }
 
 function CameraRig({ cam, still, free }: { cam: Cam; still: boolean; free: boolean }) {

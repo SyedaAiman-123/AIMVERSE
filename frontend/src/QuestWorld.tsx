@@ -8,6 +8,7 @@ import { LEVELS, useGame } from './game'
 import { audio } from './audio'
 import { STATIONS, StationGame, type StationId } from './QuestGames'
 import { ProgressPanel } from './ProgressPanel'
+import { AVATAR_HEIGHT, measureGrounding } from './grounding'
 import './questworld.css'
 import { BRAND } from './brand'
 
@@ -154,7 +155,8 @@ function Station({ id, near, state, onPick }: { id: StationId; near: boolean; st
 /* ---------------------------------------------------------------- host (Aiman) */
 function Host({ greet }: { greet: number }) {
   const { scene, animations } = useGLTF('/models/aiman-web.glb')
-  const model = useMemo(() => clone(scene), [scene])
+  const { model, lift, height } = useMemo(() => { const m = clone(scene); return { model: m, ...measureGrounding(m) } }, [scene])
+  const S = (AVATAR_HEIGHT * 1.35) / height // a little larger than life so she reads from the camera; feet are placed exactly on the pedestal
   const group = useRef<THREE.Group>(null!)
   const { actions } = useAnimations(animations, group)
   const to = (name: string, once = false) => {
@@ -174,7 +176,7 @@ function Host({ greet }: { greet: number }) {
     <group position={HOST}>
       <mesh position={[0, 0.1, 0]}><cylinderGeometry args={[1.5, 1.65, 0.24, 48]} /><meshStandardMaterial color="#17161f" metalness={0.6} roughness={0.35} /></mesh>
       <mesh position={[0, 0.24, 0]} rotation={[-Math.PI / 2, 0, 0]}><torusGeometry args={[1.45, 0.04, 8, 72]} /><meshBasicMaterial color="#ff4a1c" toneMapped={false} /></mesh>
-      <group ref={group} position={[0, 0.22, 0]} scale={1.75}><primitive object={model} /></group>
+      <group ref={group} position={[0, 0.22 + lift * S, 0]} scale={S}><primitive object={model} /></group>
       <pointLight position={[0.8, 3.2, 3.4]} color="#fff0e2" intensity={85} distance={11} decay={2} />
       <pointLight position={[2.6, 2.4, -1.4]} color="#ff6a3a" intensity={60} distance={9} decay={2} />
       <pointLight position={[-2.6, 2.2, -1.4]} color="#7ab8ff" intensity={50} distance={9} decay={2} />
