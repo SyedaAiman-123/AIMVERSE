@@ -94,3 +94,12 @@ html[data-nv-reduce="1"] .nv-slide{opacity:1;transform:translate(-50%,-50%)}
   .nv-map{top:78px!important;left:10px}.nv-toast,.nv-toasts{top:38%}.nv-toast{max-width:84vw}
   .nv-mute{bottom:186px;left:14px}.nv-qbtn{bottom:236px;left:14px}.nv-help{display:none}
 }
+
+.nv-finale{z-index:8;background:radial-gradient(ellipse at center,rgba(8,9,13,.2),rgba(8,9,13,.78))}
+.nv-end{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(900px,92vw);text-align:center;color:#fff;text-shadow:0 4px 40px rgba(0,0,0,.7);animation:nvslide0 1.2s both}
+.nv-end b{display:block;font-size:clamp(2.2rem,8.5vw,5.6rem);letter-spacing:-.04em;line-height:1}.nv-end>span{display:block;margin-top:.6rem;font:600 clamp(.9rem,2.4vw,1.3rem) Consolas,monospace;letter-spacing:.22em;text-transform:uppercase;color:#4DF3C8}
+.nv-end p{margin:1.2rem 0 0;color:#ece7db}.nv-end .nv-row{justify-content:center;margin-top:1.4rem}
+.nv-confetti.wide{position:fixed;top:0;height:0}.nv-confetti.wide i{animation-iteration-count:infinite}
+@keyframes nvslide0{from{opacity:0;transform:translate(-50%,-46%)}to{opacity:1;transform:translate(-50%,-50%)}}
+@media (prefers-reduced-motion:reduce){.nv-end{animation:none}}
+html[data-nv-reduce="1"] .nv-end{animation:none!important}

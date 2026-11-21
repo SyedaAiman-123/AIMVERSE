@@ -5,7 +5,7 @@ import { Player, type Mode } from './Player'
 import { TourStops } from './TourStops'
 import { Motes } from './Effects'
 import { audio } from './audio'
-import { resetQuests, track } from './quests'
+import { getQuests, resetQuests, track, useQuests } from './quests'
 import { useSettings } from './settings'
 import { ZONES } from './layout'
 import { STOPS } from './tour'
@@ -33,6 +33,7 @@ export default function PlayScene({ touch }: { touch: boolean }) {
   const [paused, setPaused] = useState(false)
   const [mode, setMode] = useState<Mode>('foot')
   const [journal, setJournal] = useState(false)
+  const [finale, setFinale] = useState(false)
   const [entered, setEntered] = useState(false)
   const [intro, setIntro] = useState(() => { const q = new URLSearchParams(location.search); return !(q.get('intro') === '0' || q.has('x') || q.has('z') || q.has('drive') || q.has('car') || q.has('place')) })
   const [visited, setVisited] = useState<ReadonlySet<string>>(() => { try { return new Set<string>(JSON.parse(localStorage.getItem('aimverse:nedverse:tour') || '[]')) } catch { return new Set<string>() } })
@@ -40,7 +41,7 @@ export default function PlayScene({ touch }: { touch: boolean }) {
   const onEnter = useCallback(() => { setEntered(true); audio.unlock(); track('gate') }, [])
   // browsers only allow sound after a gesture: start the audio engine on the first key press / click / tap
   useEffect(() => { const go = () => audio.start(); window.addEventListener('keydown', go); window.addEventListener('pointerdown', go); return () => { window.removeEventListener('keydown', go); window.removeEventListener('pointerdown', go) } }, [])
-  const modal = !!card || paused || intro || journal
+  const modal = !!card || paused || intro || journal || finale
   // Low tier (phones, ?q=low): smaller shadow map, no bloom/SMAA, dpr 1. High tier otherwise (?q=high forces it).
   const qp = new URLSearchParams(location.search).get('q')
   const [forceLow, setForceLow] = useState(false)
@@ -61,10 +62,10 @@ export default function PlayScene({ touch }: { touch: boolean }) {
     const iv = window.setInterval(() => {
       if (!input.escape) return
       input.escape = false
-      if (intro) setIntro(false); else if (journal) setJournal(false); else if (card) setCard(null); else setPaused((p) => !p)
+      if (finale) setFinale(false); else if (intro) setIntro(false); else if (journal) setJournal(false); else if (card) setCard(null); else setPaused((p) => !p)
     }, 50)
     return () => window.clearInterval(iv)
-  }, [card, intro, journal])
+  }, [card, intro, journal, finale])
   // J toggles the quest journal
   useEffect(() => {
     const iv = window.setInterval(() => { if (!input.journal) return; input.journal = false; if (!intro && !paused && !card) { setJournal((j) => !j); audio.click() } }, 50)
@@ -82,6 +83,13 @@ export default function PlayScene({ touch }: { touch: boolean }) {
   }, [])
   useEffect(() => { if (place !== 'campus') track('room:' + place) }, [place])
   useEffect(() => { if (mode === 'driving') track('car') }, [mode])
+  // the ending: once every quest is complete (and it has not been shown yet) wait a moment for the last toast, then play the finale
+  const q = useQuests(), allDone = q.quests.every((x) => x.done), seen = q.events.has('finale')
+  useEffect(() => {
+    if (!allDone || seen || finale || intro) return
+    const t = window.setTimeout(() => { if (getQuests().quests.every((x) => x.done)) { track('finale'); setFinale(true); audio.finale() } }, 4500)
+    return () => window.clearTimeout(t)
+  }, [allDone, seen, finale, intro])
   const onInteract = useCallback((id: string) => {
     setCard(id)
     if (id === 'kiosk') track('kiosk'); else if (id.startsWith('stop:')) track(id); else if (/^(proj|skill|fact):/.test(id)) track(id)
@@ -98,10 +106,10 @@ export default function PlayScene({ touch }: { touch: boolean }) {
           {place === 'campus' && <TourStops visited={visited} nextId={nextId} entered={entered} />}
           {place !== 'campus' && <Suspense fallback={null}><Interior room={place as RoomId} viewed={viewed} /></Suspense>}
           <Motes />
-          <Suspense fallback={null}><Player colliders={colliders} onNear={setNear} onInteract={onInteract} onMode={setMode} entered={entered} onEnter={onEnter} intro={intro} onPlace={setPlace} /></Suspense>
+          <Suspense fallback={null}><Player colliders={colliders} onNear={setNear} onInteract={onInteract} onMode={setMode} entered={entered} onEnter={onEnter} intro={intro} onPlace={setPlace} finale={finale} /></Suspense>
         </Canvas>
       </div>
-      <PlayHud near={near} card={card} paused={paused} mode={mode} visited={visited} entered={entered} intro={intro} place={place} viewed={viewed} onIntroDone={() => setIntro(false)} onResetTour={() => { resetQuests(); setVisited(new Set()); setViewed(new Set()); setJournal(false) }} journal={journal} onCloseJournal={() => setJournal(false)} onOpenJournal={() => { if (!modal) setJournal(true) }} onCloseCard={() => setCard(null)} onResume={() => setPaused(false)} touch={touch} />
+      <PlayHud near={near} card={card} paused={paused} mode={mode} visited={visited} entered={entered} intro={intro} place={place} viewed={viewed} onIntroDone={() => setIntro(false)} onResetTour={() => { resetQuests(); setVisited(new Set()); setViewed(new Set()); setJournal(false) }} finale={finale} onKeepExploring={() => setFinale(false)} onReplayFinale={() => { setJournal(false); setFinale(true); audio.finale() }} journal={journal} onCloseJournal={() => setJournal(false)} onOpenJournal={() => { if (!modal) setJournal(true) }} onCloseCard={() => setCard(null)} onResume={() => setPaused(false)} touch={touch} />
     </Boundary>
   )
 }

@@ -13,30 +13,48 @@ let volume = 0.8
 let muted = (() => { try { return localStorage.getItem(KEY) === '1' } catch { return false } })()
 const subs = new Set<() => void>()
 let stepDist = 0, birdT = 4
-// ---- generative background music: soft pads + bass + a gentle plucked melody (Am - F - C - G), ~68 bpm ----
-let musicBus: GainNode | null = null, echo: DelayNode | null = null, nextBar = 0, barIdx = 0, musicTimer = 0
-const CH = [[220, 261.63, 329.63], [174.61, 220, 261.63], [261.63, 329.63, 392], [196, 246.94, 293.66]]
-const BASS = [110, 87.31, 130.81, 98], PENT = [0, 3, 5, 7, 10, 12, 15, 17]   // A-minor pentatonic steps (semitones above the chord root pick)
-const BEAT = 60 / 68
+// ---- generative background music: pads + pulsing bass + soft kick/hats + a brighter pluck melody over C - G - Am - F, 100 bpm.
+//      "energy" rises while you drive and fades when you stand still, so the score follows the play without ever getting loud. ----
+let musicBus: GainNode | null = null, echo: DelayNode | null = null, nextBar = 0, barIdx = 0, musicTimer = 0, energy = 0.3, energyTarget = 0.3, barsScheduled = 0
+const CH = [[261.63, 329.63, 392], [196, 246.94, 293.66], [220, 261.63, 329.63], [174.61, 220, 261.63]]
+const BASS = [65.41, 49, 55, 43.65]
+const BEAT = 60 / 100
+function kick(t: number, vol: number) {
+  if (!ctx || !musicBus) return
+  const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.12)
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0008, t + 0.2); o.connect(g); g.connect(musicBus); o.start(t); o.stop(t + 0.22)
+}
+function hat(t: number, vol: number) {
+  if (!ctx || !musicBus || !noiseBuf) return
+  const s = ctx.createBufferSource(); s.buffer = noiseBuf; const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 7000; const g = ctx.createGain()
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0004, t + 0.05); s.connect(hp); hp.connect(g); g.connect(musicBus); s.start(t, Math.random(), 0.07)
+}
 function scheduleBar(t: number, i: number) {
   if (!ctx || !musicBus || !echo) return
-  const ch = CH[i % 4], bar = BEAT * 4
+  const ch = CH[i % 4], bar = BEAT * 4, e = energy
+  barsScheduled++
   ch.forEach((f, k) => {   // pad: two soft oscillators per note through a low-pass
     [0, 5].forEach((det) => {
       const o = ctx!.createOscillator(), g = ctx!.createGain(), lp = ctx!.createBiquadFilter()
-      o.type = k === 0 ? 'triangle' : 'sine'; o.frequency.value = f; o.detune.value = det - 2; lp.type = 'lowpass'; lp.frequency.value = 1100
-      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.03, t + 1.4); g.gain.setValueAtTime(0.03, t + bar - 0.9); g.gain.linearRampToValueAtTime(0.0001, t + bar + 0.8)
-      o.connect(lp); lp.connect(g); g.connect(musicBus!); o.start(t); o.stop(t + bar + 1)
+      o.type = k === 0 ? 'triangle' : 'sine'; o.frequency.value = f; o.detune.value = det - 2; lp.type = 'lowpass'; lp.frequency.value = 1300 + e * 900
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.026, t + 0.9); g.gain.setValueAtTime(0.026, t + bar - 0.7); g.gain.linearRampToValueAtTime(0.0001, t + bar + 0.6)
+      o.connect(lp); lp.connect(g); g.connect(musicBus!); o.start(t); o.stop(t + bar + 0.8)
     })
   })
-  const b = ctx.createOscillator(), bg = ctx.createGain(); b.type = 'sine'; b.frequency.value = BASS[i % 4]
-  bg.gain.setValueAtTime(0.0001, t); bg.gain.linearRampToValueAtTime(0.09, t + 0.3); bg.gain.linearRampToValueAtTime(0.0001, t + bar); b.connect(bg); bg.connect(musicBus); b.start(t); b.stop(t + bar + 0.1)
-  for (let n = 0; n < 8; n++) {   // plucked arpeggio, sparse and random so the loop never feels mechanical
-    if (Math.random() < 0.38) continue
-    const tt = t + n * BEAT * 0.5, f = ch[Math.floor(Math.random() * 3)] * (Math.random() < 0.45 ? 2 : 1)
+  for (let n = 0; n < 8; n++) {   // pulsing eighth-note bass (octave jumps give it drive)
+    const tt = t + n * BEAT * 0.5, o = ctx.createOscillator(), g = ctx.createGain(), lp = ctx.createBiquadFilter()
+    o.type = 'triangle'; o.frequency.value = BASS[i % 4] * (n % 4 === 3 ? 2 : 1); lp.type = 'lowpass'; lp.frequency.value = 420
+    g.gain.setValueAtTime(0.0001, tt); g.gain.exponentialRampToValueAtTime(0.05 + 0.04 * e, tt + 0.012); g.gain.exponentialRampToValueAtTime(0.0006, tt + BEAT * 0.45)
+    o.connect(lp); lp.connect(g); g.connect(musicBus); o.start(tt); o.stop(tt + BEAT * 0.5)
+  }
+  for (let b = 0; b < 4; b++) { if (b % 2 === 0 || e > 0.55) kick(t + b * BEAT, 0.07 + 0.1 * e) }       // soft kick on 1 and 3 (all four beats when driving)
+  for (let b = 0; b < 8; b++) { if (b % 2 === 1 || e > 0.7) hat(t + b * BEAT * 0.5, 0.012 + 0.03 * e) }   // off-beat hats
+  for (let n = 0; n < 8; n++) {   // brighter arpeggio, denser with energy
+    if (Math.random() > 0.55 + 0.35 * e) continue
+    const tt = t + n * BEAT * 0.5, f = ch[Math.floor(Math.random() * 3)] * (Math.random() < 0.5 ? 2 : 1)
     const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'triangle'; o.frequency.value = f
-    g.gain.setValueAtTime(0.0001, tt); g.gain.exponentialRampToValueAtTime(0.035, tt + 0.015); g.gain.exponentialRampToValueAtTime(0.0004, tt + 0.7)
-    o.connect(g); g.connect(musicBus); g.connect(echo); o.start(tt); o.stop(tt + 0.75)
+    g.gain.setValueAtTime(0.0001, tt); g.gain.exponentialRampToValueAtTime(0.034, tt + 0.012); g.gain.exponentialRampToValueAtTime(0.0004, tt + 0.55)
+    o.connect(g); g.connect(musicBus); g.connect(echo); o.start(tt); o.stop(tt + 0.6)
   }
 }
 function startMusic() {
@@ -86,6 +104,7 @@ export const audio = {
     if (!ctx || !eng || !wind) return
     safe(() => {
       const t = ctx!.currentTime, v = Math.abs(o.carV)
+      energyTarget = o.driving ? 0.55 + Math.min(0.4, v / 40) : o.footSpeed > 0.4 ? 0.4 : 0.25; energy += (energyTarget - energy) * Math.min(1, o.dt * 0.6)
       const on = o.driving
       eng!.g.gain.setTargetAtTime(on ? 0.05 + Math.min(0.08, v * 0.004) : 0, t, 0.12)
       const f = 46 + v * 6.2 + (on ? 8 : 0)
@@ -130,6 +149,9 @@ export const audio = {
   },
   chime() { audio.notes([659.25, 830.61, 987.77], 0.11, 0.9) },
   click() { audio.notes([880], 0.0, 0.12, 'square', 0.04) },
+  /** the ending: a rising run of notes that resolves on a long chord */
+  finale() { audio.notes([261.63, 329.63, 392, 523.25, 659.25, 783.99], 0.16, 1.6); window.setTimeout(() => audio.notes([523.25, 659.25, 783.99, 1046.5], 0.02, 2.8, 'sine', 0.09), 1100) },
+  debug() { return { state: ctx?.state ?? 'none', bars: barsScheduled, energy } },
   unlock() { audio.notes([392, 523.25, 659.25, 783.99], 0.12, 1.2) },
   notes(freqs: number[], gap: number, dur: number, type: OscillatorType = 'sine', vol = 0.12) {
     safe(() => {
@@ -173,3 +195,4 @@ export const audio = {
     })
   },
 }
+if (typeof window !== 'undefined') (window as unknown as { __nedAudio?: unknown }).__nedAudio = audio   // QA hook (state / scheduled bars)

@@ -252,3 +252,6 @@ Lazy walk-in rooms (CS lab 15 workstations, library 6 skill shelves, exhibition 
 
 ## 2026-11-22 — NEDVERSE Phase 8: optimisation, accessibility, settings
 Triangles/frame 2.1M -> ~0.5M (tree LOD, 50 m instance cells, shrub LOD, player-following shadow box, no shadows indoors); settings (quality, day/evening, volume, reduced motion, FPS counter); focus traps; phone HUD layout; fixes: exhibit trigger, exit facing. Tests: drive 20/20, play 20/20, enter 13/13, campus 6/6, rooms 15/15, quests 11/11, settings 9/9; vite build OK. Firefox/Safari + real devices untested. Local only; awaiting approval.
+
+## 2026-11-22 — pre-deploy additions
+Cinematic finale (all quests done: "MUCH MORE TO COME in the career ahead", return to AIMVERSE / keep exploring), livelier reactive generative music. Tests: finale 8/8 and all earlier suites pass; build OK. Still local; push + deploy awaiting the owner's go-ahead and car-licence confirmation.

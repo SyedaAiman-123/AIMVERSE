@@ -10,6 +10,7 @@ import { BY_YEAR, YEARS, YEAR_NOTE } from '../data'
 import { audio } from './audio'
 import { Journal, LevelChip, QuestToasts } from './QuestUI'
 import { useFocusTrap } from './focus'
+import { Finale } from './Finale'
 import { isReduced, setSettings, useSettings } from './settings'
 import { input, resetInput } from './input'
 import { BRAND } from '../brand'
@@ -143,7 +144,7 @@ function RoomObjective({ place, viewed }: { place: RoomId; viewed: ReadonlySet<s
   )
 }
 
-export function PlayHud({ near, card, paused, mode, visited, entered, place, viewed, journal, onCloseJournal, onOpenJournal, intro, onIntroDone, onResetTour, onCloseCard, onResume, touch }: { near: string | null; card: string | null; paused: boolean; mode: Mode; visited: ReadonlySet<string>; entered: boolean; place: Place; viewed: ReadonlySet<string>; journal: boolean; onCloseJournal: () => void; onOpenJournal: () => void; intro: boolean; onIntroDone: () => void; onResetTour: () => void; onCloseCard: () => void; onResume: () => void; touch: boolean }) {
+export function PlayHud({ near, card, paused, mode, visited, entered, place, viewed, finale, onKeepExploring, onReplayFinale, journal, onCloseJournal, onOpenJournal, intro, onIntroDone, onResetTour, onCloseCard, onResume, touch }: { near: string | null; card: string | null; paused: boolean; mode: Mode; visited: ReadonlySet<string>; entered: boolean; place: Place; viewed: ReadonlySet<string>; finale: boolean; onKeepExploring: () => void; onReplayFinale: () => void; journal: boolean; onCloseJournal: () => void; onOpenJournal: () => void; intro: boolean; onIntroDone: () => void; onResetTour: () => void; onCloseCard: () => void; onResume: () => void; touch: boolean }) {
   const nearItem = near ? (SPECIAL[near] ? { label: SPECIAL[near].label, title: SPECIAL[near].title } : { label: INTERACTABLES.find((i) => i.id === near)?.label ?? '', title: near.startsWith('door:') ? 'PRESS E TO ENTER' : near.startsWith('exit:') ? 'PRESS E TO LEAVE' : /^(proj|skill|fact):/.test(near) ? 'PRESS E TO VIEW' : 'PRESS E TO INTERACT' }) : undefined
   const [help, setHelp] = useState(true)
   const st = useSettings(), pauseRef = useRef<HTMLDivElement>(null)
@@ -153,15 +154,16 @@ export function PlayHud({ near, card, paused, mode, visited, entered, place, vie
   useEffect(() => { if (!entered) return; setWelcome(true); const t = setTimeout(() => setWelcome(false), 5000); return () => clearTimeout(t) }, [entered])
   useEffect(() => { const t = setTimeout(() => setHelp(false), 14000); return () => clearTimeout(t) }, [])
   const panel = card ? getPanel(card) : null, c = card && !panel ? CARDS[card] : null
-  const modal = !!c || !!panel || journal
+  const modal = !!c || !!panel || journal || finale
   useFocusTrap(pauseRef, paused && !modal)
   return (
     <div className={'nv-hud' + (modal || paused ? ' is-modal' : '')} data-ui>
       <div className="nv-fade" aria-hidden />
       <div className="nv-speed" aria-hidden />
       {intro && <Story onDone={onIntroDone} />}
-      {!intro && <QuestToasts />}
-      {journal && <Journal onClose={onCloseJournal} onReset={onResetTour} />}
+      {!intro && !finale && <QuestToasts />}
+      {finale && <Finale onKeep={onKeepExploring} />}
+      {journal && <Journal onClose={onCloseJournal} onReset={onResetTour} onReplay={onReplayFinale} />}
       {!intro && !modal && !paused && <button className="nv-qbtn" data-ui onClick={onOpenJournal} aria-label="Open quest journal (J)">Quests<small>J</small></button>}
       {!intro && place === 'campus' && <Minimap entered={entered} visited={visited} />}
       {welcome && <div className="nv-toast" role="status"><b>Welcome to the campus</b><span>{STOPS.length} tour stops are now open — follow the arrow and the light beams.</span></div>}

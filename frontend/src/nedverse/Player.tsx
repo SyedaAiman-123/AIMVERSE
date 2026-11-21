@@ -28,7 +28,7 @@ declare global { interface Window { __ned?: PlayerDebug } }
 const wrap = (a: number) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a }
 const toWorld = (c: { x: number; z: number; yaw: number }, lx: number, lz: number) => ({ x: c.x + lx * Math.cos(c.yaw) + lz * Math.sin(c.yaw), z: c.z - lx * Math.sin(c.yaw) + lz * Math.cos(c.yaw) })
 
-export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter, intro, onPlace }: { colliders: Collider[]; onNear: (id: string | null) => void; onInteract: (id: string) => void; onMode: (m: Mode) => void; entered: boolean; onEnter: () => void; intro: boolean; onPlace: (p: Place) => void }) {
+export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter, intro, onPlace, finale }: { colliders: Collider[]; onNear: (id: string | null) => void; onInteract: (id: string) => void; onMode: (m: Mode) => void; entered: boolean; onEnter: () => void; intro: boolean; onPlace: (p: Place) => void; finale: boolean }) {
   const { camera, gl } = useThree()
   const { scene, animations } = useGLTF('/models/aiman-web.glb')
   const loco = useGLTF('/models/aiman-locomotion.glb')
@@ -59,6 +59,7 @@ export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter
     car: { x: cs?.[0] ?? CAR_START.x, z: cs?.[1] ?? CAR_START.z, yaw: cs?.[2] ?? CAR_START.yaw, v: 0, steer: 0, spin: 0, roll: 0, pitch: 0, yawRate: 0, fov: 55, thr: 0, sti: 0 },
   })
   const enteredRef = useRef(entered); enteredRef.current = entered
+  const finaleRef = useRef(finale); finaleRef.current = finale
   const introRef = useRef(intro); introRef.current = intro; const introT0 = useRef<number | null>(null)
   const cam = useMemo(() => ({ pos: new THREE.Vector3(), look: new THREE.Vector3(), init: false }), [])
   // the parked car is an obstacle for the avatar on foot (a box that follows the car)
@@ -253,7 +254,8 @@ export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter
       camera.position.copy(cam.pos); camera.lookAt(cam.look)
       const wf = 72; if (Math.abs(pc.fov - wf) > 0.05) { pc.fov += (wf - pc.fov) * (1 - Math.exp(-5 * dt)); pc.updateProjectionMatrix() }
     } else {
-      if (driving && state.clock.elapsedTime - s.lastLook > 1.6) s.camYaw += wrap(c.yaw + Math.PI - s.camYaw) * (1 - Math.exp(-3.2 * dt))
+      if (finaleRef.current) { s.camYaw += (isReduced() ? 0 : dt * 0.2); s.camPitch += (0.26 - s.camPitch) * Math.min(1, dt * 2); s.wantDist = driving ? 9 : 5.6 }
+      else if (driving && state.clock.elapsedTime - s.lastLook > 1.6) s.camYaw += wrap(c.yaw + Math.PI - s.camYaw) * (1 - Math.exp(-3.2 * dt))
       const tx = driving ? crx : rx, ty = driving ? 1.25 : s.y + 1.45, tz = driving ? crz : rz
       const cp = Math.cos(s.camPitch), dir = new THREE.Vector3(Math.sin(s.camYaw) * cp, Math.sin(s.camPitch), Math.cos(s.camYaw) * cp)
       const safe = clampCameraDistance(tx, tz, dir.x, dir.z, s.wantDist, colliders)

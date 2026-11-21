@@ -24,3 +24,8 @@ The brief shows a "QUEST MODE" label and a separate "LEVEL 3 - CAMPUS EXPLORER" 
 - The optional campus guide character; the main-site "AIMVERSE Quest" XP that previously rewarded portfolio browsing no longer exists (replaced entirely by NEDVERSE).
 - Real-GPU/phone performance, Firefox/Safari and accessibility passes are Phase 8.
 - The promo video and the PDF report still show the old Quest World (optional refresh).
+
+## Addendum (pre-deployment): finale and livelier music
+- **Finale.** When every one of the 12 quests is complete (shortly after the last reward toast), a cinematic ending plays once: letterbox bars, the camera slowly orbits the player, three title cards ("You have explored NEDVERSE." with the real counts of projects, skill shelves and milestones, then "2023 -> today", then **MUCH MORE TO COME in the career ahead.**), and a closing screen with **Return to the AIMVERSE portfolio** (link to `/`) and **Keep exploring**. Skippable; Esc = keep exploring; not repeated after a reload; the journal offers "Watch the finale" once everything is done. Reduced motion removes the camera orbit and animations.
+- **Music.** The generative score is now ~100 bpm with a pulsing bass, a soft kick and off-beat hats, brighter plucks and a rising "energy" while you drive (it relaxes when you stand still). Still synthesised, still quiet, same mute and volume controls. I cannot hear audio here; the test confirms the engine starts and schedules bars without errors.
+- Tests: finale 8/8 (new), quests 11/11, settings 9/9, driving 20/20, on-foot 20/20, arrival 13/13, rooms 15/15; production build OK.

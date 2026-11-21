@@ -34,7 +34,7 @@ export function QuestToasts() {
   return <div className="nv-toasts" role="status" aria-live="polite">{list.map((t) => <div key={t.key} className="nv-qtoast" style={{ borderColor: t.color }}><b style={{ color: t.color }}>{t.title}</b><span>{t.sub}</span></div>)}</div>
 }
 
-export function Journal({ onClose, onReset }: { onClose: () => void; onReset: () => void }) {
+export function Journal({ onClose, onReset, onReplay }: { onClose: () => void; onReset: () => void; onReplay: () => void }) {
   const g = useQuests()
   const [sure, setSure] = useState(false), box = useRef<HTMLDivElement>(null)
   useFocusTrap(box)
@@ -67,6 +67,7 @@ export function Journal({ onClose, onReset }: { onClose: () => void; onReset: ()
       </div>
       <div className="nv-row">
         <button className="nv-btn" onClick={onClose} autoFocus>Close (J / Esc)</button>
+        {g.quests.every((q) => q.done) && <button className="nv-btn ghost" onClick={onReplay}>Watch the finale</button>}
         {sure ? <><button className="nv-btn ghost" onClick={() => { onReset(); setSure(false) }}>Yes, erase my progress</button><button className="nv-btn ghost" onClick={() => setSure(false)}>Cancel</button></> : <button className="nv-btn ghost" onClick={() => setSure(true)}>Reset progress…</button>}
       </div>
     </div>
