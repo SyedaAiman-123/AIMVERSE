@@ -91,7 +91,7 @@ export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter
     else if (throttle * Math.sign(c.v || throttle) < 0) c.v -= Math.sign(c.v) * Math.min(Math.abs(c.v), 22 * Math.min(1, Math.abs(throttle) * 1.6) * STEP)   // braking
     else if (throttle !== 0) { const a = (target > c.v ? (c.v < 0 ? 6 : 8.5) : 10) * STEP; c.v += Math.max(-a, Math.min(a, target - c.v)) }
     else c.v -= Math.sign(c.v) * Math.min(Math.abs(c.v), (2.6 + Math.abs(c.v) * 0.25) * STEP)                     // coast
-    const want = -c.sti * 0.55 / (1 + Math.abs(c.v) * 0.09)
+    const want = -c.sti * 0.62 / (1 + Math.abs(c.v) * 0.07)
     c.steer += (want - c.steer) * (1 - Math.exp(-9 * STEP))
     c.yawRate += ((c.v / WHEELBASE) * Math.tan(c.steer) - c.yawRate) * (1 - Math.exp(-10 * STEP)); c.yaw += c.yawRate * STEP
     const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw), ox = c.x, oz = c.z

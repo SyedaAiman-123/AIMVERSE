@@ -7,6 +7,7 @@ import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferG
 function smooth(g: THREE.BufferGeometry) { g.deleteAttribute('normal'); g.deleteAttribute('uv'); const m = mergeVertices(g, 1e-4); m.computeVertexNormals(); return m }
 import { asphalt, grass, grassPatch, paving, rng } from './textures'
 import { KerbLine } from './Architecture'
+import { AVENUE, ROAD_LINKS, TURNAROUNDS } from './layout'
 
 const windU = { time: { value: 0 } }
 
@@ -41,14 +42,17 @@ export function Roads() {
       <Flat x={46} z={0} w={20} d={260} tex={asph} y={0.03} />                          {/* University Road (N-S) */}
       <Dashes from={[46, -125]} to={[46, 125]} />
       <Flat x={26} z={0} w={24} d={13} tex={asph} y={0.03} />                            {/* entrance road through the gate */}
-      <Flat x={-20} z={21} w={110} d={9} tex={asph} y={0.03} />                          {/* main avenue (west) */}
-      <Dashes from={[-74, 21]} to={[34, 21]} />
+      <Flat x={(AVENUE.x0 + AVENUE.x1) / 2} z={AVENUE.z} w={AVENUE.x1 - AVENUE.x0} d={AVENUE.w} tex={asph} y={0.03} />   {/* main avenue (west) */}
+      <Dashes from={[-74, 21]} to={[18, 21]} />
+      {TURNAROUNDS.map((t, i) => <Flat key={i} x={t.x} z={t.z} w={t.r * 2} d={t.r * 2} tex={asph} y={0.03} round />)}   {/* turnarounds: west end of the avenue, end of the north link */}
+      {ROAD_LINKS.map((r, i) => <group key={i}><Flat x={r.x} z={r.z} w={r.w} d={r.d} tex={asph} y={0.03} /><Dashes from={[r.x, r.z - r.d / 2 + 1]} to={[r.x, r.z + r.d / 2 - 1]} /></group>)}
       <Flat x={0} z={0} w={30} d={30} tex={pave} scale={4} y={0.05} round color="#f2eee4" />   {/* welcome plaza */}
       <Flat x={0} z={-24} w={6.4} d={19} tex={pave} scale={4} y={0.05} />               {/* path to the CS & IT building */}
       <Flat x={14} z={-30} w={22} d={4} tex={pave} scale={4} y={0.05} />                {/* cross path */}
       {/* striped kerbs along the entrance road + avenue (reference-photo detail) */}
-      <KerbLine from={[14, -6.6]} to={[36, -6.6]} /><KerbLine from={[14, 6.6]} to={[36, 6.6]} />
-      <KerbLine from={[-74, 16.4]} to={[34, 16.4]} /><KerbLine from={[-74, 25.6]} to={[34, 25.6]} />
+      <KerbLine from={[19.4, -6.6]} to={[36, -6.6]} /><KerbLine from={[19.4, 6.6]} to={[36, 6.6]} />
+      <KerbLine from={[13.4, 10]} to={[13.4, 16.4]} /><KerbLine from={[19.4, 6.6]} to={[19.4, 16.4]} /><KerbLine from={[13.4, -22]} to={[13.4, -10]} /><KerbLine from={[19.4, -22]} to={[19.4, -6.6]} />
+      <KerbLine from={[-74, 16.4]} to={[13.4, 16.4]} /><KerbLine from={[-74, 25.6]} to={[19.4, 25.6]} />
       <KerbLine from={[35.5, -125]} to={[35.5, -7.2]} /><KerbLine from={[35.5, 7.2]} to={[35.5, 125]} />
     </group>
   )

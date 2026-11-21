@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { BLOCKS, BOUNDS, COMMON, GARDEN, GATE_X, GROUND_PLAZA_R, ZONES } from './layout'
+import { AVENUE, BLOCKS, BOUNDS, COMMON, GARDEN, GATE_X, GROUND_PLAZA_R, ROAD_LINKS, TURNAROUNDS, ZONES } from './layout'
 import { STOPS } from './tour'
 
 /* Mini-map: a top-down schematic drawn from layout.ts (the same data the 3D scene and collisions use), north up.
@@ -14,7 +14,9 @@ function drawBase(c: CanvasRenderingContext2D) {
   c.fillStyle = '#35502f'; c.fillRect(0, 0, W, H)
   c.fillStyle = '#3d3f45'                                                   // roads
   const rect = (x: number, z: number, w: number, d: number) => c.fillRect(sx(x - w / 2), sz(z - d / 2), sc(w), sc(d))
-  rect(46, 0, 20, 260); rect(26, 0, 24, 13); rect(-20, 21, 110, 9)
+  rect(46, 0, 20, 260); rect(26, 0, 24, 13); rect((AVENUE.x0 + AVENUE.x1) / 2, AVENUE.z, AVENUE.x1 - AVENUE.x0, AVENUE.w)
+  for (const r of ROAD_LINKS) rect(r.x, r.z, r.w, r.d)
+  for (const t of TURNAROUNDS) { c.beginPath(); c.arc(sx(t.x), sz(t.z), sc(t.r), 0, 7); c.fill() }
   c.fillStyle = '#b9b3a0'; c.beginPath(); c.arc(sx(0), sz(0), sc(GROUND_PLAZA_R), 0, 7); c.fill()   // plaza
   c.beginPath(); c.arc(sx(GARDEN.x), sz(GARDEN.z), sc(GARDEN.r), 0, 7); c.fill()                  // garden
   c.fillStyle = '#4aa3c8'; c.beginPath(); c.arc(sx(GARDEN.x), sz(GARDEN.z), sc(3), 0, 7); c.fill()  // fountain

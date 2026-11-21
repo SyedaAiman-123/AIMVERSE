@@ -32,3 +32,12 @@ Also new: **zone signboards** (blue/gold, "ZONE E CENTRAL GARDEN"), an expanded 
 ## Decisions for you
 1. Approve Phase 5, or tell me what to change (layout, sizes, looks).
 2. Then Phase 6: portfolio interactions inside these places (CS-lab workstations with the real projects, library skill shelves, auditorium achievements, campus guide, kiosk map).
+
+## Phase 5b - drivable road network (feedback: hard to reach the left/right roads after the gate)
+Cause: after the gate the entrance road ended in the plaza (planter, benches, kiosk) and the main avenue was a separate dead end that the guard rooms cut off, so nothing led left or right.
+- **Two link roads just inside the gate** (6 m wide, dashed centre line, kerbs): RIGHT/south onto the main avenue (the avenue now starts exactly there), LEFT/north to a turning circle by the CS path.
+- **Rounded junction corners** (two asphalt pads) so the turn off the entrance road is easy at speed.
+- **Turnaround circle** at the west end of the avenue; avenue shortened to end at the gate's guard rooms (it used to run into them).
+- Removed obstacles on the new roads (two lamps, two palms, one plaza bench). Trees are kept out of the road corridors. The mini-map shows the new roads.
+- Car steering is a little tighter at low and medium speed.
+- **Proof:** `scripts/route_check.mjs` (grid search with the real colliders and a 1.05 m car radius) finds every destination reachable from the gate: avenue stops, turnaround, common area, north turnaround, contact stop. A scripted driver (`scripts/test_route.mjs`) then actually drove gate -> right link -> avenue -> west end, and gate -> left link -> north turnaround, through the real keyboard path. Regression: driving 20/20, on-foot 20/20, arrival 13/13, campus 6/6. The scripted driver is timing-sensitive under software rendering (one earlier run of the left route failed, the re-run passed), so treat it as a smoke test, not a guarantee.

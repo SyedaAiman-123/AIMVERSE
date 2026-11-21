@@ -32,6 +32,11 @@ export const ZONES: Zone[] = [
 export const CONTEXT_BLOCKS: [number, number, number][] = [[104, -70, 3], [108, -30, 4], [104, 14, 3], [110, 52, 4], [106, 92, 3]]
 
 export const GATE_X = 22
+/** Drive-through link roads just inside the gate: the entrance road forks LEFT (north, to the CS path / cross path) and RIGHT (south, onto the main avenue).
+    The avenue now ends at the gate's guard rooms (x = 19.4) and finishes in a turnaround circle at its west end. */
+export const ROAD_LINKS = [{ x: 16.4, z: 11.5, w: 6, d: 10.4 }, { x: 16.4, z: -14.2, w: 6, d: 15.6 }]
+export const AVENUE = { x0: -75, x1: 19.4, z: 21, w: 9 }
+export const TURNAROUNDS = [{ x: -70, z: 21, r: 7 }, { x: 16.4, z: -24, r: 4.5 }, { x: 15.8, z: 5.2, r: 4.5 }, { x: 15.8, z: -5.2, r: 4.5 }]   // west end of the avenue; end of the north link; two rounded junction corners just inside the gate
 export const KIOSK = { pos: [-5, 0, -5] as [number, number, number], rot: Math.PI / 2 + 0.2 }
 export const BOARD = { pos: [-8.5, 0, 7] as [number, number, number], rot: Math.PI / 2 + 0.5 }
 export const SIGNPOST = { pos: [-12, 0, 12] as [number, number, number], rot: Math.PI / 2 - 0.35, items: ['CS & IT Dept  ↑', 'Central Garden  ←', 'Auditorium  ←', 'Library  ↙', 'Student Common Area  ↓'] }
@@ -55,6 +60,7 @@ export function buildScatter() {
   const r = rng(2024)
   const inRect = (x: number, z: number, cx: number, cz: number, w: number, d: number, pad: number) => Math.abs(x - cx) < w / 2 + pad && Math.abs(z - cz) < d / 2 + pad
   const blocked = (x: number, z: number) =>
+    ROAD_LINKS.some((r) => inRect(x, z, r.x, r.z, r.w, r.d, 3)) || TURNAROUNDS.some((t) => Math.hypot(x - t.x, z - t.z) < t.r + 4) ||
     Math.hypot(x - GARDEN.x, z - GARDEN.z) < GARDEN.r + 5 || inRect(x, z, COMMON.x, COMMON.z + 3, 16, 22, 3) || BLOCKS.some((b) => inRect(x, z, b.pos[0], b.pos[2], (b.rot ?? 0) ? b.d : b.w, (b.rot ?? 0) ? b.w : b.d, 7)) ||
     Math.hypot(x, z) < 18 || inRect(x, z, 0, -40, 42, 18, 6) || inRect(x, z, 0, -24, 6.4, 19, 3) || inRect(x, z, 26, 0, 26, 14, 2) || inRect(x, z, -20, 21, 110, 9, 2.5) ||
     inRect(x, z, 46, 0, 22, 260, 1) || inRect(x, z, 14, 32, 12, 8, 3) || inRect(x, z, -12, 32, 12, 8, 3) || inRect(x, z, -46, -34, 30, 16, 5) || inRect(x, z, 14, -30, 22, 4, 2) || inRect(x, z, 22, 0, 4, 28, 6)
@@ -62,13 +68,13 @@ export function buildScatter() {
   const zones: [number, number, number, number, number][] = [[-76, 33, -96, 13, 46], [-76, 33, 28, 62, 22], [58, 74, -110, 110, 16]]
   const nearStop = (x: number, z: number) => STOPS.some((st) => Math.hypot(st.x - x, st.z - z) < 4.5) || Math.hypot(CAR_START.x - x, CAR_START.z - z) < 6
   for (const [x0, x1, z0, z1, n] of zones) { let c = 0; while (c < n && guard++ < 4000) { const x = x0 + r() * (x1 - x0), z = z0 + r() * (z1 - z0); if ((blocked(x, z) && x < 56) || nearStop(x, z)) continue; trees.push({ x, z, s: 0.8 + r() * 0.55, rot: r() * 6.28 }); c++ } }
-  const palms = ([[26, -15, 1], [26, 15, 1.05], [14, -13, 0.95], [14, 13.5, 1], [-14, -14, 1.1], [-9, 13.5, 0.9]] as number[][]).map(([x, z, s]) => ({ x, z, s }))
+  const palms = ([[26, -15, 1], [26, 15, 1.05], [-14, -14, 1.1], [-9, 13.5, 0.9]] as number[][]).map(([x, z, s]) => ({ x, z, s }))
   const shrubs: { x: number; z: number; s: number; c: number }[] = []
   for (let i = 0; i < 22; i++) { const a = (i / 22) * Math.PI * 2; shrubs.push({ x: Math.cos(a) * 4.6, z: Math.sin(a) * 4.6, s: 0.9 + r() * 0.5, c: Math.floor(r() * 6) }) }
   for (let i = 0; i < 16; i++) shrubs.push({ x: -18 + i * 2.4 + r() * 0.6, z: -30.2 + r() * 0.5, s: 0.8 + r() * 0.5, c: i % 3 === 0 ? 0 : 3 + (i % 3) })
   for (let i = 0; i < 9; i++) { shrubs.push({ x: -4.2, z: -17 - i * 2, s: 0.7, c: 3 }); shrubs.push({ x: 4.2, z: -17 - i * 2, s: 0.7, c: 4 }) }
-  const lamps: [number, number][] = [[18, -7.6], [30, -7.6], [18, 7.6], [30, 7.6], ...[-60, -42, -24, -6, 12].map((x) => [x, 15.2] as [number, number]), [-4.2, -20], [4.2, -26], [-4.2, -32], [-15, -9], [15, 9]]
-  const benches = [...Array.from({ length: 6 }, (_, i) => { const a = (i / 6) * Math.PI * 2 + 0.3; return { x: Math.cos(a) * 12.6, z: Math.sin(a) * 12.6, r: -a - Math.PI / 2 + Math.PI } }), { x: -5.5, z: -22, r: Math.PI / 2 }, { x: 5.5, z: -28, r: -Math.PI / 2 }]
+  const lamps: [number, number][] = [[30, -7.6], [30, 7.6], ...[-60, -42, -24, -6, 12].map((x) => [x, 15.2] as [number, number]), [-4.2, -20], [4.2, -26], [-4.2, -32], [-15, -9]]
+  const benches = [...Array.from({ length: 6 }, (_, i) => { const a = (i / 6) * Math.PI * 2 + 0.3; return { x: Math.cos(a) * 12.6, z: Math.sin(a) * 12.6, r: -a - Math.PI / 2 + Math.PI } }).filter((b) => Math.hypot(b.x - 15.8, b.z - 5.2) > 6 && Math.hypot(b.x - 15.8, b.z + 5.2) > 6), { x: -5.5, z: -22, r: Math.PI / 2 }, { x: 5.5, z: -28, r: -Math.PI / 2 }]
   // garden: flower beds on the diagonals (the four axis paths stay open), four benches facing the fountain
   for (let i = 0; i < 8; i++) { const a = Math.PI / 8 + (i * Math.PI) / 4; for (const k of [-0.07, 0.07]) shrubs.push({ x: GARDEN.x + Math.cos(a + k) * 6.4, z: GARDEN.z + Math.sin(a + k) * 6.4, s: 0.75, c: (i + (k > 0 ? 1 : 0)) % 6 }) }
   for (let i = 0; i < 4; i++) { const a = Math.PI / 4 + (i * Math.PI) / 2; benches.push({ x: GARDEN.x + Math.cos(a) * 8.6, z: GARDEN.z + Math.sin(a) * 8.6, r: -a - Math.PI / 2 }) }

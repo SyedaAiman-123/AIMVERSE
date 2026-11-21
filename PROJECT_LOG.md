@@ -240,3 +240,6 @@ Cinematic 2023-journey intro, generative background music, removed head arrow + 
 
 ## 2026-11-21 — NEDVERSE Phase 5: campus expansion
 Library, Auditorium & Exhibition Hall, Central Garden (animated fountain), Student Common Area, zone signboards, expanded signpost, mini-map. Colliders generated from layout.ts incl. rotated blocks. Tests: campus 6/6, arrival 13/13, driving 20/20, on-foot 20/20. Report: documentation/NEDVERSE_PHASE5_REPORT.md. Local only; awaiting approval.
+
+## 2026-11-21 — Phase 5b road network
+Link roads left/right inside the gate, rounded corners, turnarounds, avenue shortened, obstacles removed, steering tweak. route_check.mjs (reachability) + scripted driver both routes. Regression suites pass. Local only.
