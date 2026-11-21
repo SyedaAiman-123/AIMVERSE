@@ -442,8 +442,8 @@
   var chat = still["chat"], quest = still["quest"];
   var cH = 760, cW = Math.round(cH * chat.width / chat.height);
   var cc7 = card(S7, chat, 1210, 520, cW, cH, LIME, "screen chat");
-  var qH = 700, qW = Math.round(qH * quest.width / quest.height);
-  var qc7 = card(S7, quest, 1640, 560, qW, qH, PINK, "screen quest");
+  var qW = 600, qH = Math.round(qW * quest.height / quest.width); // the Quest screenshot is now landscape (3D Quest World)
+  var qc7 = card(S7, quest, 1545, 650, qW, qH, PINK, "screen quest");
   for (q = 0; q < 2; q++) { slideIn(cc7[q], 0.3, 140, 0.65); slideIn(qc7[q], 0.7, 140, 0.65); }
   tf(cc7[1]).property("Rotation").setValue(-2); tf(cc7[0]).property("Rotation").setValue(-2);
   tf(qc7[1]).property("Rotation").setValue(2.5); tf(qc7[0]).property("Rotation").setValue(2.5);
