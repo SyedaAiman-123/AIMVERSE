@@ -1,0 +1,24 @@
+/* NEDVERSE in-world UI (Phase 4 minimal set). Uses the portfolio's colours; sits over the 3D view without covering the centre. */
+.nv-hud{position:fixed;inset:0;pointer-events:none;font-family:"Bricolage Grotesque",Segoe UI,Arial,sans-serif;color:#ece7db;z-index:10}
+.nv-hud>*{pointer-events:auto}
+.nv-tag{position:absolute;left:16px;top:14px;display:flex;flex-direction:column;gap:2px;padding:8px 12px;background:rgba(8,9,13,.62);backdrop-filter:blur(6px);border-left:3px solid #ff4a1c;max-width:min(360px,70vw);pointer-events:none}
+.nv-tag b{font-size:1.05rem;letter-spacing:.08em}.nv-tag span{font:500 .7rem Consolas,monospace;letter-spacing:.1em;color:#d6d1c4;text-transform:uppercase}.nv-tag small{font:500 .6rem Consolas,monospace;color:#9a968c}
+.nv-prompt{position:absolute;left:50%;bottom:clamp(110px,18vh,170px);transform:translateX(-50%);display:flex;align-items:center;gap:12px;padding:.6rem 1rem;background:rgba(8,9,13,.82);border:1px solid #4DF3C8;color:inherit;font:inherit;cursor:pointer;box-shadow:0 0 28px rgba(77,243,200,.25);animation:nvpop .25s both}
+.nv-prompt kbd{display:grid;place-items:center;width:2.2rem;height:2.2rem;background:#4DF3C8;color:#07080c;font:800 1.05rem Consolas,monospace}
+.nv-prompt span{display:flex;flex-direction:column;text-align:left}.nv-prompt b{font-size:.95rem;letter-spacing:.06em}.nv-prompt small{font:500 .72rem Consolas,monospace;color:#b9b5a8}
+@keyframes nvpop{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translateX(-50%)}}
+.nv-help{position:absolute;left:16px;bottom:16px;display:flex;flex-wrap:wrap;gap:6px 14px;max-width:min(520px,92vw);padding:10px 14px;background:rgba(8,9,13,.7);backdrop-filter:blur(6px);font:500 .74rem Consolas,monospace;color:#d6d1c4}
+.nv-help b{width:100%;font:800 .8rem "Bricolage Grotesque",sans-serif;letter-spacing:.08em;color:#ff4a1c}
+.nv-help kbd,.nv-prompt kbd{border-radius:3px}.nv-help kbd{border:1px solid #6a665c;padding:0 .4em;margin-right:2px;color:#fff}
+.nv-card,.nv-pause{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,92vw);padding:22px 24px;background:rgba(8,9,13,.93);border:1px solid #ff4a1c;box-shadow:0 0 60px rgba(255,74,28,.25);animation:nvcard .25s both}
+@keyframes nvcard{from{opacity:0;transform:translate(-50%,-46%)}to{opacity:1;transform:translate(-50%,-50%)}}
+.nv-card h3,.nv-pause h3{margin:0 0 .6rem;font-size:1.7rem;letter-spacing:-.03em}.nv-card p,.nv-pause p{margin:.45rem 0;line-height:1.5;color:#d6d1c4;font-size:.95rem}
+.nv-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:.8rem}
+.nv-btn{display:inline-block;margin-top:.8rem;padding:.6rem 1.1rem;background:#ff4a1c;color:#07080c;font:800 .78rem Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;border:1px solid #ff4a1c;cursor:pointer;text-decoration:none}
+.nv-btn:hover,.nv-btn:focus-visible{background:#ece7db;border-color:#ece7db}.nv-btn.ghost{background:transparent;color:#ece7db;border-color:#6a665c}.nv-row .nv-btn{margin-top:0}
+.nv-stick{position:absolute;left:clamp(16px,5vw,40px);bottom:clamp(22px,6vh,50px);width:124px;height:124px;border-radius:50%;border:1px solid rgba(236,231,219,.35);background:rgba(8,9,13,.4);touch-action:none}
+.nv-stick span{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#4DF3C8 55%,#127a64);box-shadow:0 0 18px #4DF3C8aa}
+.nv-actions{position:absolute;right:clamp(16px,5vw,40px);bottom:clamp(22px,6vh,50px);display:flex;gap:12px;align-items:flex-end}
+.nv-round{width:66px;height:66px;border-radius:50%;border:2px solid rgba(236,231,219,.5);background:rgba(8,9,13,.55);color:#ece7db;font:800 .8rem Consolas,monospace;touch-action:manipulation}
+.nv-round.on{background:#ff4a1c;color:#07080c;border-color:#ff4a1c}.nv-round.act{width:78px;height:78px;font-size:1.3rem;opacity:.45}.nv-round.act.ready{opacity:1;border-color:#4DF3C8;background:rgba(77,243,200,.2)}
+@media (prefers-reduced-motion:reduce){.nv-prompt,.nv-card,.nv-pause{animation:none}}

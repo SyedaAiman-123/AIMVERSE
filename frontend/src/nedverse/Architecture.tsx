@@ -99,7 +99,7 @@ export function Gate({ x = 22 }: { x?: number }) {
 
 /** Welcome kiosk totem with a glowing screen (static in the prototype; interactive in Phase 6). */
 export function Kiosk({ pos, rot = 0 }: { pos: [number, number, number]; rot?: number }) {
-  const screen = useMemo(() => textTex('kiosk-screen', ['WELCOME', 'NEDVERSE', 'Campus map · Destinations', 'PRESS E'], 512, 900, { bg: '#0b1f33', fg: '#e8f3ff', size: 64, lineGap: 1.55 }), [])
+  const screen = useMemo(() => textTex('kiosk-screen', ['WELCOME', 'NEDVERSE', 'Campus map', 'PRESS E'], 512, 900, { bg: '#0b1f33', fg: '#e8f3ff', size: 64, lineGap: 1.55 }), [])
   const logo = useMemo(() => logoTexture(), [])
   return (
     <group position={pos} rotation={[0, rot, 0]}>

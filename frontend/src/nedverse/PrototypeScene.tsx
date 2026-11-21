@@ -6,8 +6,8 @@ import { ToneMappingMode } from 'postprocessing'
 import * as THREE from 'three'
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js'
 import { Block, Cars, DisclaimerBoard, Gate, Kiosk, SignPost } from './Architecture'
-import { Benches, BoundaryWall, FarField, Ground, Lamps, Palms, PlazaPlanter, Roads, Shrubs, Trees, type TreeSpot } from './Landscape'
-import { rng } from './textures'
+import { Benches, BoundaryWall, FarField, Ground, Lamps, Palms, PlazaPlanter, Roads, Shrubs, Trees } from './Landscape'
+import { BLOCKS, BOARD, CONTEXT_BLOCKS, GATE_X, KIOSK, SIGNPOST, buildScatter } from './layout'
 import { AVATAR_HEIGHT, measureGrounding } from '../grounding'
 
 /* PHASE 3 PROTOTYPE — "Main Gate & Welcome Plaza" of NEDVERSE (unofficial, NED-inspired). Local metres: plaza centre = origin,
@@ -57,29 +57,10 @@ function CameraRig({ cam, still, free }: { cam: Cam; still: boolean; free: boole
   return null
 }
 
-function useScatter() {
-  return useMemo(() => {
-    const r = rng(2024)
-    const inRect = (x: number, z: number, cx: number, cz: number, w: number, d: number, pad: number) => Math.abs(x - cx) < w / 2 + pad && Math.abs(z - cz) < d / 2 + pad
-    const blocked = (x: number, z: number) =>
-      Math.hypot(x, z) < 18 || inRect(x, z, 0, -40, 42, 18, 6) || inRect(x, z, 0, -24, 6.4, 19, 3) || inRect(x, z, 26, 0, 26, 14, 2) || inRect(x, z, -20, 21, 110, 9, 2.5) ||
-      inRect(x, z, 46, 0, 22, 260, 1) || inRect(x, z, 14, 32, 12, 8, 3) || inRect(x, z, -12, 32, 12, 8, 3) || inRect(x, z, -46, -34, 30, 16, 5) || inRect(x, z, 14, -30, 22, 4, 2) || inRect(x, z, 22, 0, 4, 28, 6)
-    const trees: TreeSpot[] = []; let guard = 0
-    const zones: [number, number, number, number, number][] = [[-76, 33, -96, 13, 46], [-76, 33, 28, 62, 22], [58, 74, -110, 110, 16]]
-    for (const [x0, x1, z0, z1, n] of zones) { let c = 0; while (c < n && guard++ < 4000) { const x = x0 + r() * (x1 - x0), z = z0 + r() * (z1 - z0); if (blocked(x, z) && x < 56) continue; trees.push({ x, z, s: 0.8 + r() * 0.55, rot: r() * 6.28 }); c++ } }
-    const palms = [[26, -15, 1], [26, 15, 1.05], [14, -13, 0.95], [14, 13.5, 1], [-14, -14, 1.1], [-9, 13.5, 0.9]].map(([x, z, s]) => ({ x, z, s }))
-    const shrubs: { x: number; z: number; s: number; c: number }[] = []
-    for (let i = 0; i < 22; i++) { const a = (i / 22) * Math.PI * 2; shrubs.push({ x: Math.cos(a) * 4.6, z: Math.sin(a) * 4.6, s: 0.9 + r() * 0.5, c: Math.floor(r() * 6) }) }
-    for (let i = 0; i < 16; i++) shrubs.push({ x: -18 + i * 2.4 + r() * 0.6, z: -30.2 + r() * 0.5, s: 0.8 + r() * 0.5, c: i % 3 === 0 ? 0 : 3 + (i % 3) })
-    for (let i = 0; i < 9; i++) { shrubs.push({ x: -4.2, z: -17 - i * 2, s: 0.7, c: 3 }); shrubs.push({ x: 4.2, z: -17 - i * 2, s: 0.7, c: 4 }) }
-    const lamps: [number, number][] = [[18, -7.6], [30, -7.6], [18, 7.6], [30, 7.6], ...[-60, -42, -24, -6, 12].map((x) => [x, 15.2] as [number, number]), [-4.2, -20], [4.2, -26], [-4.2, -32], [-15, -9], [15, 9]]
-    const benches = [...Array.from({ length: 6 }, (_, i) => { const a = (i / 6) * Math.PI * 2 + 0.3; return { x: Math.cos(a) * 12.6, z: Math.sin(a) * 12.6, r: -a - Math.PI / 2 + Math.PI } }), { x: -5.5, z: -22, r: Math.PI / 2 }, { x: 5.5, z: -28, r: -Math.PI / 2 }]
-    return { trees, palms, shrubs, lamps, benches }
-  }, [])
-}
-
-export function World() {
-  const sc = useScatter()
+export type Quality = 'low' | 'high'
+export function World({ withAvatar = true, quality = 'high' }: { withAvatar?: boolean; quality?: Quality }) {
+  const low = quality === 'low'
+  const sc = useMemo(buildScatter, [])
   return (
     <>
       <color attach="background" args={['#9fc4e8']} />
@@ -87,33 +68,30 @@ export function World() {
       <Sky distance={4500} sunPosition={SUN.clone().multiplyScalar(100).toArray()} turbidity={1.6} rayleigh={3.2} mieCoefficient={0.0025} mieDirectionalG={0.75} />
       <hemisphereLight args={['#b4cdf2', '#7a8a58', 0.95]} />
       <directionalLight position={[70, 35, -50]} intensity={0.55} color="#a9c0ea" />
-      <directionalLight position={SUN.clone().multiplyScalar(110).toArray()} intensity={3.0} color="#fff0d8" castShadow shadow-mapSize={[4096, 4096]} shadow-camera-left={-80} shadow-camera-right={80} shadow-camera-top={80} shadow-camera-bottom={-80} shadow-camera-near={1} shadow-camera-far={300} shadow-bias={-0.0004} shadow-normalBias={0.04} />
+      <directionalLight position={SUN.clone().multiplyScalar(110).toArray()} intensity={3.0} color="#fff0d8" castShadow shadow-mapSize={low ? [1536, 1536] : [4096, 4096]} shadow-camera-left={-80} shadow-camera-right={80} shadow-camera-top={80} shadow-camera-bottom={-80} shadow-camera-near={1} shadow-camera-far={300} shadow-bias={-0.0004} shadow-normalBias={0.04} />
       <Ground />
       <Roads />
       <BoundaryWall />
-      <Gate x={22} />
+      <Gate x={GATE_X} />
       <PlazaPlanter />
-      <Block pos={[0, 0, -40]} w={42} d={18} floors={3} porch />
-      <Block pos={[-46, 0, -34]} w={30} d={16} floors={3} />
-      <Block pos={[14, 0, 32]} w={12} d={8} floors={1} floorH={4.4} roofKit={false} />
-      <Block pos={[-12, 0, 32]} w={12} d={8} floors={1} floorH={4.4} roofKit={false} />
-      <Kiosk pos={[-5, 0, -5]} rot={Math.PI / 2 + 0.2} />
-      <DisclaimerBoard pos={[-8.5, 0, 7]} rot={Math.PI / 2 + 0.5} />
-      <SignPost pos={[-12, 0, 12]} rot={Math.PI / 2 - 0.35} items={['CS & IT Dept  ↑', 'Library  ←', 'Auditorium  ←']} />
+      {BLOCKS.map((b) => <Block key={b.id} pos={b.pos} w={b.w} d={b.d} floors={b.floors} floorH={b.floorH} porch={b.porch} roofKit={b.roofKit} />)}
+      <Kiosk pos={KIOSK.pos} rot={KIOSK.rot} />
+      <DisclaimerBoard pos={BOARD.pos} rot={BOARD.rot} />
+      <SignPost pos={SIGNPOST.pos} rot={SIGNPOST.rot} items={SIGNPOST.items} />
       <Cars />
       <FarField />
-      {[[104, -70, 3], [108, -30, 4], [104, 14, 3], [110, 52, 4], [106, 92, 3]].map(([x, z, f], i) => <Block key={i} pos={[x, 0, z]} w={20 + (i % 3) * 4} d={12} floors={f} wall={['#d9c8a4', '#cdbd9a', '#dccfae'][i % 3]} rot={Math.PI / 2} roofKit />)}
+      {CONTEXT_BLOCKS.map(([x, z, f], i) => <Block key={i} pos={[x, 0, z]} w={20 + (i % 3) * 4} d={12} floors={f} wall={['#d9c8a4', '#cdbd9a', '#dccfae'][i % 3]} rot={Math.PI / 2} roofKit />)}
       <Trees spots={sc.trees} />
       <Palms spots={sc.palms} />
       <Shrubs spots={sc.shrubs} />
       <Lamps spots={sc.lamps} />
       <Benches spots={sc.benches} />
-      <Safe><Suspense fallback={null}><Avatar /></Suspense></Safe>
+      {withAvatar && <Safe><Suspense fallback={null}><Avatar /></Suspense></Safe>}
       <EffectComposer multisampling={0}>
-        <SMAA />
-        <Bloom mipmapBlur intensity={0.35} luminanceThreshold={0.95} luminanceSmoothing={0.2} />
-        <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
-        <Vignette offset={0.3} darkness={0.45} />
+        {low ? <ToneMapping mode={ToneMappingMode.ACES_FILMIC} /> : <SMAA />}
+        {low ? <Vignette offset={0.3} darkness={0.4} /> : <Bloom mipmapBlur intensity={0.35} luminanceThreshold={0.95} luminanceSmoothing={0.2} />}
+        {low ? <></> : <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />}
+        {low ? <></> : <Vignette offset={0.3} darkness={0.45} />}
       </EffectComposer>
     </>
   )
