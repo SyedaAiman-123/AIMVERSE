@@ -1,5 +1,5 @@
 /**
- * Retrieval / grounding evaluation for Ask Aiman AI.
+ * Retrieval / grounding evaluation for AIM AI.
  * Runs WITHOUT an API key (BM25 path), so it measures the part of the pipeline that decides *what the model is allowed to see*
  * and *whether to refuse*. Run:  cd rag-system && npm run eval
  */
@@ -64,7 +64,7 @@ async function main() {
     if (pass) okR++
     rrows.push(`| ${pass ? '✅' : '❌'} | ${q} | ${res.mode} | ${retrieve(q, null, 5, {}).bmConf.toFixed(2)} |`)
   }
-  const md = `# Ask Aiman AI — retrieval & grounding evaluation\n\nRun at ${new Date().toISOString()} (no API key → BM25 retrieval + extractive fallback).\n\n## Answerable questions: ${okA}/${ANSWERABLE.length}\nPass = expected source/phrase is in the top-3 retrieved passages AND the system does not refuse.\n\n| | Question | Top-3 sources | BM25 coverage | Mode |\n|---|---|---|---|---|\n${rows.join('\n')}\n\n## Must-refuse questions: ${okR}/${MUST_REFUSE.length}\nPass = the system refuses or blocks (no model call, nothing invented).\n\n| | Question | Mode | BM25 coverage |\n|---|---|---|---|\n${rrows.join('\n')}\n`
+  const md = `# AIM AI — retrieval & grounding evaluation\n\nRun at ${new Date().toISOString()} (no API key → BM25 retrieval + extractive fallback).\n\n## Answerable questions: ${okA}/${ANSWERABLE.length}\nPass = expected source/phrase is in the top-3 retrieved passages AND the system does not refuse.\n\n| | Question | Top-3 sources | BM25 coverage | Mode |\n|---|---|---|---|---|\n${rows.join('\n')}\n\n## Must-refuse questions: ${okR}/${MUST_REFUSE.length}\nPass = the system refuses or blocks (no model call, nothing invented).\n\n| | Question | Mode | BM25 coverage |\n|---|---|---|---|\n${rrows.join('\n')}\n`
   fs.mkdirSync(new URL('./results/', import.meta.url), { recursive: true })
   fs.writeFileSync(new URL('./results/rag-eval.md', import.meta.url), md)
   console.log(md)

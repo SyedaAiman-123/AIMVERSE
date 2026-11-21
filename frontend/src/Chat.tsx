@@ -85,7 +85,7 @@ export default function Chat({ msgs, setMsgs, onClose, onProject, onSection }: {
         )}
         <header>
           <div>
-            <p className="mono">Ask Aiman AI</p>
+            <p className="mono">Ask {BRAND.assistant}</p>
             <h2 id="chat-title">Your guide to {BRAND.name}</h2>
           </div>
           <button className="mono" onClick={onClose} aria-label="Close chat">Close ✕</button>
@@ -114,7 +114,7 @@ export default function Chat({ msgs, setMsgs, onClose, onProject, onSection }: {
               )}
             </div>
           ))}
-          {busy && <div className="msg assistant" aria-label="Aiman AI is thinking"><p className="dots"><i /><i /><i /></p></div>}
+          {busy && <div className="msg assistant" aria-label={`${BRAND.assistant} is thinking`}><p className="dots"><i /><i /><i /></p></div>}
         </div>
 
         <form className="chat-form" onSubmit={(e) => { e.preventDefault(); ask(text) }}>

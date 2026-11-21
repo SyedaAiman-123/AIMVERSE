@@ -4,7 +4,7 @@ import { audio } from './audio'
 
 /* The four station games of the Quest World. Each belongs to one object in the 3D environment and is built around
    something Aiman really does: GLSL shaders (CYBERVERSE), After Effects keyframing, Blender lighting, and the RAG
-   retrieval behind "Ask Aiman AI". Clearing a game pays XP once, a flawless run pays a bonus once (see game.ts).
+   retrieval behind "AIM AI". Clearing a game pays XP once, a flawless run pays a bonus once (see game.ts).
    Every game is playable with keyboard or pointer. All facts used are from her CV / project notes. */
 
 export type StationId = (typeof ARCADE)[number]
@@ -12,7 +12,7 @@ export const STATIONS: { id: StationId; title: string; tag: string; object: stri
   { id: 'portal', title: 'Portal Tuner', tag: 'CYBERVERSE · GLSL', object: 'the glowing portal', blurb: 'Tune the portal shader — rings, arms and spin — until your portal matches the target pattern.', goal: 'Match 2 of 3 portals · flawless: all 3, no wrong lock-ins', color: '#4DF3C8' },
   { id: 'keyframe', title: 'Keyframe Rhythm', tag: 'After Effects', object: 'the clapperboard', blurb: 'The playhead sweeps the timeline. Drop a keyframe exactly as it crosses each diamond and watch your layer animate.', goal: 'Hit 5 of 8 keyframes · flawless: all 8', color: '#FF3D8B' },
   { id: 'light', title: 'Three-Point Light', tag: 'Blender · lighting', object: 'the light rig', blurb: 'Read the director’s brief and place the key, fill and rim lights around the head to light the shot.', goal: 'Light 2 of 3 briefs · flawless: all 3, first try, tight angles', color: '#FFC53D' },
-  { id: 'radar', title: 'Retrieval Radar', tag: 'Ask Aiman AI · RAG', object: 'the radar dish', blurb: 'A question lands on the radar. Pick the document chunks the AI should retrieve — and leave the lookalikes behind.', goal: 'Retrieve well on 2 of 3 questions · flawless: all 3 perfect', color: '#A58BFF' },
+  { id: 'radar', title: 'Retrieval Radar', tag: 'AIM AI · RAG', object: 'the radar dish', blurb: 'A question lands on the radar. Pick the document chunks the AI should retrieve — and leave the lookalikes behind.', goal: 'Retrieve well on 2 of 3 questions · flawless: all 3 perfect', color: '#A58BFF' },
 ]
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v))

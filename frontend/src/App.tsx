@@ -333,7 +333,7 @@ export default function App() {
         <a className="word" href="#top" onClick={(e) => { e.preventDefault(); if (entered) go(0) }}>{BRAND.name}</a>
         <nav aria-label="Main" className="bar-r mono">
           {entered && <span className="where" aria-hidden="true">{pad(near)} / {pad(SECTION_COUNT - 1)} — {LABELS[near]}</span>}
-          {entered && <button className="askbtn" onClick={() => setChatOpen(true)}>Ask Aiman AI</button>}
+          {entered && <button className="askbtn" onClick={() => setChatOpen(true)}>Ask {BRAND.assistant}</button>}
           {entered && <QuestButton onOpen={() => setQuestOpen(true)} />}
           {entered && <button className={'snd' + (sound ? ' on' : '')} onClick={toggleSound} aria-pressed={sound} aria-label={sound ? 'Mute sound' : 'Turn sound on'}>
             <span className="eq" aria-hidden="true"><i /><i /><i /><i /></span>{sound ? 'Sound on' : 'Sound off'}
@@ -465,7 +465,7 @@ export default function App() {
               <a className="big-btn ghost" href={LINKEDIN} target="_blank" rel="noopener noreferrer">LinkedIn <b>↗</b></a>
             </div>
             <div className="cta">
-              <button className="big-btn ghost" onClick={() => setChatOpen(true)}>Ask Aiman AI <b>→</b></button>
+              <button className="big-btn ghost" onClick={() => setChatOpen(true)}>Ask {BRAND.assistant} <b>→</b></button>
               <button className="big-btn ghost" onClick={() => setPromoOpen(true)}>Watch the promo <b>▶</b></button>
             </div>
             <p className="mono sub">Messages go straight to Aiman's inbox.</p>

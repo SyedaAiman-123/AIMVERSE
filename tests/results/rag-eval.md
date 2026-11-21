@@ -1,4 +1,4 @@
-# Ask Aiman AI — retrieval & grounding evaluation
+# AIM AI — retrieval & grounding evaluation
 
 Run at 2026-11-20T21:03:48.431Z (no API key → BM25 retrieval + extractive fallback).
 

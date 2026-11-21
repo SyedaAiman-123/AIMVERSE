@@ -1,4 +1,4 @@
-# Ask Aiman AI — RAG pipeline
+# AIM AI — RAG pipeline
 
 A genuine retrieval-augmented generation system. The LLM only ever sees passages retrieved from Aiman's own documents,
 and refuses (without calling the model) when nothing relevant is found.

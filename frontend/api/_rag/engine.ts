@@ -1,12 +1,12 @@
 /**
- * Retrieval + grounded answering for "Ask Aiman AI".
+ * Retrieval + grounded answering for "AIM AI".
  * - Hybrid retrieval: BM25 keyword search always; Gemini embeddings (cosine) when the index has vectors and a key is set.
  * - Confidence gate: if nothing in the documents matches well, we REFUSE without calling the LLM (no invention, no quota spent).
  * - Grounded generation via Gemini; if the model is unavailable/rate-limited we fall back to an extractive answer built only from retrieved text.
  * Secrets: the API key is read from the server environment only. Nothing here runs in the browser.
  */
 import fs from 'node:fs'
-import { BRAND_NAME } from '../_lib/brand'
+import { BRAND_NAME, ASSISTANT_NAME } from '../_lib/brand'
 
 export type Chunk = { id: string; doc: string; title: string; ref: string; text: string; vec?: number[] }
 export type Index = { version: number; builtAt: string; embeddingModel: string | null; dims: number; chunks: Chunk[] }
@@ -146,7 +146,7 @@ export async function embedQuery(q: string, env: Env = process.env): Promise<num
   } catch { return null }
 }
 
-const SYSTEM = `You are "Ask Aiman AI", the portfolio assistant on Syeda Aiman Munawar's website ${BRAND_NAME}.
+const SYSTEM = `You are "${ASSISTANT_NAME}", the AI assistant of the portfolio website ${BRAND_NAME} by Syeda Aiman Munawar. If asked your name, say you are ${ASSISTANT_NAME}.
 Rules you must always follow:
 1. Answer ONLY from the numbered CONTEXT passages. Never use outside knowledge and never invent facts, dates, grades, employers, links or technologies.
 2. If the context does not contain the answer, say clearly that you don't have that information in Aiman's documents, and suggest what you can help with.

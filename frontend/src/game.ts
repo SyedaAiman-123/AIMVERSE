@@ -30,7 +30,7 @@ export const QUESTS: Quest[] = [
   { id: 'skill-explorer', title: 'Skill Explorer', desc: 'Explore four skill categories in the constellation.', xp: 75, goal: 4, progress: (c) => Math.min(4, c.count('skillcat:')) },
   { id: 'know-aiman', title: 'Know Aiman', desc: 'Open four of the fact orbs around her.', xp: 50, goal: 4, progress: (c) => Math.min(4, c.count('fact:')) },
   { id: 'time-traveller', title: 'Time Traveller', desc: 'Visit every year in the Journey: 2023, 2024, 2025 and 2026.', xp: 75, goal: 4, progress: (c) => c.count('year:') },
-  { id: 'ai-enthusiast', title: 'AI Enthusiast', desc: 'Ask Aiman AI three questions.', xp: 75, goal: 3, progress: (c) => Math.min(3, c.count('ask:')) },
+  { id: 'ai-enthusiast', title: 'AI Enthusiast', desc: `Ask ${BRAND.assistant} three questions.`, xp: 75, goal: 3, progress: (c) => Math.min(3, c.count('ask:')) },
   { id: 'arcade-rookie', title: 'Station Rookie', desc: 'Clear any station game in the Quest World.', xp: 50, goal: 1, progress: (c) => (ARCADE.some((g) => c.has(`game:${g}:clear`)) ? 1 : 0) },
   { id: 'arcade-champion', title: 'Station Master', desc: 'Clear all four station games: Portal Tuner, Keyframe Rhythm, Three-Point Light and Retrieval Radar.', xp: 100, goal: ARCADE.length, progress: (c) => ARCADE.filter((g) => c.has(`game:${g}:clear`)).length },
   { id: 'full-tour', title: 'Full Tour', desc: 'Visit all ten stops, from the Gateway to Contact.', xp: 100, goal: 10, progress: (c) => c.count('section:') },

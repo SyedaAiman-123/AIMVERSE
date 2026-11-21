@@ -4,6 +4,7 @@ export const BRAND = {
   name: 'AIMVERSE',
   tagline: 'Beyond the Portfolio. Into the Experience.',
   owner: 'Syeda Aiman Munawar',
+  assistant: 'AIM AI', // the chatbot's name
   quest: 'NEDVERSE',
   questTagline: 'Explore the Campus. Discover the Journey.',
   // Honest labelling required for the campus experience (not affiliated with the university).

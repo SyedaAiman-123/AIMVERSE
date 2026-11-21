@@ -1,5 +1,5 @@
 /**
- * RAG ingestion pipeline for "Ask Aiman AI".
+ * RAG ingestion pipeline for "AIM AI".
  *   1. extract   — CV PDF, project-notes text, Between Waking deck PDF, structured portfolio data
  *   2. clean     — strip emoji/markdown/hashtags, normalise whitespace, REDACT private contact details
  *   3. chunk     — logical sections first, then ~800-char windows on sentence boundaries

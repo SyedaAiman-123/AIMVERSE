@@ -431,7 +431,7 @@
   // ===================================================================================
   var S7 = sceneComp(6), d7 = S7.duration;
   bg(S7, LIME, 1500, 520);
-  var a1 = T(S7, "ASK AIMAN AI", { x: 110, y: 260, size: 118, color: BONE, name: "ASK AIMAN AI" }); slideIn(a1, 0.15, 80, 0.6);
+  var a1 = T(S7, "ASK AIM AI", { x: 110, y: 260, size: 118, color: BONE, name: "ASK AIM AI" }); slideIn(a1, 0.15, 80, 0.6);
   glow(a1, 85, 40, 0.25);
   var a2 = T(S7, "Answers only from her CV, projects and documents —\rcited, and honest when it doesn't know.", { x: 116, y: 365, size: 23, color: LIME, font: "Consolas", track: 0, lead: 36, name: "AI promise" }); slideIn(a2, 0.5, 24, 0.55);
   var q1 = T(S7, "AIMVERSE QUEST", { x: 110, y: 630, size: 82, color: BONE, name: "AIMVERSE QUEST" }); slideIn(q1, 1.0, 70, 0.6);
@@ -466,7 +466,7 @@
   glow(e2, 85, 40, 0.25);
   var e3 = T(S8, "BEYOND THE PORTFOLIO. INTO THE EXPERIENCE.", { x: 116, y: 690, size: 30, color: BONE, font: "Consolas", track: 140, name: "Tagline" }); slideIn(e3, 0.9, 20, 0.55);
   var e4 = T(S8, "linkedin.com/in/syeda-aiman-munawar-46108a2ba", { x: 116, y: 780, size: 34, color: MUT, font: "Consolas", track: 40, name: "LinkedIn" }); slideIn(e4, 1.2, 20, 0.55);
-  var e5 = T(S8, "DOWNLOAD CV   ·   ASK AIMAN AI   ·   SEND A MESSAGE", { x: 116, y: 855, size: 28, color: RED, font: "Consolas", track: 120, name: "Calls to action" }); slideIn(e5, 1.5, 20, 0.55);
+  var e5 = T(S8, "DOWNLOAD CV   ·   ASK AIM AI   ·   SEND A MESSAGE", { x: 116, y: 855, size: 28, color: RED, font: "Consolas", track: 120, name: "Calls to action" }); slideIn(e5, 1.5, 20, 0.55);
   var e6 = T(S8, "NED UNIVERSITY · CTGA-003", { x: 116, y: 920, size: 22, color: MUT, font: "Consolas", track: 240, name: "University" }); slideIn(e6, 1.8, 14, 0.5);
   fadeOutAll(S8);
   function fadeOutAll(c) {

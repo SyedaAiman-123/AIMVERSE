@@ -56,7 +56,7 @@ One dark, calm space (deep ink-navy, soft teal, warm amber accent) containing a 
 | E. AI & CV Lab | Node graph, hand-landmark motif | green | Virtual Teaching Board, Tic-Tac-Toe Minimax (AI), Islamic Evaluator (desktop app) |
 | F. Motion Studio | Floating video screens, kinetic type | rose | Creative Motion Design videos, Between Waking (pre-production) |
 
-Skill constellation, timeline, quest dashboard and Ask Aiman AI sit as overlay panels reachable from any island, so they do not need heavy extra scenes.
+Skill constellation, timeline, quest dashboard and AIM AI sit as overlay panels reachable from any island, so they do not need heavy extra scenes.
 Placeholder: where I would not be sure which island a project fits (e.g. Islamic Evaluator is a Python/MySQL desktop app, not AI), I will place it per your CV category and you can move it.
 
 ## 3. Technical approach per effect

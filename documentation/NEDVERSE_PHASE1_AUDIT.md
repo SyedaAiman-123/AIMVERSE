@@ -6,7 +6,7 @@ Date: 2026-11-21. Status: **audit only — no code, assets or branding have been
 | Area | Reality |
 |---|---|
 | Stack | Vite 8 · React 19 · TypeScript · Three.js 0.187 · @react-three/fiber 9 · drei 10 · postprocessing · GSAP · Lenis · WebAudio (procedural music) |
-| Main site | `App.tsx` (483 lines): hold-to-enter gateway, scroll-driven 3D world (`world/*`, `Scene.tsx`), case-file dialogs (`CaseSheet.tsx`), Classic view (`Classic.tsx`), Ask-Aiman-AI chat, contact form, promo-video dialog |
+| Main site | `App.tsx` (483 lines): hold-to-enter gateway, scroll-driven 3D world (`world/*`, `Scene.tsx`), case-file dialogs (`CaseSheet.tsx`), Classic view (`Classic.tsx`), AIM-AI chat, contact form, promo-video dialog |
 | API | Vercel functions `api/chat.ts` (RAG + Gemini) and `api/contact.ts` (Resend). **There is no authentication or account system** anywhere in the portfolio (Orb Rush has one, but it is a separate hosted project). |
 | Quest today | `GameUI.tsx` (header button + dialog), `QuestWorld.tsx` (fantasy floating observatory, drone, 4 stations), `QuestGames.tsx` (4 games), `ProgressPanel.tsx`, `game.ts` (event-set store: XP/levels/quests/badges derived, localStorage key `aimanverse:quest:v1`) |
 | Avatar | `public/models/aiman-web.glb` (670 KB): 1 skinned mesh, 40 nodes, full humanoid rig (hips, spine, thighs, shins, feet, toes, arms, fingers, head). **Only 3 animations: `Aiman_Idle`, `Aiman_Greeting_Wave`, `Aiman_Head_Movement`. No walk, no run.** Source rig: `blender/Aiman_Avatar_Rigged.blend` (Blender 4.5 is installed). |
