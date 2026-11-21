@@ -81,7 +81,7 @@ export function Player({ colliders, onNear, onInteract, onMode }: { colliders: C
     const space = input.keys.has('Space')
     const vmax = m.run ? CAR_BOOST : CAR_SPEED
     const throttle = m.z
-    const target = throttle > 0 ? vmax * throttle : throttle < 0 ? CAR_REVERSE * -throttle : 0
+    const target = throttle > 0 ? vmax * throttle : throttle < 0 ? CAR_REVERSE * throttle : 0
     if (space) c.v -= Math.sign(c.v) * Math.min(Math.abs(c.v), 26 * STEP)
     else if (throttle * Math.sign(c.v || throttle) < 0) c.v -= Math.sign(c.v) * Math.min(Math.abs(c.v), 22 * STEP)   // braking
     else if (throttle !== 0) { const a = (target > c.v ? (c.v < 0 ? 6 : 8.5) : 10) * STEP; c.v += Math.max(-a, Math.min(a, target - c.v)) }
