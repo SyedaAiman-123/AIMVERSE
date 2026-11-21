@@ -83,6 +83,14 @@ export function Gate({ x = 22 }: { x?: number }) {
       {[-1.33, 1.33].map((dx) => (
         <mesh key={dx} position={[dx, 7.1, 0]} rotation={[0, dx > 0 ? Math.PI / 2 : -Math.PI / 2, 0]} material={lMat}><planeGeometry args={[20.2, 1.35]} /></mesh>
       ))}
+      {/* large emblem medallion crowning the main entrance (both faces); unofficial-experience disclaimer is shown in-world */}
+      <Slab p={[0, 8.7, 0]} s={[0.5, 0.5, 2.4]} color="#d4c9ab" />
+      {[-1, 1].map((k) => (
+        <group key={k} position={[k * 0.28, 9.95, 0]} rotation={[0, k * Math.PI / 2, 0]}>
+          <mesh><circleGeometry args={[1.3, 56]} /><meshStandardMaterial map={logo} transparent roughness={0.6} emissive="#ffffff" emissiveMap={logo} emissiveIntensity={0.25} /></mesh>
+          <mesh position={[0, 0, -0.01]}><ringGeometry args={[1.3, 1.46, 56]} /><meshStandardMaterial color="#c8a64a" metalness={0.5} roughness={0.35} /></mesh>
+        </group>
+      ))}
       {/* round plaque on the plaza-facing pier */}
       <mesh position={[-1.63, 3.6, 12]} rotation={[0, -Math.PI / 2, 0]}><circleGeometry args={[0.62, 40]} /><meshStandardMaterial map={logo} transparent roughness={0.7} /></mesh>
       <mesh position={[-1.61, 3.6, 12]} rotation={[0, -Math.PI / 2, 0]}><ringGeometry args={[0.62, 0.7, 40]} /><meshStandardMaterial color="#8a7f60" /></mesh>

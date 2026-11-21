@@ -32,3 +32,12 @@ Date: 2026-11-21. Dev preview: http://localhost:5173/nedverse.html?play=1
 - **Visual spark (inspired by the Bruno Simon-style vehicle exploration in your references):** a floating guide arrow above the car or avatar that always points at the next objective; a different glowing 3D icon above each stop; stops pop in with a little overshoot; light beams and rings; drifting sunlit dust; speed lines at high speed; confetti when a stop opens; an intro title card.
 - **Tests:** new arrival test 10/10 (starts outside, no stops yet, walks to car, drives through the gate without hitting the piers, stops unlock, toast shown), driving 20/20, on-foot 20/20.
 - **Not verified:** I cannot hear the sound in this environment, so the mix and volume levels are untested by ear. Real-GPU performance is still unmeasured.
+
+## Round 4
+- **Cinematic opening:** letterboxed slow camera move over the gate while a story plays from the real data: NEDVERSE title -> 2023 "University begins - BS Computer Science & IT at NED. The journey began." -> 2024 / 2025 / 2026 with the real project counts and names -> "Explore the campus. Get to know the milestones." Skippable (Enter, Space, Esc, button). Player input is locked while it plays. `?intro=0` skips it (the automated tests use that).
+- **Background music:** a generative synthesised ambient loop (soft pads, bass, sparse plucked melody with echo, Am-F-C-G at 68 bpm). No audio files. It follows the same mute (M / speaker button). Not judged by ear.
+- **Removed:** the arrow above the player's head and all floating shapes above the stops. The HUD compass arrow in the objective panel stays.
+- **Car controls:** throttle, brake and steering now ramp in and out instead of snapping, steering is gentler at speed, yaw rate is smoothed.
+- **Gate:** a large NED emblem medallion (the logo you supplied) crowns the main entrance on both faces. The unofficial-experience disclaimer remains on the About board and pause menu.
+- **Pause menu:** new "Reset tour progress" button (clears the visited stops saved in the browser).
+- Tests: arrival 13/13, driving 20/20, on-foot 20/20.

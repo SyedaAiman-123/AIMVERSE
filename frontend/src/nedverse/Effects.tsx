@@ -31,24 +31,3 @@ export function Motes({ count = 220 }: { count?: number }) {
     </points>
   )
 }
-
-/** Floating chevron above the player that points at the objective; pulses and tints with the objective's colour. */
-export function GuideArrow({ target }: { target: { x: number; z: number; color: string } | null }) {
-  const g = useRef<THREE.Group>(null!)
-  const mat = useRef<THREE.MeshBasicMaterial>(null!)
-  const geo = useMemo(() => {
-    const s = new THREE.Shape(); s.moveTo(0, 0.55); s.lineTo(0.42, -0.35); s.lineTo(0, -0.1); s.lineTo(-0.42, -0.35); s.closePath()
-    const e = new THREE.ExtrudeGeometry(s, { depth: 0.12, bevelEnabled: false }); e.rotateX(Math.PI / 2); return e
-  }, [])
-  useFrame(({ clock }) => {
-    const n = window.__ned; if (!n || !target) { if (g.current) g.current.visible = false; return }
-    const driving = n.mode === 'driving', px = driving ? n.carX : n.x, pz = driving ? n.carZ : n.z
-    const dx = target.x - px, dz = target.z - pz, d = Math.hypot(dx, dz)
-    g.current.visible = n.mode !== 'entering' && d > 6
-    g.current.position.set(px, (driving ? 2.9 : 2.5) + Math.sin(clock.elapsedTime * 3) * 0.1, pz)
-    g.current.rotation.y = Math.atan2(dx, dz)
-    g.current.scale.setScalar(driving ? 1.5 : 1.1)
-    mat.current.color.set(target.color)
-  })
-  return <group ref={g}><mesh geometry={geo}><meshBasicMaterial ref={mat} toneMapped={false} transparent opacity={0.9} /></mesh></group>
-}

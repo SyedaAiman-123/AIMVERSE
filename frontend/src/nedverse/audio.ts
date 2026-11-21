@@ -12,6 +12,41 @@ let noiseBuf: AudioBuffer | null = null
 let muted = (() => { try { return localStorage.getItem(KEY) === '1' } catch { return false } })()
 const subs = new Set<() => void>()
 let stepDist = 0, birdT = 4
+// ---- generative background music: soft pads + bass + a gentle plucked melody (Am - F - C - G), ~68 bpm ----
+let musicBus: GainNode | null = null, echo: DelayNode | null = null, nextBar = 0, barIdx = 0, musicTimer = 0
+const CH = [[220, 261.63, 329.63], [174.61, 220, 261.63], [261.63, 329.63, 392], [196, 246.94, 293.66]]
+const BASS = [110, 87.31, 130.81, 98], PENT = [0, 3, 5, 7, 10, 12, 15, 17]   // A-minor pentatonic steps (semitones above the chord root pick)
+const BEAT = 60 / 68
+function scheduleBar(t: number, i: number) {
+  if (!ctx || !musicBus || !echo) return
+  const ch = CH[i % 4], bar = BEAT * 4
+  ch.forEach((f, k) => {   // pad: two soft oscillators per note through a low-pass
+    [0, 5].forEach((det) => {
+      const o = ctx!.createOscillator(), g = ctx!.createGain(), lp = ctx!.createBiquadFilter()
+      o.type = k === 0 ? 'triangle' : 'sine'; o.frequency.value = f; o.detune.value = det - 2; lp.type = 'lowpass'; lp.frequency.value = 1100
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.03, t + 1.4); g.gain.setValueAtTime(0.03, t + bar - 0.9); g.gain.linearRampToValueAtTime(0.0001, t + bar + 0.8)
+      o.connect(lp); lp.connect(g); g.connect(musicBus!); o.start(t); o.stop(t + bar + 1)
+    })
+  })
+  const b = ctx.createOscillator(), bg = ctx.createGain(); b.type = 'sine'; b.frequency.value = BASS[i % 4]
+  bg.gain.setValueAtTime(0.0001, t); bg.gain.linearRampToValueAtTime(0.09, t + 0.3); bg.gain.linearRampToValueAtTime(0.0001, t + bar); b.connect(bg); bg.connect(musicBus); b.start(t); b.stop(t + bar + 0.1)
+  for (let n = 0; n < 8; n++) {   // plucked arpeggio, sparse and random so the loop never feels mechanical
+    if (Math.random() < 0.38) continue
+    const tt = t + n * BEAT * 0.5, f = ch[Math.floor(Math.random() * 3)] * (Math.random() < 0.45 ? 2 : 1)
+    const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'triangle'; o.frequency.value = f
+    g.gain.setValueAtTime(0.0001, tt); g.gain.exponentialRampToValueAtTime(0.035, tt + 0.015); g.gain.exponentialRampToValueAtTime(0.0004, tt + 0.7)
+    o.connect(g); g.connect(musicBus); g.connect(echo); o.start(tt); o.stop(tt + 0.75)
+  }
+}
+function startMusic() {
+  if (!ctx || !master || musicBus) return
+  musicBus = ctx.createGain(); musicBus.gain.value = 0.9; musicBus.connect(master)
+  echo = ctx.createDelay(1); echo.delayTime.value = BEAT * 0.75; const fb = ctx.createGain(); fb.gain.value = 0.38; const lpf = ctx.createBiquadFilter()
+  lpf.type = 'lowpass'; lpf.frequency.value = 1800; const wet = ctx.createGain(); wet.gain.value = 0.5
+  echo.connect(lpf); lpf.connect(fb); fb.connect(echo); lpf.connect(wet); wet.connect(musicBus)
+  nextBar = ctx.currentTime + 0.3
+  musicTimer = window.setInterval(() => { if (!ctx) return; while (nextBar < ctx.currentTime + 2) { scheduleBar(nextBar, barIdx++); nextBar += BEAT * 4 } }, 400)
+}
 
 const safe = (fn: () => void) => { try { fn() } catch { /* audio is optional */ } }
 
@@ -34,6 +69,7 @@ export const audio = {
       // wind bed
       const n = ctx.createBufferSource(); n.buffer = noiseBuf; n.loop = true; const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 500; bp.Q.value = 0.6
       const wg = ctx.createGain(); wg.gain.value = 0.02; n.connect(bp); bp.connect(wg); wg.connect(master); n.start(); wind = { g: wg, bp }
+      startMusic()
     })
   },
   setMuted(m: boolean) {

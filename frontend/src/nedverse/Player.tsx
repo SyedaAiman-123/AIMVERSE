@@ -25,7 +25,7 @@ declare global { interface Window { __ned?: PlayerDebug } }
 const wrap = (a: number) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a }
 const toWorld = (c: { x: number; z: number; yaw: number }, lx: number, lz: number) => ({ x: c.x + lx * Math.cos(c.yaw) + lz * Math.sin(c.yaw), z: c.z - lx * Math.sin(c.yaw) + lz * Math.cos(c.yaw) })
 
-export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter }: { colliders: Collider[]; onNear: (id: string | null) => void; onInteract: (id: string) => void; onMode: (m: Mode) => void; entered: boolean; onEnter: () => void }) {
+export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter, intro }: { colliders: Collider[]; onNear: (id: string | null) => void; onInteract: (id: string) => void; onMode: (m: Mode) => void; entered: boolean; onEnter: () => void; intro: boolean }) {
   const { camera } = useThree()
   const { scene, animations } = useGLTF('/models/aiman-web.glb')
   const loco = useGLTF('/models/aiman-locomotion.glb')
@@ -53,9 +53,10 @@ export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter
     x: sx, z: sz, y: groundY(sx, sz), vx: 0, vz: 0, yaw: syaw, vis: 1, mode: 'foot' as Mode, t: 0, door: { x: 0, z: 0 },
     camYaw: q.has('cam') ? +q.get('cam')! : SPAWN.yaw + Math.PI, camPitch: 0.28, camDist: 4.4, wantDist: 4.4, footDist: 4.4, carDist: 7.6, lastLook: -9, camSwitch: -9,
     dp: false, state: 'Idle', near: null as string | null, acc: 0, frames: 0, fpsT: 0, fps: 0,
-    car: { x: cs?.[0] ?? CAR_START.x, z: cs?.[1] ?? CAR_START.z, yaw: cs?.[2] ?? CAR_START.yaw, v: 0, steer: 0, spin: 0, roll: 0, pitch: 0, yawRate: 0, fov: 55 },
+    car: { x: cs?.[0] ?? CAR_START.x, z: cs?.[1] ?? CAR_START.z, yaw: cs?.[2] ?? CAR_START.yaw, v: 0, steer: 0, spin: 0, roll: 0, pitch: 0, yawRate: 0, fov: 55, thr: 0, sti: 0 },
   })
   const enteredRef = useRef(entered); enteredRef.current = entered
+  const introRef = useRef(intro); introRef.current = intro; const introT0 = useRef<number | null>(null)
   const cam = useMemo(() => ({ pos: new THREE.Vector3(), look: new THREE.Vector3(), init: false }), [])
   // the parked car is an obstacle for the avatar on foot (a box that follows the car)
   const carBox = useMemo<Box>(() => ({ kind: 'b', x: 0, z: 0, hw: 1.0, hd: 2.2, rot: 0 }), [])
@@ -82,15 +83,17 @@ export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter
     const s = st.current, c = s.car, m = readMove()
     const space = input.keys.has('Space')
     const vmax = m.run ? CAR_BOOST : CAR_SPEED
-    const throttle = m.z
+    c.thr += (m.z - c.thr) * (1 - Math.exp(-(m.z !== 0 ? 5.5 : 8) * STEP))          // pedals and steering ramp in/out instead of snapping
+    c.sti += (m.x - c.sti) * (1 - Math.exp(-(m.x !== 0 ? 4.5 : 9) * STEP))
+    const throttle = Math.abs(c.thr) < 0.04 ? 0 : c.thr
     const target = throttle > 0 ? vmax * throttle : throttle < 0 ? CAR_REVERSE * throttle : 0
     if (space) c.v -= Math.sign(c.v) * Math.min(Math.abs(c.v), 26 * STEP)
-    else if (throttle * Math.sign(c.v || throttle) < 0) c.v -= Math.sign(c.v) * Math.min(Math.abs(c.v), 22 * STEP)   // braking
+    else if (throttle * Math.sign(c.v || throttle) < 0) c.v -= Math.sign(c.v) * Math.min(Math.abs(c.v), 22 * Math.min(1, Math.abs(throttle) * 1.6) * STEP)   // braking
     else if (throttle !== 0) { const a = (target > c.v ? (c.v < 0 ? 6 : 8.5) : 10) * STEP; c.v += Math.max(-a, Math.min(a, target - c.v)) }
     else c.v -= Math.sign(c.v) * Math.min(Math.abs(c.v), (2.6 + Math.abs(c.v) * 0.25) * STEP)                     // coast
-    const want = -m.x * 0.6 / (1 + Math.abs(c.v) * 0.07)
+    const want = -c.sti * 0.55 / (1 + Math.abs(c.v) * 0.09)
     c.steer += (want - c.steer) * (1 - Math.exp(-9 * STEP))
-    c.yawRate = (c.v / WHEELBASE) * Math.tan(c.steer); c.yaw += c.yawRate * STEP
+    c.yawRate += ((c.v / WHEELBASE) * Math.tan(c.steer) - c.yawRate) * (1 - Math.exp(-10 * STEP)); c.yaw += c.yawRate * STEP
     const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw), ox = c.x, oz = c.z
     c.x += fx * c.v * STEP; c.z += fz * c.v * STEP
     for (let pass = 0; pass < 2; pass++) for (const off of CAR_OFFS) {
@@ -214,7 +217,13 @@ export function Player({ colliders, onNear, onInteract, onMode, entered, onEnter
     // ---- camera: damped orbit (on foot) / first-person while getting in / chase (driving), kept out of walls ----
     const driving = s.mode === 'driving', entering = s.mode === 'entering'
     const pc = camera as THREE.PerspectiveCamera
-    if (entering) {
+    if (introRef.current) {
+      if (introT0.current === null) introT0.current = state.clock.elapsedTime
+      const t = state.clock.elapsedTime - introT0.current
+      const p = new THREE.Vector3(66 - t * 1.7, Math.max(5.5, 17 - t * 0.6), 20 - t * 1.3), l = new THREE.Vector3(22 - t * 0.15, 5, 0)
+      cam.pos.copy(p); cam.look.copy(l); cam.init = true; camera.position.copy(p); camera.lookAt(l)
+      if (Math.abs(pc.fov - 48) > 0.05) { pc.fov += (48 - pc.fov) * (1 - Math.exp(-3 * dt)); pc.updateProjectionMatrix() }
+    } else if (entering) {
       // first-person: eyes at head height, walking up to the driver's door and looking at the car; then a quick dip to black as she gets in
       const ex = rx + Math.sin(s.yaw) * 0.15, ez = rz + Math.cos(s.yaw) * 0.15, ey = s.y + 1.55
       const lx = s.door.x + (c.x - s.door.x) * 0.7, lz = s.door.z + (c.z - s.door.z) * 0.7

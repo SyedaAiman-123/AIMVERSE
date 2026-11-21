@@ -234,3 +234,6 @@ User supplied lowpoly-sedan-wagon.zip (corolla.glb): replaced my Blender car wit
 
 ## 2026-11-21 — Phase 4b round 3
 Start outside the gate; stops unlock after entering; synthesised WebAudio sound (engine, steps, door, horn, chime, birds, wind) with mute; guide arrow, stop icons, motes, speed lines, confetti, intro card. Tests: arrival 10/10, driving 20/20, on-foot 20/20. Local only. Sound untested by ear.
+
+## 2026-11-21 — Phase 4b round 4
+Cinematic 2023-journey intro, generative background music, removed head arrow + floating shapes, smoother car controls, NED emblem on main gate, reset-tour button. Tests arrival 13/13, driving 20/20, on-foot 20/20. Local only; music/sound untested by ear.

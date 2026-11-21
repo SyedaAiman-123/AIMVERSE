@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { INTERACTABLES, SIGNPOST } from './layout'
 import { STOPS, stopById } from './tour'
 import type { Mode } from './Player'
 import { GATE_TARGET } from './layout'
+import { BY_YEAR, YEARS, YEAR_NOTE } from '../data'
 import { audio } from './audio'
 import { input, resetInput } from './input'
 import { BRAND } from '../brand'
@@ -49,6 +50,28 @@ function Objective({ visited, mode, entered }: { visited: ReadonlySet<string>; m
   )
 }
 
+/** Cinematic opening: letterbox bars, the journey from 2023, then the objective. Skippable (Enter / Space / Esc / click). */
+function Story({ onDone }: { onDone: () => void }) {
+  const slides = useMemo(() => [
+    { big: BRAND.quest, small: BRAND.questTagline, note: BRAND.name + ' · unofficial NED-inspired campus' },
+    { big: '2023', small: YEAR_NOTE['2023'] ?? 'University begins', note: 'The journey began.' },
+    ...YEARS.filter((y) => y !== '2023' && BY_YEAR[y].length).map((y) => { const n = BY_YEAR[y].map((p) => p.name); return { big: y, small: `${n.length} project${n.length > 1 ? 's' : ''}`, note: n.slice(0, 3).join(' · ') + (n.length > 3 ? ' · and more' : '') } }),
+    { big: 'Explore the campus.', small: 'Get to know the milestones.', note: 'Drive in through the main gate.' },
+  ], [])
+  const [i, setI] = useState(0)
+  const done = useRef(onDone); done.current = onDone   // the parent re-renders often: keep the timers independent of it
+  useEffect(() => { const t = setTimeout(() => (i >= slides.length - 1 ? done.current() : setI(i + 1)), i === slides.length - 1 ? 3600 : 2900); return () => clearTimeout(t) }, [i, slides.length])
+  useEffect(() => { const k = (e: KeyboardEvent) => { if (e.code === 'Enter' || e.code === 'Space') { e.preventDefault(); done.current() } }; window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k) }, [])
+  const sl = slides[i]
+  return (
+    <div className="nv-story" data-ui>
+      <div className="nv-bar top" /><div className="nv-bar bot" />
+      <div className="nv-slide" key={i}><b>{sl.big}</b><span>{sl.small}</span><em>{sl.note}</em></div>
+      <button className="nv-skip" onClick={onDone}>Skip ▸ <kbd>Enter</kbd></button>
+    </div>
+  )
+}
+
 function StopCardView({ id, onClose }: { id: string; onClose: () => void }) {
   const stop = stopById(id.replace('stop:', '')); if (!stop) return null
   const c = stop.card
@@ -72,7 +95,7 @@ function StopCardView({ id, onClose }: { id: string; onClose: () => void }) {
   )
 }
 
-export function PlayHud({ near, card, paused, mode, visited, entered, onCloseCard, onResume, touch }: { near: string | null; card: string | null; paused: boolean; mode: Mode; visited: ReadonlySet<string>; entered: boolean; onCloseCard: () => void; onResume: () => void; touch: boolean }) {
+export function PlayHud({ near, card, paused, mode, visited, entered, intro, onIntroDone, onResetTour, onCloseCard, onResume, touch }: { near: string | null; card: string | null; paused: boolean; mode: Mode; visited: ReadonlySet<string>; entered: boolean; intro: boolean; onIntroDone: () => void; onResetTour: () => void; onCloseCard: () => void; onResume: () => void; touch: boolean }) {
   const nearItem = near ? (SPECIAL[near] ? { label: SPECIAL[near].label, title: SPECIAL[near].title } : { label: INTERACTABLES.find((i) => i.id === near)?.label ?? '', title: 'PRESS E TO INTERACT' }) : undefined
   const [help, setHelp] = useState(true)
   const [muted, setMuted] = useState(audio.muted)
@@ -86,16 +109,16 @@ export function PlayHud({ near, card, paused, mode, visited, entered, onCloseCar
     <div className="nv-hud" data-ui>
       <div className="nv-fade" aria-hidden />
       <div className="nv-speed" aria-hidden />
-      <div className="nv-intro" aria-hidden><b>{BRAND.quest}</b><span>{BRAND.questTagline}</span><small>Walk to the car and press E</small></div>
+      {intro && <Story onDone={onIntroDone} />}
       {welcome && <div className="nv-toast" role="status"><b>Welcome to the campus</b><span>{STOPS.length} tour stops are now open — follow the arrow and the light beams.</span></div>}
       <button className="nv-mute" data-ui onClick={() => audio.toggle()} aria-pressed={muted} aria-label={muted ? 'Unmute sound (M)' : 'Mute sound (M)'}>{muted ? '🔇' : '🔊'}<small>M</small></button>
       <div className="nv-tag"><b>{BRAND.quest}</b><span>{BRAND.questTagline}</span><small>{BRAND.name} · unofficial NED-inspired campus</small></div>
-      {!modal && !paused && nearItem && mode !== 'entering' && (
+      {!modal && !paused && !intro && nearItem && mode !== 'entering' && (
         <button className="nv-prompt" data-ui onClick={() => { input.interact = true }}><kbd>E</kbd><span><b>{nearItem.title}</b><small>{nearItem.label}</small></span></button>
       )}
-      {!modal && !paused && <Objective visited={visited} mode={mode} entered={entered} />}
+      {!modal && !paused && !intro && <Objective visited={visited} mode={mode} entered={entered} />}
       {stopCard && <StopCardView id={stopCard} onClose={onCloseCard} />}
-      {!touch && help && !modal && !paused && (
+      {!touch && help && !modal && !paused && !intro && (
         <div className="nv-help" role="note"><b>Controls</b>{mode === 'driving' ? <><span><kbd>W</kbd><kbd>S</kbd> throttle / reverse</span><span><kbd>A</kbd><kbd>D</kbd> steer</span><span><kbd>Shift</kbd> boost</span><span><kbd>Space</kbd> brake</span><span><kbd>H</kbd> horn</span></> : <><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span><span><kbd>Shift</kbd> run</span></>}<span>drag mouse · look</span><span>wheel · zoom</span><span><kbd>E</kbd> interact</span><span><kbd>M</kbd> sound</span><span><kbd>Esc</kbd> pause</span></div>
       )}
       {c && (
@@ -107,10 +130,10 @@ export function PlayHud({ near, card, paused, mode, visited, entered, onCloseCar
       {paused && !modal && (
         <div className="nv-pause" role="dialog" aria-modal="true" aria-label="Paused">
           <h3>Paused</h3><p>{BRAND.questDisclaimer}</p>
-          <div className="nv-row"><button className="nv-btn" onClick={onResume} autoFocus>Resume</button><a className="nv-btn ghost" href="/">Exit to {BRAND.name} portfolio</a></div>
+          <div className="nv-row"><button className="nv-btn" onClick={onResume} autoFocus>Resume</button><button className="nv-btn ghost" onClick={onResetTour}>Reset tour progress</button><a className="nv-btn ghost" href="/">Exit to {BRAND.name} portfolio</a></div>
         </div>
       )}
-      {touch && !modal && !paused && <TouchControls canInteract={!!nearItem} />}
+      {touch && !modal && !paused && !intro && <TouchControls canInteract={!!nearItem} />}
     </div>
   )
 }

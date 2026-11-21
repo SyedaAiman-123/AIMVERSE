@@ -44,3 +44,13 @@
 .nv-confetti{position:absolute;left:0;right:0;top:0;height:0;overflow:visible;pointer-events:none}.nv-confetti i{position:absolute;top:-8px;width:7px;height:12px;opacity:0;animation:nvconf 1.8s ease-out both}
 @keyframes nvconf{0%{opacity:1;transform:translateY(0) rotate(0)}100%{opacity:0;transform:translateY(300px) rotate(540deg)}}
 @media (prefers-reduced-motion:reduce){.nv-intro{animation:none;opacity:0}.nv-toast{animation:none}.nv-confetti,.nv-speed{display:none}}
+
+.nv-story{position:absolute;inset:0;z-index:6;pointer-events:auto}
+.nv-bar{position:absolute;left:0;right:0;height:12vh;background:#000;animation:nvbar 1s ease-out both}.nv-bar.top{top:0;--d:-100%}.nv-bar.bot{bottom:0;--d:100%}
+@keyframes nvbar{from{transform:translateY(var(--d))}to{transform:none}}
+.nv-slide{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);width:min(900px,92vw);text-align:center;color:#fff;text-shadow:0 4px 40px rgba(0,0,0,.7);animation:nvslide 2.9s both}
+.nv-slide b{display:block;font-size:clamp(2.6rem,10vw,6.5rem);letter-spacing:-.05em;line-height:1}.nv-slide span{display:block;margin-top:.7rem;font:600 clamp(.85rem,2.2vw,1.2rem) Consolas,monospace;letter-spacing:.2em;text-transform:uppercase;color:#4DF3C8}.nv-slide em{display:block;margin-top:1rem;font-style:normal;font-size:clamp(.9rem,2vw,1.15rem);color:#ece7db}
+@keyframes nvslide{0%{opacity:0;transform:translate(-50%,-46%)}16%,82%{opacity:1;transform:translate(-50%,-50%)}100%{opacity:0;transform:translate(-50%,-54%)}}
+.nv-skip{position:absolute;right:18px;bottom:calc(12vh + 14px);background:rgba(8,9,13,.6);color:#ece7db;border:1px solid rgba(236,231,219,.35);padding:8px 14px;font:700 .78rem Consolas,monospace;letter-spacing:.08em;cursor:pointer}
+.nv-skip kbd{margin-left:6px;padding:1px 6px;border:1px solid #6a665c;font-size:.68rem}
+@media (prefers-reduced-motion:reduce){.nv-slide,.nv-bar{animation:none}}
