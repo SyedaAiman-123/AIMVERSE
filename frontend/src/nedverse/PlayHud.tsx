@@ -3,6 +3,7 @@ import { INTERACTABLES, SIGNPOST } from './layout'
 import { STOPS, stopById } from './tour'
 import type { Mode } from './Player'
 import { GATE_TARGET } from './layout'
+import { Minimap } from './Minimap'
 import { BY_YEAR, YEARS, YEAR_NOTE } from '../data'
 import { audio } from './audio'
 import { input, resetInput } from './input'
@@ -110,6 +111,7 @@ export function PlayHud({ near, card, paused, mode, visited, entered, intro, onI
       <div className="nv-fade" aria-hidden />
       <div className="nv-speed" aria-hidden />
       {intro && <Story onDone={onIntroDone} />}
+      {!intro && <Minimap entered={entered} visited={visited} />}
       {welcome && <div className="nv-toast" role="status"><b>Welcome to the campus</b><span>{STOPS.length} tour stops are now open — follow the arrow and the light beams.</span></div>}
       <button className="nv-mute" data-ui onClick={() => audio.toggle()} aria-pressed={muted} aria-label={muted ? 'Unmute sound (M)' : 'Mute sound (M)'}>{muted ? '🔇' : '🔊'}<small>M</small></button>
       <div className="nv-tag"><b>{BRAND.quest}</b><span>{BRAND.questTagline}</span><small>{BRAND.name} · unofficial NED-inspired campus</small></div>

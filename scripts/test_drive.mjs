@@ -3,7 +3,7 @@
 import { spawn } from 'node:child_process'
 import { writeFileSync, mkdirSync } from 'node:fs'
 const OUT = process.argv[2] || 'reference/play_test'; mkdirSync(OUT, { recursive: true })
-const PORT = 9385, W = 640, H = 360
+const PORT = 9397, W = 640, H = 360
 const edge = spawn('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', ['--headless=new', `--remote-debugging-port=${PORT}`, `--window-size=${W},${H}`, '--force-device-scale-factor=1', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--user-data-dir=' + process.env.TEMP + '/aim_drive_profile', 'about:blank'], { stdio: 'ignore' })
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 let targets; for (let i = 0; i < 40; i++) { try { targets = await (await fetch(`http://127.0.0.1:${PORT}/json`)).json(); if (targets.find((t) => t.type === 'page')) break } catch {} await sleep(500) }
@@ -56,7 +56,7 @@ await up('w'); await down('space'); const braked = await waitFor(async () => { c
 check('Space brakes to a stop', !!braked, braked ? `v=${braked.carV.toFixed(2)}` : 'did not stop')
 
 // ---------- 3. car collides with buildings ----------
-s = await load('&drive=1&car=-46,-14,3.1416&cam=0')
+s = await load('&drive=1&car=-38,-14,3.1416&cam=0')
 await down('w'); let prev = 1e9, still = 0
 const hit = await waitFor(async () => { const t = await S(); if (t.carZ < -20 && Math.abs(t.carZ - prev) < 0.03) still++; else still = 0; prev = t.carZ; return still >= 4 && t }, 240000, 800)
 const w = await S(); await shot('car_wall'); await up('w')

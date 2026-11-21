@@ -54,3 +54,6 @@
 .nv-skip{position:absolute;right:18px;bottom:calc(12vh + 14px);background:rgba(8,9,13,.6);color:#ece7db;border:1px solid rgba(236,231,219,.35);padding:8px 14px;font:700 .78rem Consolas,monospace;letter-spacing:.08em;cursor:pointer}
 .nv-skip kbd{margin-left:6px;padding:1px 6px;border:1px solid #6a665c;font-size:.68rem}
 @media (prefers-reduced-motion:reduce){.nv-slide,.nv-bar{animation:none}}
+
+.nv-map{position:absolute;left:14px;top:96px;border:1px solid rgba(236,231,219,.35);box-shadow:0 4px 24px rgba(0,0,0,.4);pointer-events:none;opacity:.94}
+@media (max-width:700px),(pointer:coarse){.nv-map{width:96px;height:138px;top:84px}}

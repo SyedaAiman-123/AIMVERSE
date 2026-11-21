@@ -1,4 +1,4 @@
-import { BLOCKS, BOARD, BOUNDS, GATE_X, KIOSK, SIGNPOST, buildScatter } from './layout'
+import { BLOCKS, BOARD, BOUNDS, COMMON, GARDEN, GATE_X, KIOSK, SIGNPOST, ZONES, buildScatter } from './layout'
 import { STOPS } from './tour'
 
 /* 2-D collision on a flat campus: the player is a circle; obstacles are circles and oriented boxes (OBB). Overlaps are resolved by
@@ -14,13 +14,20 @@ const B = (x: number, z: number, hw: number, hd: number, rot = 0): Box => ({ kin
 export function buildColliders(): Collider[] {
   const s = buildScatter(), out: Collider[] = []
   for (const b of BLOCKS) {
-    out.push(B(b.pos[0], b.pos[2], b.w / 2 + 0.3, b.d / 2 + 0.3))
-    if (b.porch) for (const dx of [-4.2, -1.4, 1.4, 4.2]) out.push(C(b.pos[0] + dx, b.pos[2] + b.d / 2 + 4.6, 0.4)) // porch columns (the porch itself is walkable)
+    const rot = b.rot ?? 0, cs = Math.cos(rot), sn = Math.sin(rot)
+    out.push(B(b.pos[0], b.pos[2], b.w / 2 + 0.3, b.d / 2 + 0.3, rot))
+    if (b.porch) for (const dx of [-4.2, -1.4, 1.4, 4.2]) { const lz = b.d / 2 + 4.6; out.push(C(b.pos[0] + dx * cs + lz * sn, b.pos[2] - dx * sn + lz * cs, 0.4)) } // porch columns (the porch itself is walkable)
   }
   // gate: piers + guard rooms + parked gate leaves (the opening between z = -10.4 and 10.4 is the entrance)
   for (const k of [-1, 1]) { out.push(B(GATE_X, k * 12, 1.8, 1.8)); out.push(B(GATE_X, k * 16.4, 2.4, 2.9)); out.push(B(GATE_X + 1, k * 9.0, 0.2, 1.8)) }
   out.push(B(37, -69.5, 0.4, 55.5), B(37, 69.5, 0.4, 55.5)) // boundary wall along University Road
-  out.push(C(0, 0, 5.2))                                      // plaza planter + shrub ring
+  out.push(C(0, 0, 5.2))
+  out.push(C(GARDEN.x, GARDEN.z, 3.3))                                                  // fountain basin
+  for (const z of [-4.5, 0, 4.5]) out.push(B(GARDEN.x - 9.6, GARDEN.z + z, 0.35, 1.05)) // monument slabs
+  out.push(B(COMMON.x, COMMON.z + 8.6, 4.3, 2.3, Math.PI))                              // canteen kiosk
+  for (const [x, z] of [[-2.6, -2.6], [2.6, -2.6], [-2.6, 2.6], [2.6, 2.6]]) out.push(C(COMMON.x + x, COMMON.z - 1 + z, 0.3)) // pavilion posts
+  for (const [x, z] of [[-1.6, -2.4], [1.6, -2.4], [-1.6, 0.4], [1.6, 0.4], [-3.6, 4]]) out.push(B(COMMON.x + x, COMMON.z + z, 1.05, 0.7)) // tables
+  for (const zn of ZONES) if (zn.sign) out.push(B(zn.sign.x, zn.sign.z, 1.65, 0.2, zn.sign.rot))                                      // plaza planter + shrub ring
   out.push(B(KIOSK.pos[0], KIOSK.pos[2], 0.95, 0.5, KIOSK.rot))
   out.push(B(BOARD.pos[0], BOARD.pos[2], 1.25, 0.4, BOARD.rot))
   out.push(C(SIGNPOST.pos[0], SIGNPOST.pos[2], 0.3))

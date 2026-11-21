@@ -237,3 +237,6 @@ Start outside the gate; stops unlock after entering; synthesised WebAudio sound 
 
 ## 2026-11-21 — Phase 4b round 4
 Cinematic 2023-journey intro, generative background music, removed head arrow + floating shapes, smoother car controls, NED emblem on main gate, reset-tour button. Tests arrival 13/13, driving 20/20, on-foot 20/20. Local only; music/sound untested by ear.
+
+## 2026-11-21 — NEDVERSE Phase 5: campus expansion
+Library, Auditorium & Exhibition Hall, Central Garden (animated fountain), Student Common Area, zone signboards, expanded signpost, mini-map. Colliders generated from layout.ts incl. rotated blocks. Tests: campus 6/6, arrival 13/13, driving 20/20, on-foot 20/20. Report: documentation/NEDVERSE_PHASE5_REPORT.md. Local only; awaiting approval.

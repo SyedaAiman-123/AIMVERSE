@@ -5,6 +5,7 @@ import { Bloom, EffectComposer, SMAA, ToneMapping, Vignette } from '@react-three
 import { ToneMappingMode } from 'postprocessing'
 import * as THREE from 'three'
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js'
+import { Garden, CommonArea, ZoneSigns } from './Campus'
 import { Block, Cars, DisclaimerBoard, Gate, Kiosk, SignPost } from './Architecture'
 import { Benches, BoundaryWall, FarField, Ground, Lamps, Palms, PlazaPlanter, Roads, Shrubs, Trees } from './Landscape'
 import { BLOCKS, BOARD, CONTEXT_BLOCKS, GATE_X, KIOSK, SIGNPOST, buildScatter } from './layout'
@@ -74,7 +75,8 @@ export function World({ withAvatar = true, quality = 'high' }: { withAvatar?: bo
       <BoundaryWall />
       <Gate x={GATE_X} />
       <PlazaPlanter />
-      {BLOCKS.map((b) => <Block key={b.id} pos={b.pos} w={b.w} d={b.d} floors={b.floors} floorH={b.floorH} porch={b.porch} roofKit={b.roofKit} />)}
+      {BLOCKS.map((b) => <Block key={b.id} pos={b.pos} w={b.w} d={b.d} floors={b.floors} floorH={b.floorH} porch={b.porch} roofKit={b.roofKit} rot={b.rot} porchText={b.porchText} />)}
+      <Garden /><CommonArea /><ZoneSigns />
       <Kiosk pos={KIOSK.pos} rot={KIOSK.rot} />
       <DisclaimerBoard pos={BOARD.pos} rot={BOARD.rot} />
       <SignPost pos={SIGNPOST.pos} rot={SIGNPOST.rot} items={SIGNPOST.items} />

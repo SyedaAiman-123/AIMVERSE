@@ -15,7 +15,7 @@ function Slab({ p, s, color = CREAM, tex }: { p: [number, number, number]; s: [n
 }
 
 /** A multi-storey block: window-bay facade on all sides, plinth, parapet band, roof kit, optional entrance porch on the +z face. */
-export function Block({ pos, w, d, floors, rot = 0, floorH = 3.9, bay = 3.2, wall = CREAM, porch = false, roofKit = true }: { pos: [number, number, number]; w: number; d: number; floors: number; rot?: number; floorH?: number; bay?: number; wall?: string; porch?: boolean; roofKit?: boolean }) {
+export function Block({ pos, w, d, floors, rot = 0, floorH = 3.9, bay = 3.2, wall = CREAM, porch = false, roofKit = true, porchText }: { pos: [number, number, number]; w: number; d: number; floors: number; rot?: number; floorH?: number; bay?: number; wall?: string; porch?: boolean; roofKit?: boolean; porchText?: string }) {
   const h = floors * floorH
   const mats = useMemo(() => {
     const bayT = facadeBay(wall), nW = Math.max(1, Math.round(w / bay)), nD = Math.max(1, Math.round(d / bay))
@@ -36,13 +36,13 @@ export function Block({ pos, w, d, floors, rot = 0, floorH = 3.9, bay = 3.2, wal
         <Slab p={[-w * 0.2, h + 1.4, -d * 0.15]} s={[1.8, 0.9, 1.2]} color="#9a9ca1" />
         <Slab p={[-w * 0.38, h + 1.7, d * 0.2]} s={[1.2, 1.5, 1.2]} color={wall} />
       </>}
-      {porch && <Porch z={d / 2} />}
+      {porch && <Porch z={d / 2} text={porchText} />}
     </group>
   )
 }
 
-function Porch({ z }: { z: number }) {
-  const deptSign = useMemo(() => textTex('dept-sign', 'DEPARTMENT OF COMPUTER SCIENCE & INFORMATION TECHNOLOGY', 1536, 160, { bg: '#2a3a34', fg: '#f3eee0', size: 70 }), [])
+function Porch({ z, text = 'DEPARTMENT OF COMPUTER SCIENCE & INFORMATION TECHNOLOGY' }: { z: number; text?: string }) {
+  const deptSign = useMemo(() => textTex('porch-' + text, text, 1536, 160, { bg: '#2a3a34', fg: '#f3eee0', size: 70 }), [text])
   const door = useMemo(() => std('#22302c', 0.25, { metalness: 0.2 }), [])
   return (
     <group position={[0, 0, z]}>
