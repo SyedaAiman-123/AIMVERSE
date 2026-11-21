@@ -1,6 +1,5 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { audio } from './audio'
-import { track } from './game'
 import { BRAND } from './brand'
 
 export type Source = { n: number; title: string; doc: string; ref: string }
@@ -55,7 +54,6 @@ export default function Chat({ msgs, setMsgs, onClose, onProject, onSection }: {
       const j = await r.json().catch(() => ({}))
       if (!r.ok) throw new Error(j.error || `Request failed (${r.status})`)
       setMsgs((m) => [...m, { id: ++uid, role: 'assistant', text: j.answer, sources: j.sources, mode: j.mode, note: j.note }])
-      track('ask:' + Date.now().toString(36)) // quest: one distinct event per answered question (unique across reloads)
       audio.select()
     } catch (e) {
       const msg = e instanceof DOMException && e.name === 'AbortError' ? 'That took too long.' : e instanceof Error ? e.message : 'Something went wrong.'

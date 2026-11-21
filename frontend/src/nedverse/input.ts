@@ -9,10 +9,11 @@ export const input = {
   interact: false,                  // edge-triggered
   escape: false,                    // edge-triggered
   mute: false,                      // edge-triggered (M)
+  journal: false,                   // edge-triggered (J)
   enabled: true,                    // false while a panel / pause menu is open: movement is ignored, nothing can drift
 }
 
-export function resetInput() { input.keys.clear(); input.stick.x = input.stick.y = 0; input.lookDX = input.lookDY = input.zoom = 0; input.interact = input.escape = input.mute = false }
+export function resetInput() { input.keys.clear(); input.stick.x = input.stick.y = 0; input.lookDX = input.lookDY = input.zoom = 0; input.interact = input.escape = input.mute = input.journal = false }
 export function setInputEnabled(on: boolean) { input.enabled = on; if (!on) { input.keys.clear(); input.stick.x = input.stick.y = 0 } }
 
 /** Current movement intent: x = right, z = forward (both −1..1), run flag. */
@@ -34,6 +35,7 @@ export function attachInput(el: HTMLElement) {
   const kd = (e: KeyboardEvent) => {
     if (e.code === 'Escape') { if (!e.repeat) input.escape = true; return }
     if (e.code === 'KeyM' && !e.repeat) { input.mute = true; return }
+    if (e.code === 'KeyJ' && !e.repeat) { input.journal = true; return }
     if (!input.enabled) return
     if (MOVE_KEYS.has(e.code)) { input.keys.add(e.code); e.preventDefault() }
     else if (e.code === 'KeyE' && !e.repeat) input.interact = true

@@ -8,6 +8,7 @@ import { GATE_TARGET } from './layout'
 import { Minimap } from './Minimap'
 import { BY_YEAR, YEARS, YEAR_NOTE } from '../data'
 import { audio } from './audio'
+import { Journal, LevelChip, QuestToasts } from './QuestUI'
 import { input, resetInput } from './input'
 import { BRAND } from '../brand'
 import './nedverse.css'
@@ -110,7 +111,7 @@ function RoomObjective({ place, viewed }: { place: RoomId; viewed: ReadonlySet<s
   )
 }
 
-export function PlayHud({ near, card, paused, mode, visited, entered, place, viewed, intro, onIntroDone, onResetTour, onCloseCard, onResume, touch }: { near: string | null; card: string | null; paused: boolean; mode: Mode; visited: ReadonlySet<string>; entered: boolean; place: Place; viewed: ReadonlySet<string>; intro: boolean; onIntroDone: () => void; onResetTour: () => void; onCloseCard: () => void; onResume: () => void; touch: boolean }) {
+export function PlayHud({ near, card, paused, mode, visited, entered, place, viewed, journal, onCloseJournal, onOpenJournal, intro, onIntroDone, onResetTour, onCloseCard, onResume, touch }: { near: string | null; card: string | null; paused: boolean; mode: Mode; visited: ReadonlySet<string>; entered: boolean; place: Place; viewed: ReadonlySet<string>; journal: boolean; onCloseJournal: () => void; onOpenJournal: () => void; intro: boolean; onIntroDone: () => void; onResetTour: () => void; onCloseCard: () => void; onResume: () => void; touch: boolean }) {
   const nearItem = near ? (SPECIAL[near] ? { label: SPECIAL[near].label, title: SPECIAL[near].title } : { label: INTERACTABLES.find((i) => i.id === near)?.label ?? '', title: near.startsWith('door:') ? 'PRESS E TO ENTER' : near.startsWith('exit:') ? 'PRESS E TO LEAVE' : /^(proj|skill|fact):/.test(near) ? 'PRESS E TO VIEW' : 'PRESS E TO INTERACT' }) : undefined
   const [help, setHelp] = useState(true)
   const [muted, setMuted] = useState(audio.muted)
@@ -119,23 +120,26 @@ export function PlayHud({ near, card, paused, mode, visited, entered, place, vie
   useEffect(() => { if (!entered) return; setWelcome(true); const t = setTimeout(() => setWelcome(false), 5000); return () => clearTimeout(t) }, [entered])
   useEffect(() => { const t = setTimeout(() => setHelp(false), 14000); return () => clearTimeout(t) }, [])
   const panel = card ? getPanel(card) : null, c = card && !panel ? CARDS[card] : null
-  const modal = !!c || !!panel
+  const modal = !!c || !!panel || journal
   return (
     <div className="nv-hud" data-ui>
       <div className="nv-fade" aria-hidden />
       <div className="nv-speed" aria-hidden />
       {intro && <Story onDone={onIntroDone} />}
+      {!intro && <QuestToasts />}
+      {journal && <Journal onClose={onCloseJournal} onReset={onResetTour} />}
+      {!intro && !modal && !paused && <button className="nv-qbtn" data-ui onClick={onOpenJournal} aria-label="Open quest journal (J)">Quests<small>J</small></button>}
       {!intro && place === 'campus' && <Minimap entered={entered} visited={visited} />}
       {welcome && <div className="nv-toast" role="status"><b>Welcome to the campus</b><span>{STOPS.length} tour stops are now open — follow the arrow and the light beams.</span></div>}
       <button className="nv-mute" data-ui onClick={() => audio.toggle()} aria-pressed={muted} aria-label={muted ? 'Unmute sound (M)' : 'Mute sound (M)'}>{muted ? '🔇' : '🔊'}<small>M</small></button>
-      <div className="nv-tag"><b>{BRAND.quest}</b><span>{BRAND.questTagline}</span><small>{BRAND.name} · unofficial NED-inspired campus</small></div>
+      <div className="nv-tag"><b>{BRAND.quest}</b><span>{BRAND.questTagline}</span><small>{BRAND.name} · unofficial NED-inspired campus</small><LevelChip /></div>
       {!modal && !paused && !intro && nearItem && mode !== 'entering' && (
         <button className="nv-prompt" data-ui onClick={() => { input.interact = true }}><kbd>E</kbd><span><b>{nearItem.title}</b><small>{nearItem.label}</small></span></button>
       )}
       {!modal && !paused && !intro && (place === 'campus' ? <Objective visited={visited} mode={mode} entered={entered} /> : <RoomObjective place={place as RoomId} viewed={viewed} />)}
       {panel && <PanelView panel={panel} onClose={onCloseCard} inside={place !== 'campus'} />}
       {!touch && help && !modal && !paused && !intro && (
-        <div className="nv-help" role="note"><b>Controls</b>{mode === 'driving' ? <><span><kbd>W</kbd><kbd>S</kbd> throttle / reverse</span><span><kbd>A</kbd><kbd>D</kbd> steer</span><span><kbd>Shift</kbd> boost</span><span><kbd>Space</kbd> brake</span><span><kbd>H</kbd> horn</span></> : <><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span><span><kbd>Shift</kbd> run</span></>}<span>drag mouse · look</span><span>wheel · zoom</span><span><kbd>E</kbd> interact</span><span><kbd>M</kbd> sound</span><span><kbd>Esc</kbd> pause</span></div>
+        <div className="nv-help" role="note"><b>Controls</b>{mode === 'driving' ? <><span><kbd>W</kbd><kbd>S</kbd> throttle / reverse</span><span><kbd>A</kbd><kbd>D</kbd> steer</span><span><kbd>Shift</kbd> boost</span><span><kbd>Space</kbd> brake</span><span><kbd>H</kbd> horn</span></> : <><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span><span><kbd>Shift</kbd> run</span></>}<span>drag mouse · look</span><span>wheel · zoom</span><span><kbd>E</kbd> interact</span><span><kbd>J</kbd> quests</span><span><kbd>M</kbd> sound</span><span><kbd>Esc</kbd> pause</span></div>
       )}
       {c && (
         <div className="nv-card" role="dialog" aria-modal="true" aria-label={c.title}>
@@ -146,7 +150,7 @@ export function PlayHud({ near, card, paused, mode, visited, entered, place, vie
       {paused && !modal && (
         <div className="nv-pause" role="dialog" aria-modal="true" aria-label="Paused">
           <h3>Paused</h3><p>{BRAND.questDisclaimer}</p>
-          <div className="nv-row"><button className="nv-btn" onClick={onResume} autoFocus>Resume</button><button className="nv-btn ghost" onClick={onResetTour}>Reset tour progress</button><a className="nv-btn ghost" href="/">Exit to {BRAND.name} portfolio</a></div>
+          <div className="nv-row"><button className="nv-btn" onClick={onResume} autoFocus>Resume</button><button className="nv-btn ghost" onClick={onResetTour}>Reset quest progress</button><a className="nv-btn ghost" href="/">Exit to {BRAND.name} portfolio</a></div>
         </div>
       )}
       {touch && !modal && !paused && !intro && <TouchControls canInteract={!!nearItem} />}

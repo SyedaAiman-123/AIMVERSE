@@ -8,8 +8,7 @@ import CaseSheet, { type OpenState } from './CaseSheet'
 import type { Quality } from './Scene'
 import { ACCENTS, SECTION_COUNT, avatarBus, fx, intro, scroll } from './world/state'
 import { audio } from './audio'
-import { track } from './game'
-import { Dashboard, QuestButton } from './GameUI'
+import { QuestButton } from './QuestEntry'
 import Chat, { type Msg } from './Chat'
 import Contact from './Contact'
 import PromoVideo from './PromoVideo'
@@ -182,7 +181,6 @@ export default function App() {
   const [fact, setFact] = useState<string | null>(null)
   const [year, setYear] = useState<string | null>(null)
   const [playing, setPlaying] = useState(false)
-  const [questOpen, setQuestOpen] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
   const [contactOpen, setContactOpen] = useState(false)
   const [promoOpen, setPromoOpen] = useState(false)
@@ -218,9 +216,9 @@ export default function App() {
   }, [classic, entered])
 
   useEffect(() => {
-    if (open || questOpen || chatOpen || contactOpen || !entered) lenis.current?.stop()
+    if (open || chatOpen || contactOpen || !entered) lenis.current?.stop()
     else lenis.current?.start()
-  }, [open, questOpen, chatOpen, contactOpen, entered])
+  }, [open, chatOpen, contactOpen, entered])
 
   // she greets you as soon as the preloader lifts
   useEffect(() => {
@@ -230,16 +228,6 @@ export default function App() {
   }, [loaded])
 
   useEffect(() => { audio.setSection(near) }, [near])
-  // quest tracking: every event is something the visitor genuinely did
-  useEffect(() => { if (entered) track('section:' + near) }, [near, entered])
-  useEffect(() => { if (open) track(`project:${open.gi}:${open.pi}`) }, [open?.gi, open?.pi]) // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (!skill) return
-    const g = skill.startsWith('#') ? skill.slice(1) : SKILL_GROUPS.find((x) => x.skills.includes(skill))?.name
-    if (g) track('skillcat:' + g)
-  }, [skill])
-  useEffect(() => { if (fact) track('fact:' + fact) }, [fact])
-  useEffect(() => { if (year) track('year:' + year) }, [year])
   useEffect(() => { audio.duck(!!open) }, [open])
 
   // "Play the journey": steps through the years, the camera follows
@@ -258,7 +246,6 @@ export default function App() {
 
   const enter = useCallback(() => {
     audio.drop()
-    track('enter')
     setSound(true)
     setFlash(true)
     setTimeout(() => setFlash(false), 1500)
@@ -316,7 +303,7 @@ export default function App() {
     addEventListener('blur', hidePeek)
     return () => { removeEventListener('scroll', hidePeek); removeEventListener('wheel', hidePeek); removeEventListener('blur', hidePeek) }
   }, [hidePeek])
-  useEffect(() => { if (open || questOpen || chatOpen || contactOpen) hidePeek() }, [open, questOpen, chatOpen, contactOpen, hidePeek])
+  useEffect(() => { if (open || chatOpen || contactOpen) hidePeek() }, [open, chatOpen, contactOpen, hidePeek])
 
   if (classic) return <Classic canReturn={webgl} onWorld={() => setClassic(false)} />
 
@@ -334,7 +321,7 @@ export default function App() {
         <nav aria-label="Main" className="bar-r mono">
           {entered && <span className="where" aria-hidden="true">{pad(near)} / {pad(SECTION_COUNT - 1)} — {LABELS[near]}</span>}
           {entered && <button className="askbtn" onClick={() => setChatOpen(true)}>Ask {BRAND.assistant}</button>}
-          {entered && <QuestButton onOpen={() => setQuestOpen(true)} />}
+          {entered && <QuestButton />}
           {entered && <button className={'snd' + (sound ? ' on' : '')} onClick={toggleSound} aria-pressed={sound} aria-label={sound ? 'Mute sound' : 'Turn sound on'}>
             <span className="eq" aria-hidden="true"><i /><i /><i /><i /></span>{sound ? 'Sound on' : 'Sound off'}
           </button>}
@@ -474,7 +461,6 @@ export default function App() {
       </main>
       <div className="peek" ref={peek} aria-hidden="true"><img alt="" /></div>
 
-      {questOpen && <Dashboard onClose={() => setQuestOpen(false)} />}
       {contactOpen && <Contact onClose={() => setContactOpen(false)} />}
       {promoOpen && <PromoVideo onClose={() => setPromoOpen(false)} />}
       {chatOpen && <Chat msgs={chatMsgs} setMsgs={setChatMsgs} onClose={() => setChatOpen(false)} onProject={openProject} onSection={go} />}

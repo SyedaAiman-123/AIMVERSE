@@ -37,3 +37,4 @@
 .confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 @media (max-width:760px){.qbtn .qbar{display:none}}
 @media (max-width:760px){.bar-r .qbtn,.bar-r .snd{display:inline-flex}.bar-r{gap:10px}}
+.qbtn{text-decoration:none;color:inherit}

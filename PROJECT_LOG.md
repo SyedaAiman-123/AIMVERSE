@@ -246,3 +246,6 @@ Link roads left/right inside the gate, rounded corners, turnarounds, avenue shor
 
 ## 2026-11-22 — NEDVERSE Phase 6: portfolio interactions
 Lazy walk-in rooms (CS lab 15 workstations, library 6 skill shelves, exhibition hall 7 verified-fact panels), door transitions, panels from data.ts, kiosk map. Tests: rooms 15/15, driving 20/20, on-foot 20/20, arrival 13/13, campus 6/6. Campus guide not built. Report: documentation/NEDVERSE_PHASE6_REPORT.md. Local only; awaiting approval.
+
+## 2026-11-22 — NEDVERSE Phase 7: quest system + Quest Mode entry
+12 exploration quests, XP/levels (L3 = Campus Explorer), 7 badges, journal (J), toasts, two-step reset, localStorage persistence. Header QUEST MODE button -> /nedverse.html (production entry, vite multi-page). Old Quest World + station games + game.ts removed. Tests: quests 11/11, rooms 15/15, driving 20/20, on-foot 20/20, arrival 13/13, campus 6/6; vite build OK. Local only; awaiting approval.

@@ -1,4 +1,4 @@
-// Dev-only preview of the NEDVERSE environment (nedverse.html). Not part of the production build.
+// Dev-only camera presets for the NEDVERSE environment (nedverse-dev.html). Not part of the production build.
 //   ?play=1          -> playable third-person mode (WASD, Shift, mouse, E)      ?touch=1 -> force touch controls
 //   ?cam=1..6[&free=1] -> fixed camera presets of the Phase 3 prototype
 import { createRoot } from 'react-dom/client'

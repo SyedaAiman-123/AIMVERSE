@@ -5,6 +5,8 @@ import { Player, type Mode } from './Player'
 import { TourStops } from './TourStops'
 import { Motes } from './Effects'
 import { audio } from './audio'
+import { resetQuests, track } from './quests'
+import { ZONES } from './layout'
 import { STOPS } from './tour'
 import { PlayHud } from './PlayHud'
 import { buildColliders } from './collision'
@@ -29,14 +31,15 @@ export default function PlayScene({ touch }: { touch: boolean }) {
   const [card, setCard] = useState<string | null>(null)
   const [paused, setPaused] = useState(false)
   const [mode, setMode] = useState<Mode>('foot')
+  const [journal, setJournal] = useState(false)
   const [entered, setEntered] = useState(false)
   const [intro, setIntro] = useState(() => { const q = new URLSearchParams(location.search); return !(q.get('intro') === '0' || q.has('x') || q.has('z') || q.has('drive') || q.has('car') || q.has('place')) })
   const [visited, setVisited] = useState<ReadonlySet<string>>(() => { try { return new Set<string>(JSON.parse(localStorage.getItem('aimverse:nedverse:tour') || '[]')) } catch { return new Set<string>() } })
   const nextStop = STOPS.find((s) => !visited.has(s.id)) ?? null, nextId = nextStop?.id ?? null
-  const onEnter = useCallback(() => { setEntered(true); audio.unlock() }, [])
+  const onEnter = useCallback(() => { setEntered(true); audio.unlock(); track('gate') }, [])
   // browsers only allow sound after a gesture: start the audio engine on the first key press / click / tap
   useEffect(() => { const go = () => audio.start(); window.addEventListener('keydown', go); window.addEventListener('pointerdown', go); return () => { window.removeEventListener('keydown', go); window.removeEventListener('pointerdown', go) } }, [])
-  const modal = !!card || paused || intro
+  const modal = !!card || paused || intro || journal
   // Low tier (phones, ?q=low): smaller shadow map, no bloom/SMAA, dpr 1. High tier otherwise (?q=high forces it).
   const qp = new URLSearchParams(location.search).get('q')
   const [forceLow, setForceLow] = useState(false)
@@ -55,12 +58,30 @@ export default function PlayScene({ touch }: { touch: boolean }) {
     const iv = window.setInterval(() => {
       if (!input.escape) return
       input.escape = false
-      if (intro) setIntro(false); else if (card) setCard(null); else setPaused((p) => !p)
+      if (intro) setIntro(false); else if (journal) setJournal(false); else if (card) setCard(null); else setPaused((p) => !p)
     }, 50)
     return () => window.clearInterval(iv)
-  }, [card, intro])
+  }, [card, intro, journal])
+  // J toggles the quest journal
+  useEffect(() => {
+    const iv = window.setInterval(() => { if (!input.journal) return; input.journal = false; if (!intro && !paused && !card) { setJournal((j) => !j); audio.click() } }, 50)
+    return () => window.clearInterval(iv)
+  }, [intro, paused, card])
+  // quest events that come from where she is: zones A-G (on foot or by car), and walking into a room
+  useEffect(() => {
+    const AREAS: Record<string, [number, number, number]> = { A: [15, 0, 9], B: [-46, -22, 10], C: [0, -27.5, 9], D: [-48, 31, 10], E: [-30, -4, 10], F: [-52, -6, 10], G: [-26, 38, 9] }
+    const iv = window.setInterval(() => {
+      const n = window.__ned; if (!n || n.place !== 'campus') return
+      const px = n.mode === 'driving' ? n.carX : n.x, pz = n.mode === 'driving' ? n.carZ : n.z
+      for (const z of ZONES) { const a = AREAS[z.id]; if (a && Math.hypot(px - a[0], pz - a[1]) < a[2]) track('zone:' + z.id) }
+    }, 400)
+    return () => window.clearInterval(iv)
+  }, [])
+  useEffect(() => { if (place !== 'campus') track('room:' + place) }, [place])
+  useEffect(() => { if (mode === 'driving') track('car') }, [mode])
   const onInteract = useCallback((id: string) => {
     setCard(id)
+    if (id === 'kiosk') track('kiosk'); else if (id.startsWith('stop:')) track(id); else if (/^(proj|skill|fact):/.test(id)) track(id)
     if (/^(stop|proj|skill|fact):/.test(id)) audio.chime(); else audio.click()
     if (/^(proj|skill|fact):/.test(id)) setViewed((v) => { const n = new Set(v); n.add(id); try { localStorage.setItem('aimverse:nedverse:viewed', JSON.stringify([...n])) } catch { /* private mode */ } return n })
     if (id.startsWith('stop:')) setVisited((v) => { const n = new Set(v); n.add(id.slice(5)); try { localStorage.setItem('aimverse:nedverse:tour', JSON.stringify([...n])) } catch { /* private mode */ } return n })
@@ -77,7 +98,7 @@ export default function PlayScene({ touch }: { touch: boolean }) {
           <Suspense fallback={null}><Player colliders={colliders} onNear={setNear} onInteract={onInteract} onMode={setMode} entered={entered} onEnter={onEnter} intro={intro} onPlace={setPlace} /></Suspense>
         </Canvas>
       </div>
-      <PlayHud near={near} card={card} paused={paused} mode={mode} visited={visited} entered={entered} intro={intro} place={place} viewed={viewed} onIntroDone={() => setIntro(false)} onResetTour={() => { setVisited(new Set()); try { localStorage.removeItem('aimverse:nedverse:tour') } catch { /* ignore */ } }} onCloseCard={() => setCard(null)} onResume={() => setPaused(false)} touch={touch} />
+      <PlayHud near={near} card={card} paused={paused} mode={mode} visited={visited} entered={entered} intro={intro} place={place} viewed={viewed} onIntroDone={() => setIntro(false)} onResetTour={() => { resetQuests(); setVisited(new Set()); setViewed(new Set()); setJournal(false) }} journal={journal} onCloseJournal={() => setJournal(false)} onOpenJournal={() => { if (!modal) setJournal(true) }} onCloseCard={() => setCard(null)} onResume={() => setPaused(false)} touch={touch} />
     </Boundary>
   )
 }

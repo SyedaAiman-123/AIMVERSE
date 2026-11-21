@@ -3,7 +3,6 @@ import { useFrame } from '@react-three/fiber'
 import { Edges, Text, useAnimations, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import { audio } from '../audio'
-import { track } from '../game'
 import { avatarBus, fx, tint } from './state'
 import { BRAND } from '../brand'
 
@@ -36,7 +35,6 @@ function Avatar() {
     const idle = actions['Aiman_Idle']
     if (!w || !idle || busy.current) return
     busy.current = true
-    if (!auto) track('hello')
     audio.chime()
     w.reset().setLoop(THREE.LoopOnce, 1)
     w.clampWhenFinished = true
@@ -52,7 +50,6 @@ function Avatar() {
     const idle = actions['Aiman_Idle']
     if (!clip || !idle || busy.current) return
     busy.current = true
-    track('hello')
     clip.reset().setLoop(THREE.LoopOnce, 1)
     clip.clampWhenFinished = true
     idle.crossFadeTo(clip, 0.3, false)

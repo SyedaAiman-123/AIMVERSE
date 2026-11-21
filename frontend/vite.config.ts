@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+import { resolve } from 'node:path'
 
 /** Serves /api/chat during `npm run dev` using the same handler Vercel runs in production. Reads .env for GEMINI_API_KEY. */
 function apiDev(): Plugin {
@@ -24,4 +25,4 @@ function apiDev(): Plugin {
   }
 }
 
-export default defineConfig({ plugins: [react(), apiDev()], build: { chunkSizeWarningLimit: 1200 } })
+export default defineConfig({ plugins: [react(), apiDev()], build: { chunkSizeWarningLimit: 1200, rollupOptions: { input: { main: resolve(__dirname, 'index.html'), nedverse: resolve(__dirname, 'nedverse.html') } } } })
