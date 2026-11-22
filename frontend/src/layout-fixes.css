@@ -68,3 +68,10 @@
 /* ---- Skip link (Classic view): visible only on keyboard focus ---- */
 .skip-link { position: absolute; left: 12px; top: -48px; z-index: 100; background: #ff4a1c; color: #07080c; padding: 10px 14px; font-weight: 700; text-decoration: none; }
 .skip-link:focus { top: 12px; }
+
+/* phones/tablets: the header hides its buttons, so AIM AI gets a floating button (always reachable, clear of the browser's bottom bar) */
+.askfab{display:none}
+@media (max-width:900px){
+  .askfab{display:inline-flex;align-items:center;gap:8px;position:fixed;right:14px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:30;padding:.7rem 1rem;border:1px solid var(--red);background:rgba(8,9,13,.88);color:var(--bone);font:600 .78rem Mono,monospace;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 0 22px rgba(255,74,28,.35);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .askfab span{color:var(--red)}
+}

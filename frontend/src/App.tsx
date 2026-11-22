@@ -351,6 +351,7 @@ export default function App() {
         </nav>
       </header>
 
+      {entered && !open && !chatOpen && !contactOpen && <button className="askfab" onClick={() => setChatOpen(true)} aria-label={`Ask ${BRAND.assistant}`}><span aria-hidden="true">✦</span> Ask {BRAND.assistant}</button>}
       {loaded && !entered && <Welcome onEnter={enter} onSkip={() => setClassic(true)} reduced={reduced} out={stage !== 'intro'} />}
       {flash && <div className="flash" aria-hidden="true" />}
 
