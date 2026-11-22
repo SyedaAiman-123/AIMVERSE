@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { audio } from './audio'
+import { voice } from './voice'
 import { BRAND } from './brand'
 
 export type Source = { n: number; title: string; doc: string; ref: string }
@@ -36,6 +37,8 @@ export default function Chat({ msgs, setMsgs, onClose, onProject, onSection }: {
     d.addEventListener('cancel', cancel)
     return () => { d.removeEventListener('cancel', cancel); d.close() }
   }, [onClose])
+  // her recorded welcome when the chat opens (cut when it closes)
+  useEffect(() => { const id = setTimeout(() => voice.play('aim-ai', undefined, 15000), 500); return () => { clearTimeout(id); voice.stop() } }, [])
   useEffect(() => { log.current?.scrollTo({ top: log.current.scrollHeight, behavior: 'smooth' }) }, [msgs, busy])
 
   const ask = async (q: string) => {

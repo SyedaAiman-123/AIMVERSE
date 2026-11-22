@@ -61,7 +61,7 @@ def bed(total, d, seed=3):
 def dur(p):
     return float(subprocess.check_output(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', p]).decode().strip())
 
-for src in sorted(glob.glob(os.path.join(RAW, '*.aac'))):
+for src in sorted(sum((glob.glob(os.path.join(RAW, e)) for e in ('*.aac', '*.ogg', '*.mp3', '*.wav', '*.m4a')), [])):
     name = os.path.basename(src).split('.')[0]
     d = dur(src); total = LEAD + d + TAIL
     bedwav = os.path.join(OUT, '_bed.wav'); wavfile.write(bedwav, SR, bed(total, d))
