@@ -8,6 +8,7 @@ import { GATE_TARGET } from './layout'
 import { Minimap } from './Minimap'
 import { BY_YEAR, YEARS, YEAR_NOTE } from '../data'
 import { audio } from './audio'
+import { voice, useVoiceEnabled } from '../voice'
 import { Journal, LevelChip, QuestToasts } from './QuestUI'
 import { useFocusTrap } from './focus'
 import { Finale } from './Finale'
@@ -66,7 +67,12 @@ function Story({ onDone }: { onDone: () => void }) {
   ], [])
   const [i, setI] = useState(0)
   const done = useRef(onDone); done.current = onDone   // the parent re-renders often: keep the timers independent of it
-  useEffect(() => { const t = setTimeout(() => (i >= slides.length - 1 ? done.current() : setI(i + 1)), i === slides.length - 1 ? 3600 : 2900); return () => clearTimeout(t) }, [i, slides.length])
+  // recorded narration: line 1 on the title, line 2 on "2023", line 3 on the final slide; those slides wait long enough for the line to finish
+  const last = slides.length - 1, vo = voice.enabled
+  const line = i === 0 ? 'intro-1' : i === 1 ? 'intro-2' : i === last ? 'intro-3' : null
+  useEffect(() => { if (line) voice.play(line) }, [line])
+  useEffect(() => () => voice.stop(), [])
+  useEffect(() => { const t = setTimeout(() => (i >= last ? done.current() : setI(i + 1)), vo && i === 0 ? 8900 : vo && i === 1 ? 9600 : i === last ? (vo ? 5000 : 3600) : 2900); return () => clearTimeout(t) }, [i, last, vo])
   useEffect(() => { const k = (e: KeyboardEvent) => { if (e.code === 'Enter' || e.code === 'Space') { e.preventDefault(); done.current() } }; window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k) }, [])
   const sl = slides[i]
   return (
@@ -114,12 +120,13 @@ function Seg<T extends string>({ label, value, options, onChange }: { label: str
 
 /** pause-menu settings: graphics quality, time of day, volume, reduced motion, FPS readout */
 function SettingsPanel() {
-  const st = useSettings()
+  const st = useSettings(), vo = useVoiceEnabled()
   return (
     <div className="nv-settings">
       <Seg label="Graphics" value={st.quality} options={[{ v: 'auto', t: 'Auto' }, { v: 'low', t: 'Light' }, { v: 'high', t: 'Full' }]} onChange={(quality) => setSettings({ quality })} />
       <Seg label="Time of day" value={st.mood} options={[{ v: 'day', t: 'Day' }, { v: 'evening', t: 'Evening' }]} onChange={(mood) => setSettings({ mood })} />
       <div className="nv-set"><label htmlFor="nv-vol">Volume</label><input id="nv-vol" type="range" min={0} max={100} value={Math.round(st.volume * 100)} onChange={(e) => setSettings({ volume: +e.target.value / 100 })} aria-valuetext={`${Math.round(st.volume * 100)} percent`} /></div>
+      <Seg label="Voiceover" value={vo ? 'on' : 'off'} options={[{ v: 'on', t: 'On' }, { v: 'off', t: 'Off' }]} onChange={(v) => voice.setEnabled(v === 'on')} />
       <Seg label="Reduced motion" value={st.reducedMotion === null ? 'os' : st.reducedMotion ? 'on' : 'off'} options={[{ v: 'os', t: isReduced() ? 'System (on)' : 'System' }, { v: 'on', t: 'On' }, { v: 'off', t: 'Off' }]} onChange={(v) => setSettings({ reducedMotion: v === 'os' ? null : v === 'on' })} />
       <Seg label="FPS counter" value={st.showFps ? 'on' : 'off'} options={[{ v: 'off', t: 'Off' }, { v: 'on', t: 'On' }]} onChange={(v) => setSettings({ showFps: v === 'on' })} />
     </div>

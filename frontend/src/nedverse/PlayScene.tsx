@@ -5,6 +5,7 @@ import { Player, type Mode } from './Player'
 import { TourStops } from './TourStops'
 import { Motes } from './Effects'
 import { audio } from './audio'
+import { voice } from '../voice'
 import { getQuests, resetQuests, track, useQuests } from './quests'
 import { useSettings } from './settings'
 import { ZONES } from './layout'
@@ -82,6 +83,10 @@ export default function PlayScene({ touch }: { touch: boolean }) {
     return () => window.clearInterval(iv)
   }, [])
   useEffect(() => { if (place !== 'campus') track('room:' + place) }, [place])
+  // recorded narration: a line when you walk into a room (cut when you leave), a line for each roadside stop (cut when its card closes)
+  const prevCard = useRef<string | null>(null)
+  useEffect(() => { if (place !== 'campus') { if (!intro) voice.play('room-' + place) } else voice.stop() }, [place, intro])
+  useEffect(() => { if (!card && prevCard.current?.startsWith('stop:')) voice.stop(); prevCard.current = card }, [card])
   useEffect(() => { if (mode === 'driving') track('car') }, [mode])
   // the ending: once every quest is complete (and it has not been shown yet) wait a moment for the last toast, then play the finale
   const q = useQuests(), allDone = q.quests.every((x) => x.done), seen = q.events.has('finale')
@@ -94,6 +99,7 @@ export default function PlayScene({ touch }: { touch: boolean }) {
     setCard(id)
     if (id === 'kiosk') track('kiosk'); else if (id.startsWith('stop:')) track(id); else if (/^(proj|skill|fact):/.test(id)) track(id)
     if (/^(stop|proj|skill|fact):/.test(id)) audio.chime(); else audio.click()
+    if (id.startsWith('stop:')) voice.play('stop-' + id.slice(5))
     if (/^(proj|skill|fact):/.test(id)) setViewed((v) => { const n = new Set(v); n.add(id); try { localStorage.setItem('aimverse:nedverse:viewed', JSON.stringify([...n])) } catch { /* private mode */ } return n })
     if (id.startsWith('stop:')) setVisited((v) => { const n = new Set(v); n.add(id.slice(5)); try { localStorage.setItem('aimverse:nedverse:tour', JSON.stringify([...n])) } catch { /* private mode */ } return n })
   }, [])

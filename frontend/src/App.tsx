@@ -8,6 +8,7 @@ import CaseSheet, { type OpenState } from './CaseSheet'
 import type { Quality } from './Scene'
 import { ACCENTS, SECTION_COUNT, avatarBus, fx, intro, scroll } from './world/state'
 import { audio } from './audio'
+import { voice } from './voice'
 import { QuestButton } from './QuestEntry'
 import Chat, { type Msg } from './Chat'
 import Contact from './Contact'
@@ -246,6 +247,8 @@ export default function App() {
 
   const enter = useCallback(() => {
     audio.drop()
+    voice.setDucker((on) => audio.duck(on))
+    setTimeout(() => voice.play('welcome'), 700)   // her greeting, just after the drop
     setSound(true)
     setFlash(true)
     setTimeout(() => setFlash(false), 1500)
@@ -264,6 +267,7 @@ export default function App() {
   const toggleSound = () => {
     const next = !sound
     audio.setMuted(!next)
+    voice.setMuted(!next)
     setSound(next)
   }
 

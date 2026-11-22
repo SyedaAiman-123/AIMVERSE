@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { FACTS, FLAT, SKILL_GROUPS } from '../data'
 import { BRAND } from '../brand'
 import { useFocusTrap } from './focus'
+import { voice } from '../voice'
 
 /** The ending: shown once when every quest is complete (and from the journal on request). Cinematic letterbox, three title cards,
     then a choice: return to the AIMVERSE portfolio, or keep exploring. */
@@ -13,7 +14,11 @@ export function Finale({ onKeep }: { onKeep: () => void }) {
   ], [])
   const [i, setI] = useState(0), box = useRef<HTMLDivElement>(null)
   const last = i >= slides.length
-  useEffect(() => { if (last) return; const t = setTimeout(() => setI((k) => k + 1), i === slides.length - 1 ? 4200 : 3600); return () => clearTimeout(t) }, [i, last, slides.length])
+  // recorded narration, one line per title card; the cards wait for the line to finish
+  const vo = voice.enabled
+  useEffect(() => { if (i < slides.length) voice.play(`finale-${i + 1}`) }, [i, slides.length])
+  useEffect(() => () => voice.stop(), [])
+  useEffect(() => { if (last) return; const t = setTimeout(() => setI((k) => k + 1), vo ? [5400, 7000, 7800][i] : i === slides.length - 1 ? 4200 : 3600); return () => clearTimeout(t) }, [i, last, slides.length, vo])
   useFocusTrap(box, last)
   const sl = slides[Math.min(i, slides.length - 1)]
   return (

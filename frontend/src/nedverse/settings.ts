@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { audio } from './audio'
+import { voice } from '../voice'
 
 /* Player settings, saved in the browser only. quality: auto = pick from the device and the live frame rate; mood: time of day;
    reducedMotion: null = follow the operating-system setting. */
@@ -12,7 +13,7 @@ try { const raw = localStorage.getItem(KEY); if (raw) { const j = JSON.parse(raw
 const subs = new Set<() => void>()
 const osReduce = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches } catch { return false } }
 export const isReduced = (s: Settings = cur) => (s.reducedMotion === null ? osReduce() : s.reducedMotion)
-const apply = () => { audio.setVolume(cur.volume); try { document.documentElement.dataset.nvReduce = isReduced() ? '1' : '0' } catch { /* ignore */ } }
+const apply = () => { audio.setVolume(cur.volume); voice.setVolume(cur.volume); try { document.documentElement.dataset.nvReduce = isReduced() ? '1' : '0' } catch { /* ignore */ } }
 apply()
 
 export const getSettings = () => cur

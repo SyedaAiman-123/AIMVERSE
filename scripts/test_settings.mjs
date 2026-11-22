@@ -36,15 +36,15 @@ const LS = 'aimverse:nedverse:settings'
 await load('&intro=0&x=-5&z=3&yaw=1.5&cam=1.2'); await ev(`localStorage.removeItem('${LS}')`)
 await load('&intro=0&x=-5&z=3&yaw=1.5&cam=1.2'); await sleep(1500)
 await tap('esc'); await waitFor(async () => (await ev("!!document.querySelector('.nv-pause')")), 15000)
-check('pause menu has graphics, time of day, volume, reduced-motion and FPS settings', (await ev("document.querySelectorAll('.nv-settings .nv-set').length")) === 5)
+check('pause menu has graphics, time of day, volume, reduced-motion and FPS settings', (await ev("document.querySelectorAll('.nv-settings .nv-set').length")) === 6)
 await clickText('.nv-seg', 'Evening'); await sleep(2500); await tap('esc'); await sleep(2500); await shot('evening')
 check('Evening mood is saved', JSON.parse((await ev(`localStorage.getItem('${LS}')`)) || '{}').mood === 'evening')
 await tap('esc'); await waitFor(async () => (await ev("!!document.querySelector('.nv-pause')")), 15000)
 await ev("(()=>{const i=document.querySelector('#nv-vol');const set=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;set.call(i,'30');i.dispatchEvent(new Event('input',{bubbles:true}))})()"); await sleep(500)
 check('volume slider is saved (30%)', JSON.parse((await ev(`localStorage.getItem('${LS}')`)) || '{}').volume === 0.3)
-await clickText('.nv-seg', 'On'); await sleep(300)   // first "On" = reduced motion
+await clickText('.nv-set:nth-child(5) .nv-seg', 'On'); await sleep(300)   // first "On" = reduced motion
 check('reduced motion switches the page into reduced-motion mode', (await ev("document.documentElement.dataset.nvReduce")) === '1')
-await clickText('.nv-set:nth-child(5) .nv-seg', 'On'); await sleep(500)
+await clickText('.nv-set:nth-child(6) .nv-seg', 'On'); await sleep(500)
 await clickText('.nv-seg', 'Light'); await sleep(300)
 check('graphics quality choice is saved', JSON.parse((await ev(`localStorage.getItem('${LS}')`)) || '{}').quality === 'low')
 await tap('esc'); await sleep(2500)

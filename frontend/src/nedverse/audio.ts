@@ -2,6 +2,8 @@
    Engine hum that follows the car's speed, footsteps, car door + start-up, horn, impact thud, stop chime, UI click,
    wind ambience and distant birds once on campus. M (or the speaker button) mutes; the choice is remembered. */
 
+import { voice } from '../voice'
+
 type Ctx = AudioContext
 const KEY = 'aimverse:nedverse:mute'
 let ctx: Ctx | null = null, master: GainNode | null = null
@@ -68,6 +70,9 @@ function startMusic() {
 }
 
 const safe = (fn: () => void) => { try { fn() } catch { /* audio is optional */ } }
+// recorded voiceovers: lower the score while a line plays, and follow this module's mute
+voice.setDucker((on) => safe(() => { if (ctx && musicBus) musicBus.gain.setTargetAtTime(on ? 0.3 : 0.9, ctx.currentTime, 0.25) }))
+voice.setMuted(muted)
 
 export const audio = {
   get muted() { return muted },
@@ -92,7 +97,7 @@ export const audio = {
     })
   },
   setMuted(m: boolean) {
-    muted = m; try { localStorage.setItem(KEY, m ? '1' : '0') } catch { /* private mode */ }
+    muted = m; voice.setMuted(m); try { localStorage.setItem(KEY, m ? '1' : '0') } catch { /* private mode */ }
     safe(() => { if (master && ctx) master.gain.setTargetAtTime(m ? 0 : volume, ctx.currentTime, 0.05) })
     subs.forEach((f) => f())
   },
