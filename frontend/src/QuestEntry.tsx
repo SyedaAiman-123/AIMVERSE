@@ -11,7 +11,7 @@ export function QuestButton() {
   }, [])
   return (
     <a className="qbtn" href="/nedverse.html" aria-label={`Open Quest Mode, the NEDVERSE campus.${info ? ` ${info.label}, ${info.xp} XP` : ''}`} title="Quest Mode · explore the NEDVERSE campus">
-      <span>Quest Mode</span>{info && <span className="qlvl">{info.label}</span>}
+      <span>Quest Mode</span>
     </a>
   )
 }

@@ -217,7 +217,8 @@ html.lenis,html.lenis body{height:auto}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .welcome{background:linear-gradient(90deg,rgba(8,9,13,.82),transparent 58%)}
 .welcome h1{display:block;font-size:clamp(3.4rem,10.5vw,9.4rem);line-height:.84;margin:.9rem 0 1.1rem;transform:scale(calc(1 + var(--p,0) * .035));transform-origin:left bottom;transition:none}
-.welcome h1 .ln{display:block;overflow:hidden;padding-bottom:.06em;animation:none}
+.welcome h1 .ln{display:block;overflow:hidden;padding-bottom:.06em;animation:none;white-space:nowrap}
+@media (max-width:900px){.welcome h1{font-size:clamp(2.6rem,12.5vw,6rem)}}
 .welcome h1 .ln i{display:inline-block;font-style:normal;animation:letter .9s cubic-bezier(.2,.9,.2,1) both;animation-delay:calc(.25s + var(--i) * 55ms)}
 .welcome h1 .ln.red{color:var(--red);text-shadow:0 0 calc(var(--p,0) * 40px) var(--red)}
 @keyframes letter{from{transform:translateY(110%) rotate(8deg);opacity:0}to{transform:none;opacity:1}}
