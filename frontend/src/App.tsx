@@ -229,6 +229,24 @@ export default function App() {
   }, [loaded])
 
   useEffect(() => { audio.setSection(near) }, [near])
+  useEffect(() => { voice.setDucker((on) => audio.duck(on)) }, [])
+  // her greeting plays as the avatar and "HELLO, I'M AIMAN." appear (if the browser blocks sound before a click, it plays on the first click or key press)
+  useEffect(() => {
+    if (!loaded || entered || classic) return
+    const id = setTimeout(() => voice.play('welcome', undefined, 60000), 1100)
+    return () => clearTimeout(id)
+  }, [loaded, entered, classic])
+  // recorded narration for each section of the portfolio: the line for the section you reach (once per visit, after you settle on it)
+  const spoken = useRef(new Set<number>())
+  useEffect(() => {
+    if (!entered) return
+    const ids: Record<number, string> = { 1: 'stop-about', [2 + ISLANDS.length]: 'stop-skills', [SECTION_COUNT - 1]: 'stop-contact' }
+    ISLANDS.forEach((isl, k) => { ids[2 + k] = 'stop-' + isl.id })
+    const line = ids[near]
+    if (!line || spoken.current.has(near)) return
+    const id = setTimeout(() => { spoken.current.add(near); voice.play(line) }, 900)
+    return () => clearTimeout(id)
+  }, [near, entered])
   useEffect(() => { audio.duck(!!open) }, [open])
 
   // "Play the journey": steps through the years, the camera follows
@@ -248,7 +266,6 @@ export default function App() {
   const enter = useCallback(() => {
     audio.drop()
     voice.setDucker((on) => audio.duck(on))
-    setTimeout(() => voice.play('welcome'), 700)   // her greeting, just after the drop
     setSound(true)
     setFlash(true)
     setTimeout(() => setFlash(false), 1500)

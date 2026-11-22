@@ -22,7 +22,7 @@ export const voice = {
   setVolume(v: number) { vol = Math.min(1, Math.max(0, v)); if (cur) cur.volume = vol },
   setDucker(fn: (on: boolean) => void) { ducker = fn },
   /** play one recorded line, e.g. voice.play('stop-about'); returns a promise that resolves when it ends (or at once if nothing plays) */
-  play(name: string, onEnd?: () => void) {
+  play(name: string, onEnd?: () => void, retryMs = 8000) {
     voice.stop()
     if (!enabled || muted || typeof Audio === 'undefined') return
     try {
@@ -32,9 +32,9 @@ export const voice = {
       a.play().catch(() => {
         // the browser blocked it (no click/key yet on this page): retry once on the visitor's first gesture, if this line is still the current one
         release(a)
-        const retry = () => { window.removeEventListener('pointerdown', retry); window.removeEventListener('keydown', retry); if (!cur && !stale) voice.play(name, onEnd) }
+        const retry = () => { window.removeEventListener('pointerdown', retry); window.removeEventListener('keydown', retry); if (!cur && !stale) voice.play(name, onEnd, 0) }
         let stale = false; window.addEventListener('pointerdown', retry); window.addEventListener('keydown', retry)
-        window.setTimeout(() => { stale = true; window.removeEventListener('pointerdown', retry); window.removeEventListener('keydown', retry) }, 8000)
+        window.setTimeout(() => { stale = true; window.removeEventListener('pointerdown', retry); window.removeEventListener('keydown', retry) }, retryMs)
       })
     } catch { cur = null; ducker(false) }
   },
