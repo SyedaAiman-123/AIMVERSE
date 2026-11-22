@@ -187,7 +187,7 @@ export function PlayHud({ near, card, paused, mode, visited, entered, place, vie
       {paused && !modal && (
         <div ref={pauseRef} className="nv-pause" role="dialog" aria-modal="true" aria-label="Paused">
           <h3>Paused</h3><SettingsPanel /><p>{BRAND.questDisclaimer}</p>
-          <div className="nv-row"><button className="nv-btn" onClick={onResume} autoFocus>Resume</button><button className="nv-btn ghost" onClick={onResetTour}>Reset quest progress</button><a className="nv-btn ghost" href="/">Exit to {BRAND.name} portfolio</a></div>
+          <div className="nv-row"><button className="nv-btn" onClick={onResume} autoFocus>Resume</button><button className="nv-btn ghost" onClick={onReplayFinale}>Finish exploring</button><button className="nv-btn ghost" onClick={onResetTour}>Reset quest progress</button><a className="nv-btn ghost" href="/">Exit to {BRAND.name} portfolio</a></div>
         </div>
       )}
       {touch && !modal && !paused && !intro && <TouchControls canInteract={!!nearItem} />}

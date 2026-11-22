@@ -67,7 +67,7 @@ export function Journal({ onClose, onReset, onReplay }: { onClose: () => void; o
       </div>
       <div className="nv-row">
         <button className="nv-btn" onClick={onClose} autoFocus>Close (J / Esc)</button>
-        {g.quests.every((q) => q.done) && <button className="nv-btn ghost" onClick={onReplay}>Watch the finale</button>}
+        <button className="nv-btn ghost" onClick={onReplay}>{g.quests.every((q) => q.done) ? 'Watch the finale' : 'Finish exploring · see the ending'}</button>
         {sure ? <><button className="nv-btn ghost" onClick={() => { onReset(); setSure(false) }}>Yes, erase my progress</button><button className="nv-btn ghost" onClick={() => setSure(false)}>Cancel</button></> : <button className="nv-btn ghost" onClick={() => setSure(true)}>Reset progress…</button>}
       </div>
     </div>

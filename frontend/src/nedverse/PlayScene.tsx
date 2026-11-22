@@ -109,7 +109,7 @@ export default function PlayScene({ touch }: { touch: boolean }) {
           <Suspense fallback={null}><Player colliders={colliders} onNear={setNear} onInteract={onInteract} onMode={setMode} entered={entered} onEnter={onEnter} intro={intro} onPlace={setPlace} finale={finale} /></Suspense>
         </Canvas>
       </div>
-      <PlayHud near={near} card={card} paused={paused} mode={mode} visited={visited} entered={entered} intro={intro} place={place} viewed={viewed} onIntroDone={() => setIntro(false)} onResetTour={() => { resetQuests(); setVisited(new Set()); setViewed(new Set()); setJournal(false) }} finale={finale} onKeepExploring={() => setFinale(false)} onReplayFinale={() => { setJournal(false); setFinale(true); audio.finale() }} journal={journal} onCloseJournal={() => setJournal(false)} onOpenJournal={() => { if (!modal) setJournal(true) }} onCloseCard={() => setCard(null)} onResume={() => setPaused(false)} touch={touch} />
+      <PlayHud near={near} card={card} paused={paused} mode={mode} visited={visited} entered={entered} intro={intro} place={place} viewed={viewed} onIntroDone={() => setIntro(false)} onResetTour={() => { resetQuests(); setVisited(new Set()); setViewed(new Set()); setJournal(false) }} finale={finale} onKeepExploring={() => setFinale(false)} onReplayFinale={() => { setJournal(false); setPaused(false); setFinale(true); audio.finale() }} journal={journal} onCloseJournal={() => setJournal(false)} onOpenJournal={() => { if (!modal) setJournal(true) }} onCloseCard={() => setCard(null)} onResume={() => setPaused(false)} touch={touch} />
     </Boundary>
   )
 }
