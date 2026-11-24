@@ -124,7 +124,7 @@
 - User supplied a Gemini API key; stored ONLY in frontend/.env (git-ignored). (Key was pasted in chat, so it should be regenerated before publishing.)
 - Re-ingested with real embeddings: 112 chunks, gemini-embedding-001 @ 768 dims, index 684 KB. Embedding request format accepted.
 - Found: gemini-2.5-flash(-lite) return 404 "no longer available to new users" -> default model changed to alias `gemini-flash-lite-latest`; generation verified (grounded, cited answers; "I don't have that information" for irrelevant passages; injection + off-topic refused; phone request blocked).
-- Found: inside the Claude preview sandbox the dev server's fetch to Google fails ("fetch failed") so the in-app preview shows quote-only fallback; a normal `npm run dev` on the user's machine (and my own shell dev server on :5199) reaches Gemini fine. Failure note text reworded to not blame quota.
+- Found: inside the in-app preview sandbox the dev server's fetch to Google fails ("fetch failed") so the in-app preview shows quote-only fallback; a normal `npm run dev` on the user's machine (and my own shell dev server on :5199) reaches Gemini fine. Failure note text reworded to not blame quota.
 - Rate limiter (10/min/IP) confirmed working under rapid testing.
 - Not verified: Vercel deployment of the function; Gemini free-tier quota numbers; behaviour under real traffic; full 31-question live evaluation with vectors (only ~12 live questions run, paced).
 
